@@ -23,6 +23,7 @@ import {
   type NovaChartLineSeriesApi,
   type NovaChartRootApi,
   type NovaChartTooltipContext,
+  type NovaChartViewportControllerApi,
   type NovaChartViewportApi,
 } from '@/index'
 import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
@@ -489,6 +490,89 @@ function mountViewportChart(app: NovaApp<TestEvents>, data: Array<Row>, width = 
               orientation: 'horizontal',
               visibleCount: 10,
               wheelStep: 5,
+            },
+          },
+        ],
+      },
+    ],
+  })
+  app.raph.run()
+  app.raph.run()
+}
+
+function mountViewportControllerChart(
+  app: NovaApp<TestEvents>,
+  data: Array<Row>,
+  controllerProps: Record<string, unknown> = {},
+  width = 720,
+  height = 320,
+): void {
+  const surface = app.createSurface('chart-viewport-controller-test')
+  app.schema.createNode(surface, {
+    type: NovaUIKit.Root,
+    id: 'ui-root',
+    props: { width, height },
+    children: [
+      {
+        type: NovaCharts.Root,
+        id: 'chart',
+        props: {
+          width,
+          height,
+          data,
+          keyField: 'id',
+        },
+        children: [
+          {
+            type: NovaCharts.Scale,
+            id: 'x-scale',
+            props: { scaleId: 'x', scaleType: 'band', field: 'category' },
+          },
+          {
+            type: NovaCharts.Scale,
+            id: 'y-scale',
+            props: { scaleId: 'y', scaleType: 'linear', field: 'value', zero: true },
+          },
+          {
+            type: NovaCharts.Plot,
+            id: 'plot',
+            props: { xScaleId: 'x', yScaleId: 'y', width, height: height - 20 },
+            children: [
+              {
+                type: NovaCharts.BarSeries,
+                id: 'series',
+                props: {
+                  xScaleId: 'x',
+                  yScaleId: 'y',
+                  xField: 'category',
+                  yField: 'value',
+                },
+              },
+              {
+                type: NovaCharts.Interaction,
+                id: 'interaction',
+                props: { enabled: true, hover: true, tooltip: true },
+              },
+              {
+                type: NovaCharts.ViewportController,
+                id: 'viewport-controller',
+                props: {
+                  scaleId: 'x',
+                  viewportRef: 'viewport',
+                  ...controllerProps,
+                },
+              },
+            ],
+          },
+          {
+            type: NovaCharts.Viewport,
+            id: 'viewport',
+            props: {
+              scaleId: 'x',
+              orientation: 'horizontal',
+              visibleCount: 10,
+              wheelStep: 5,
+              controller: controllerProps,
             },
           },
         ],
@@ -1098,6 +1182,98 @@ describe('Nova Charts components', () => {
     })
   })
 
+  it('registers ViewportController and scrolls horizontal viewport from deltaX', () => {
+    const app = createApp()
+    mountViewportControllerChart(app, rows(40), {
+      wheel: { axis: 'horizontal', useDeltaX: true, speed: 1 },
+    })
+
+    expect(NovaCharts.ViewportController).toBe('NovaCharts.ViewportController')
+    expect(app.components.api<NovaChartViewportControllerApi>('viewport-controller')).toBeTruthy()
+
+    const viewport = app.components.requireApi<NovaChartViewportApi>('viewport')
+    const controller = app.components.require('viewport-controller') as unknown as NovaNode<TestEvents>
+    controller.eventHandlers.wheel?.(new WheelEvent('wheel', { deltaX: 96, deltaY: 0 }))
+
+    expect(viewport.getViewportState().value).toBe(2)
+    expect(app.components.requireApi<NovaChartRootApi<Row>>('chart').getScaleSourceDomain('x')).toHaveLength(40)
+  })
+
+  it('maps Shift+wheel to horizontal viewport and filters tiny deltas', () => {
+    const app = createApp()
+    mountViewportControllerChart(app, rows(40), {
+      wheel: { axis: 'horizontal', shiftYToX: true, thresholdPx: 8 },
+    })
+
+    const viewport = app.components.requireApi<NovaChartViewportApi>('viewport')
+    const controller = app.components.require('viewport-controller') as unknown as NovaNode<TestEvents>
+    controller.eventHandlers.wheel?.(new WheelEvent('wheel', { deltaY: 4, shiftKey: true }))
+    expect(viewport.getViewportState().value).toBe(0)
+
+    controller.eventHandlers.wheel?.(new WheelEvent('wheel', { deltaY: 96, shiftKey: true }))
+    expect(viewport.getViewportState().value).toBe(2)
+  })
+
+  it('allows wheel pass-through at viewport bounds', () => {
+    const app = createApp()
+    mountViewportControllerChart(app, rows(20), {
+      wheel: { axis: 'horizontal', edgeBehavior: 'pass-through', preventDefault: 'when-scrollable' },
+    })
+
+    const controller = app.components.require('viewport-controller') as unknown as NovaNode<TestEvents>
+    const event = new WheelEvent('wheel', { deltaX: -96 })
+    controller.eventHandlers.wheel?.(event)
+
+    expect((event as unknown as Record<string, unknown>).__novaAllowDefault).toBe(true)
+    expect(app.components.requireApi<NovaChartViewportApi>('viewport').getViewportState().value).toBe(0)
+  })
+
+  it('supports pointer pan, keyboard and custom wheel mapper', () => {
+    const app = createApp()
+    const onInput = vi.fn()
+    mountViewportControllerChart(app, rows(60), {
+      wheel: { axis: 'horizontal' },
+      pointerPan: { enabled: true, speed: 1 },
+      keyboard: { enabled: true, step: 3, pageStep: 8 },
+      mapWheel: () => ({ axis: 'horizontal', delta: 5, mode: 'domain', source: 'custom' }),
+      onInput,
+    })
+
+    const viewport = app.components.requireApi<NovaChartViewportApi>('viewport')
+    const controller = app.components.require('viewport-controller') as unknown as NovaNode<TestEvents>
+    controller.eventHandlers.wheel?.(new WheelEvent('wheel', { deltaY: 1 }))
+    expect(viewport.getViewportState().value).toBe(5)
+    expect(onInput).toHaveBeenLastCalledWith(expect.objectContaining({ source: 'custom', delta: 5 }), expect.any(WheelEvent))
+
+    controller.eventHandlers.mousedown?.(new MouseEvent('mousedown', { button: 0, clientX: 100, clientY: 100 }))
+    controller.eventHandlers.dragmove?.(new MouseEvent('mousemove', { clientX: 0, clientY: 100 }), -96, 0, {
+      startX: 100,
+      startY: 100,
+      x: 0,
+      y: 100,
+      dx: -96,
+      dy: 0,
+      totalDx: -96,
+      totalDy: 0,
+      pointerId: 1,
+    })
+    expect(viewport.getViewportState().value).toBe(7)
+
+    controller.eventHandlers.keydown?.(new KeyboardEvent('keydown', { key: 'PageDown' }))
+    expect(viewport.getViewportState().value).toBe(15)
+  })
+
+  it('keeps scrollbar wheel behavior backward-compatible without controller', () => {
+    const app = createApp()
+    mountViewportChart(app, rows(40))
+
+    const viewport = app.components.requireApi<NovaChartViewportApi>('viewport')
+    const scrollbar = app.components.require('viewport') as unknown as NovaNode<TestEvents>
+    scrollbar.eventHandlers.wheel?.(new WheelEvent('wheel', { deltaX: 0, deltaY: 96 }))
+
+    expect(viewport.getViewportState().value).toBe(5)
+  })
+
   it('keeps generic bar metadata and scale domain contributions in root API', () => {
     const app = createApp()
     mountSeriesChart(app, { mode: 'grouped', orientation: 'vertical' })
@@ -1347,6 +1523,24 @@ describe('Nova Charts components', () => {
     viewport.scrollTo(1)
     app.raph.run()
     expect(root.requireScale('category').getDomain()).toEqual(['Q2', 'Q3'])
+  })
+
+  it('auto-mounts ViewportController from BarChart viewport controller props', () => {
+    const app = createApp()
+    mountBarChart(app, seriesRows(), {
+      viewport: {
+        visibleCount: 2,
+        controller: {
+          wheel: { axis: 'horizontal' },
+        },
+      },
+    })
+
+    const controller = app.components.require('bar-chart:viewport-controller') as unknown as NovaNode<TestEvents>
+    const viewport = app.components.requireApi<NovaChartViewportApi>('bar-chart:viewport')
+    controller.eventHandlers.wheel?.(new WheelEvent('wheel', { deltaY: 96 }))
+
+    expect(viewport.getViewportState().value).toBe(1)
   })
 
   it('exposes bounded chart semantics and export wrappers', async () => {

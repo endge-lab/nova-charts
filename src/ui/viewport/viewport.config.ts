@@ -48,6 +48,7 @@ export function createChartViewportDescriptor(createNode?: ChartViewportNodeFact
       value: { type: 'number' },
       visibleCount: { type: 'number' },
       wheelStep: { type: 'number' },
+      controller: { type: 'record' },
       scrollbar: { type: 'record' },
       onChange: { type: 'function' },
     },

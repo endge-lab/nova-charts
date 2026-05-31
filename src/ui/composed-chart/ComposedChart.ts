@@ -224,6 +224,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
             ...(interactionProps ?? {}),
           },
         }] : []),
+        ...this.createViewportController(),
         ...(this.props.tooltip ? [{
           type: NovaCharts.Tooltip,
           id: `${this.componentId}:tooltip`,
@@ -234,6 +235,22 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
         }] : []),
       ],
     }
+  }
+
+  private createViewportController(): Array<NovaTemplateChildSchema> {
+    if (!this.props.viewport) return []
+    const viewportProps = this.resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
+    if (!viewportProps?.controller) return []
+    return [{
+      type: NovaCharts.ViewportController,
+      id: `${this.componentId}:viewport-controller`,
+      props: {
+        ...viewportProps.controller,
+        scaleId: this.props.xAxis.scaleId,
+        viewportRef: `${this.componentId}:viewport`,
+      },
+      layout: { width: '100%', height: '100%' },
+    }]
   }
 
   private createSeriesSchema(series: NovaChartComposedSeriesConfig<TData>, index: number): NovaTemplateChildSchema {

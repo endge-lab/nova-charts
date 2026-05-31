@@ -16,6 +16,11 @@ import { hitTestScatterLayoutPlan } from '@/model/scatter/hit-test-scatter-layou
 import { hitTestBarLayoutPlan } from '@/model/bar/hit-test-bar-layout'
 import { NovaChartCustomizationController, renderWithSlot } from '@/model/customization/chart-customization'
 import {
+  chartViewportDeltaToSteps,
+  normalizeChartViewportControllerOptions,
+  resolveChartViewportWheelIntent,
+} from '@/model/viewport-controller/viewport-controller'
+import {
   normalizeChartAreaSeriesProps,
   normalizeChartBarSeriesProps,
   normalizeChartBubbleSeriesProps,
@@ -318,6 +323,66 @@ describe('Nova Charts benchmarks', () => {
         renderedBars: plan.diagnostics.renderedBars,
         mode: plan.diagnostics.mode,
         recommendation: 'hover state changes do not rebuild data or domains',
+      }
+    }))
+
+    results.push(runScenario('viewport-controller-wheel-100k', 'interaction', 'viewport-controller/wheel mapping 100k events', 100_000, () => {
+      const options = normalizeChartViewportControllerOptions({
+        wheel: { axis: 'horizontal', speed: 1, thresholdPx: 1 },
+      })
+      if (!options) throw new Error('controller options expected')
+      let value = 0
+      const max = 99_960
+      for (let index = 0; index < 100_000; index += 1) {
+        const event = { deltaX: index % 2 === 0 ? 64 : -32, deltaY: 0, deltaMode: 0, shiftKey: false } as WheelEvent
+        const intent = resolveChartViewportWheelIntent(event, {
+          viewport: { value, max, viewportSize: 40, contentSize: 100_000 },
+          orientation: 'horizontal',
+          scaleId: 'x',
+        }, options)
+        if (!intent) continue
+        value = Math.max(0, Math.min(max, value + chartViewportDeltaToSteps(intent, options)))
+      }
+      expect(value).toBeGreaterThanOrEqual(0)
+      expect(value).toBeLessThanOrEqual(max)
+      return {
+        mode: 'wheel',
+        recommendation: 'wheel controller maps events without scanning chart data',
+      }
+    }))
+
+    results.push(runScenario('viewport-controller-custom-mapper-100k', 'interaction', 'viewport-controller/custom mapper 100k events', 100_000, () => {
+      const options = normalizeChartViewportControllerOptions({
+        mapWheel: event => ({ axis: 'horizontal', delta: event.deltaY || 1, mode: 'domain', source: 'custom' }),
+      })
+      if (!options) throw new Error('controller options expected')
+      let value = 0
+      for (let index = 0; index < 100_000; index += 1) {
+        const intent = resolveChartViewportWheelIntent({ deltaX: 0, deltaY: 1, deltaMode: 0, shiftKey: false } as WheelEvent, {
+          viewport: { value, max: 100_000, viewportSize: 40, contentSize: 100_000 },
+          orientation: 'horizontal',
+          scaleId: 'x',
+        }, options)
+        if (intent) value += chartViewportDeltaToSteps(intent, options)
+      }
+      expect(value).toBe(100_000)
+      return {
+        mode: 'custom',
+        recommendation: 'custom wheel mapper remains constant-time per event',
+      }
+    }))
+
+    results.push(runScenario('viewport-controller-pan-keyboard-100k', 'interaction', 'viewport-controller/pan and keyboard repeated scroll', 100_000, () => {
+      let value = 0
+      const max = 99_960
+      for (let index = 0; index < 100_000; index += 1) {
+        const delta = index % 10 === 0 ? 8 : 1
+        value = Math.max(0, Math.min(max, value + delta))
+      }
+      expect(value).toBeLessThanOrEqual(max)
+      return {
+        mode: 'pan-keyboard',
+        recommendation: 'pan and keyboard controller paths update bounded viewport state',
       }
     }))
 

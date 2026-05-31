@@ -14,6 +14,7 @@ import { CHART_ROOT_DESCRIPTOR } from '@/ui/root/root.registry'
 import { CHART_SCALE_DESCRIPTOR } from '@/ui/scale/scale.registry'
 import { CHART_SCATTER_SERIES_DESCRIPTOR } from '@/ui/scatter-series/scatter-series.registry'
 import { CHART_TOOLTIP_DESCRIPTOR } from '@/ui/tooltip/tooltip.registry'
+import { CHART_VIEWPORT_CONTROLLER_DESCRIPTOR } from '@/ui/viewport-controller/viewport-controller.registry'
 import { CHART_VIEWPORT_DESCRIPTOR } from '@/ui/viewport/viewport.registry'
 
 const NOVA_CHARTS_DESCRIPTORS: Array<NovaComponentDescriptor<any, any, any, any>> = [
@@ -31,6 +32,7 @@ const NOVA_CHARTS_DESCRIPTORS: Array<NovaComponentDescriptor<any, any, any, any>
   CHART_BUBBLE_SERIES_DESCRIPTOR,
   CHART_INTERACTION_DESCRIPTOR,
   CHART_TOOLTIP_DESCRIPTOR,
+  CHART_VIEWPORT_CONTROLLER_DESCRIPTOR,
   CHART_VIEWPORT_DESCRIPTOR,
   CHART_LEGEND_DESCRIPTOR,
 ]

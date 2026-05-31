@@ -1226,6 +1226,123 @@ export type NovaChartTooltipContentFormatter<TData = Record<string, unknown>> = 
   context: NovaChartTooltipContext<TData>,
 ) => TooltipContent | null
 
+export type NovaChartViewportControllerAxis = 'auto' | 'horizontal' | 'vertical'
+export type NovaChartViewportControllerPreventDefault = 'never' | 'always' | 'when-scrollable'
+export type NovaChartViewportControllerEdgeBehavior = 'clamp' | 'pass-through'
+export type NovaChartViewportControllerDeltaMode = 'pixel' | 'line' | 'domain'
+export type NovaChartViewportControllerSource = 'wheel' | 'trackpad' | 'pointer-pan' | 'keyboard' | 'custom'
+export type NovaChartViewportControllerPointerButton = 'primary' | 'middle' | 'secondary'
+
+export interface NovaChartViewportControllerWheelOptions {
+  enabled?: boolean
+  axis?: NovaChartViewportControllerAxis
+  useDeltaX?: boolean
+  shiftYToX?: boolean
+  speed?: number
+  thresholdPx?: number
+  preventDefault?: NovaChartViewportControllerPreventDefault
+  edgeBehavior?: NovaChartViewportControllerEdgeBehavior
+}
+
+export interface NovaChartViewportControllerTrackpadOptions {
+  enabled?: boolean
+  preferDeltaX?: boolean
+  inertia?: boolean
+}
+
+export interface NovaChartViewportControllerPointerPanOptions {
+  enabled?: boolean
+  button?: NovaChartViewportControllerPointerButton
+  speed?: number
+  cursor?: string
+}
+
+export interface NovaChartViewportControllerKeyboardOptions {
+  enabled?: boolean
+  step?: number
+  pageStep?: number
+  keys?: {
+    left?: string
+    right?: string
+    up?: string
+    down?: string
+    pageLeft?: string
+    pageRight?: string
+    pageUp?: string
+    pageDown?: string
+    home?: string
+    end?: string
+  }
+}
+
+export interface NovaChartViewportControllerScrollbarOptions {
+  drag?: boolean
+  clickTrack?: false | 'jump' | 'page'
+}
+
+export interface NovaChartViewportControllerContext {
+  viewport: NovaChartViewportState
+  orientation: 'horizontal' | 'vertical'
+  scaleId?: string
+}
+
+export interface NovaChartViewportControllerWheelIntent {
+  axis: 'horizontal' | 'vertical'
+  delta: number
+  mode: NovaChartViewportControllerDeltaMode
+  source?: NovaChartViewportControllerSource
+}
+
+export interface NovaChartViewportControllerInputState {
+  source: NovaChartViewportControllerSource
+  value: number
+  delta: number
+  consumed: boolean
+  axis: 'horizontal' | 'vertical'
+}
+
+export interface NovaChartViewportControllerOptions {
+  enabled?: boolean
+  viewportRef?: string
+  wheel?: boolean | NovaChartViewportControllerWheelOptions
+  trackpad?: boolean | NovaChartViewportControllerTrackpadOptions
+  pointerPan?: boolean | NovaChartViewportControllerPointerPanOptions
+  keyboard?: boolean | NovaChartViewportControllerKeyboardOptions
+  scrollbar?: NovaChartViewportControllerScrollbarOptions
+  mapWheel?: (event: WheelEvent, context: NovaChartViewportControllerContext) => NovaChartViewportControllerWheelIntent | null
+  onInput?: (state: NovaChartViewportControllerInputState, event?: Event) => void
+}
+
+export interface NovaChartViewportControllerResolvedOptions {
+  enabled: boolean
+  viewportRef?: string
+  wheel: Required<NovaChartViewportControllerWheelOptions>
+  trackpad: Required<NovaChartViewportControllerTrackpadOptions>
+  pointerPan: Required<NovaChartViewportControllerPointerPanOptions>
+  keyboard: Required<Omit<NovaChartViewportControllerKeyboardOptions, 'keys'>> & {
+    keys: Required<NonNullable<NovaChartViewportControllerKeyboardOptions['keys']>>
+  }
+  scrollbar: Required<NovaChartViewportControllerScrollbarOptions>
+  mapWheel?: NovaChartViewportControllerOptions['mapWheel']
+  onInput?: NovaChartViewportControllerOptions['onInput']
+}
+
+export interface NovaChartViewportControllerProps extends NovaUiCommonProps, NovaChartViewportControllerOptions {
+  chartRef?: string
+  scaleId?: string
+}
+
+export interface NovaChartViewportControllerResolvedProps extends NovaUiCommonResolvedProps, NovaChartViewportControllerResolvedOptions {
+  className?: string | Array<string>
+  attrs?: Record<string, unknown>
+  chartRef?: string
+  scaleId?: string
+}
+
+export interface NovaChartViewportControllerApi {
+  refresh: () => void
+}
+
 export interface NovaChartViewportProps extends NovaUiCommonProps {
   chartRef?: string
   scaleId: string
@@ -1234,6 +1351,7 @@ export interface NovaChartViewportProps extends NovaUiCommonProps {
   value?: number
   visibleCount?: number
   wheelStep?: number
+  controller?: false | NovaChartViewportControllerOptions
   scrollbar?: NovaScrollbarVisualOptions
   onChange?: (state: NovaChartViewportState, event?: Event) => void
 }
@@ -1248,6 +1366,7 @@ export interface NovaChartViewportResolvedProps extends NovaUiCommonResolvedProp
   value: number
   visibleCount?: number
   wheelStep: number
+  controller: false | NovaChartViewportControllerResolvedOptions
   scrollbar: NovaScrollbarVisualOptions
   onChange?: (state: NovaChartViewportState, event?: Event) => void
 }
@@ -1262,6 +1381,9 @@ export interface NovaChartViewportState {
 export interface NovaChartViewportApi {
   scrollTo: (value: number, event?: Event) => void
   scrollBy: (delta: number, event?: Event) => void
+  scrollToIndex: (index: number, event?: Event) => void
+  scrollToDomain: (domain: string | Array<string>, event?: Event) => void
+  canScroll: (delta?: number) => boolean
   getViewportState: () => NovaChartViewportState
   refresh: () => void
 }

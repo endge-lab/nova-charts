@@ -17,6 +17,7 @@ export const NovaCharts = {
   Interaction: 'NovaCharts.Interaction',
   Tooltip: 'NovaCharts.Tooltip',
   Viewport: 'NovaCharts.Viewport',
+  ViewportController: 'NovaCharts.ViewportController',
   Legend: 'NovaCharts.Legend',
   TimeAxis: 'NovaCharts.TimeAxis',
   ValueAxis: 'NovaCharts.ValueAxis',

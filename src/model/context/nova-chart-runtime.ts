@@ -1,4 +1,4 @@
-import { createNovaContextToken } from '@endge/nova'
+import { Nova } from '@endge/nova'
 import type { NovaScope, NovaSemanticRegisterOptions, NovaTemplateChildSchema } from '@endge/nova'
 import type { ChartDataStore } from '@/model/data/ChartDataStore'
 import type { ChartScaleRegistry } from '@/model/scale/ChartScaleRegistry'
@@ -24,7 +24,7 @@ import type {
 } from '@/model/types/chart-components.types'
 import type { NovaChartCustomizationRuntime } from '@/model/customization/chart-customization'
 
-export const NovaChartRuntimeToken = createNovaContextToken<NovaChartRuntime>('NovaCharts.Runtime')
+export const NovaChartRuntimeToken = Nova.createContextToken<NovaChartRuntime>('NovaCharts.Runtime')
 
 export interface NovaChartScaleRegistration<TData = Record<string, unknown>> {
   id: string

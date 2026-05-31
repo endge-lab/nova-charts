@@ -6,6 +6,7 @@ import {
   RaphSchedulerType,
   RendererType,
   type NovaApp,
+  type NovaNode,
 } from '@endge/nova'
 import { NovaUIKit, registerNovaUIKit } from '@endge/nova-ui-kit'
 import {
@@ -27,6 +28,7 @@ import {
   type NovaChartLegendApi,
   type NovaChartRootApi,
   type NovaChartScatterSeriesApi,
+  type NovaChartViewportApi,
 } from '@/index'
 
 type TestEvents = Record<string, any>
@@ -353,7 +355,7 @@ describe('Nova Charts cartesian series', () => {
             keyField: 'id',
             xAxis: { scaleType: 'band', field: 'category', height: 36 },
             yAxis: { scaleType: 'linear', zero: true, nice: false, width: 54 },
-            viewport: { visibleCount: 2 },
+            viewport: { visibleCount: 2, controller: { wheel: { axis: 'horizontal' } } },
             legend: { orientation: 'vertical' },
             tooltip: {
               contentFormatter: context => ({
@@ -387,6 +389,8 @@ describe('Nova Charts cartesian series', () => {
     const scatter = app.components.api<NovaChartScatterSeriesApi<PointRow>>('composed:series:scatter')
     const area = app.components.api<NovaChartAreaSeriesApi<PointRow>>('composed:series:area')
     const bubble = app.components.api<NovaChartBubbleSeriesApi<PointRow>>('composed:series:bubble')
+    const controller = app.components.require('composed:viewport-controller') as unknown as NovaNode<TestEvents>
+    const viewport = app.components.requireApi<NovaChartViewportApi>('composed:viewport')
 
     expect(composed?.getData().length).toBe(pointRows().length)
     expect(scatter?.getDiagnostics().kind).toBe('scatter')
@@ -398,5 +402,8 @@ describe('Nova Charts cartesian series', () => {
     root?.setScaleDomain('x', ['Q1', 'Q2'])
     expect(root?.getScale('x')?.getDomain()).toEqual(['Q1', 'Q2'])
     expect(root?.getScaleSourceDomain('x')).toEqual(sourceDomain)
+
+    controller.eventHandlers.wheel?.(new WheelEvent('wheel', { deltaY: 96 }))
+    expect(viewport.getViewportState().value).toBe(1)
   })
 })

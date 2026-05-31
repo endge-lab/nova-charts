@@ -1,7 +1,7 @@
 {
   "name": "@endge/nova-charts",
   "private": false,
-  "version": "0.9.0",
+  "version": "0.10.0",
   "type": "module",
   "module": "./dist/nova-charts.js",
   "types": "./dist/index.d.ts",
@@ -24,9 +24,8 @@
     "bench": "vitest run --config vite.bench.config.ts"
   },
   "dependencies": {
-    "@endge/nova": "^0.6.0",
-    "@endge/nova-ui-kit": "^0.6.0",
-    "@endge/utils": "^0.23.0",
+    "@endge/nova": "workspace:*",
+    "@endge/nova-ui-kit": "workspace:*",
     "date-fns-tz": "^2.0.1",
     "gl-matrix": "^3.4.3"
   },

@@ -7,6 +7,7 @@ import {
 import { DEFAULT_BAR_VIRTUALIZATION } from '@/model/bar/create-bar-series-layout'
 import { DEFAULT_LINE_VIRTUALIZATION } from '@/model/line/create-line-series-layout'
 import { DEFAULT_POINT_SERIES_VIRTUALIZATION } from '@/model/cartesian/point-series'
+import { normalizeChartViewportControllerOptions } from '@/model/viewport-controller/viewport-controller'
 import type {
   NovaChartAreaSeriesProps,
   NovaChartAreaSeriesResolvedProps,
@@ -39,6 +40,9 @@ import type {
   NovaChartScaleResolvedProps,
   NovaChartTooltipProps,
   NovaChartTooltipResolvedProps,
+  NovaChartViewportControllerProps,
+  NovaChartViewportControllerResolvedProps,
+  NovaChartViewportControllerResolvedOptions,
   NovaChartViewportProps,
   NovaChartViewportResolvedProps,
 } from '@/model/types/chart-components.types'
@@ -307,6 +311,8 @@ export function normalizeChartLineSeriesProps<TData>(
 export function normalizeChartScatterSeriesProps<TData>(
   props: NovaChartScatterSeriesProps<TData>,
 ): NovaChartScatterSeriesResolvedProps<TData> {
+  const strokeWidth = Math.max(0, finiteNumber(props.strokeWidth, 1))
+
   return {
     ...normalizeCommonProps(props, {
       width: 560,
@@ -323,7 +329,7 @@ export function normalizeChartScatterSeriesProps<TData>(
     radius: props.radius ?? 4,
     fill: props.fill,
     strokeColor: props.strokeColor,
-    strokeWidth: Math.max(0, finiteNumber(props.strokeWidth, 1)),
+    strokeWidth,
     opacity: Math.max(0, Math.min(1, finiteNumber(props.opacity, 0.9))),
     colors: {
       palette: props.colors?.palette?.length ? [...props.colors.palette] : [
@@ -343,9 +349,9 @@ export function normalizeChartScatterSeriesProps<TData>(
       enabled: props.highlight?.enabled ?? true,
       fill: props.highlight?.fill ?? '#1d4ed8',
       strokeColor: props.highlight?.strokeColor ?? '#1e40af',
-      strokeWidth: Math.max(0, finiteNumber(props.highlight?.strokeWidth, 1.5)),
+      strokeWidth: Math.max(0, finiteNumber(props.highlight?.strokeWidth, strokeWidth)),
       opacity: Math.max(0, Math.min(1, finiteNumber(props.highlight?.opacity, 1))),
-      radiusDelta: finiteNumber(props.highlight?.radiusDelta, 2),
+      radiusDelta: finiteNumber(props.highlight?.radiusDelta, 0),
     },
     hitRadiusPx: Math.max(0, finiteNumber(props.hitRadiusPx, 12)),
     virtualization: normalizePointVirtualization(props.virtualization),
@@ -421,6 +427,7 @@ export function normalizeChartBubbleSeriesProps<TData>(
   const radiusRange = props.radiusRange ?? [props.minRadius ?? 4, props.maxRadius ?? 18]
   const minRadius = Math.max(0, finiteNumber(props.minRadius, radiusRange[0]))
   const maxRadius = Math.max(minRadius, finiteNumber(props.maxRadius, radiusRange[1]))
+  const strokeWidth = Math.max(0, finiteNumber(props.strokeWidth, 1))
 
   return {
     ...normalizeCommonProps(props, {
@@ -442,7 +449,7 @@ export function normalizeChartBubbleSeriesProps<TData>(
     maxRadius,
     fill: props.fill,
     strokeColor: props.strokeColor,
-    strokeWidth: Math.max(0, finiteNumber(props.strokeWidth, 1)),
+    strokeWidth,
     opacity: Math.max(0, Math.min(1, finiteNumber(props.opacity, 0.58))),
     colors: {
       palette: props.colors?.palette?.length ? [...props.colors.palette] : [
@@ -462,9 +469,9 @@ export function normalizeChartBubbleSeriesProps<TData>(
       enabled: props.highlight?.enabled ?? true,
       fill: props.highlight?.fill ?? '#0284c7',
       strokeColor: props.highlight?.strokeColor ?? '#0f172a',
-      strokeWidth: Math.max(0, finiteNumber(props.highlight?.strokeWidth, 1.5)),
+      strokeWidth: Math.max(0, finiteNumber(props.highlight?.strokeWidth, strokeWidth)),
       opacity: Math.max(0, Math.min(1, finiteNumber(props.highlight?.opacity, 0.82))),
-      radiusDelta: finiteNumber(props.highlight?.radiusDelta, 2),
+      radiusDelta: finiteNumber(props.highlight?.radiusDelta, 0),
     },
     hitRadiusPx: Math.max(0, finiteNumber(props.hitRadiusPx, 8)),
     virtualization: normalizePointVirtualization(props.virtualization),
@@ -559,8 +566,30 @@ export function normalizeChartViewportProps(
     value: Math.max(0, finiteNumber(props.value, 0)),
     visibleCount: props.visibleCount === undefined ? undefined : Math.max(1, Math.trunc(finiteNumber(props.visibleCount, 1))),
     wheelStep: Math.max(1, finiteNumber(props.wheelStep, 3)),
+    controller: props.controller === undefined ? false : normalizeChartViewportControllerOptions(props.controller),
     scrollbar: props.scrollbar ?? {},
     onChange: props.onChange,
+  }
+}
+
+export function normalizeChartViewportControllerProps(
+  props: NovaChartViewportControllerProps = {},
+): NovaChartViewportControllerResolvedProps {
+  const controller = normalizeChartViewportControllerOptions(props)
+  const resolvedController: NovaChartViewportControllerResolvedOptions = controller === false
+    ? normalizeChartViewportControllerOptions({}) as NovaChartViewportControllerResolvedOptions
+    : controller
+  const common = normalizeCommonProps(props, {
+    width: 560,
+    height: 300,
+    clip: false,
+  })
+  return {
+    ...common,
+    chartRef: props.chartRef,
+    scaleId: props.scaleId,
+    ...resolvedController,
+    viewportRef: props.viewportRef ?? resolvedController.viewportRef,
   }
 }
 

@@ -10,6 +10,10 @@ import {
   type NovaChartRuntimeBridge,
   type NovaChartStyleContext,
 } from '@/index'
+import {
+  normalizeChartBubbleSeriesProps,
+  normalizeChartScatterSeriesProps,
+} from '@/ui/shared/chart-props'
 
 interface Row {
   id: string
@@ -214,6 +218,41 @@ describe('Nova Charts customization layer', () => {
     expect(resolveVisualState('series', 'a', {
       attrs: { muted: true },
     })).toBe('muted')
+  })
+
+  it('keeps default point-series hover highlight from changing mark geometry', () => {
+    const scatter = normalizeChartScatterSeriesProps<Row>({
+      xScaleId: 'x',
+      yScaleId: 'y',
+      xField: 'category',
+      yField: 'value',
+    })
+    const bubble = normalizeChartBubbleSeriesProps<Row>({
+      xScaleId: 'x',
+      yScaleId: 'y',
+      xField: 'category',
+      yField: 'value',
+      sizeField: 'value',
+    })
+
+    expect(scatter.highlight.radiusDelta).toBe(0)
+    expect(scatter.highlight.strokeWidth).toBe(scatter.strokeWidth)
+    expect(bubble.highlight.radiusDelta).toBe(0)
+    expect(bubble.highlight.strokeWidth).toBe(bubble.strokeWidth)
+
+    const explicitScatter = normalizeChartScatterSeriesProps<Row>({
+      xScaleId: 'x',
+      yScaleId: 'y',
+      xField: 'category',
+      yField: 'value',
+      highlight: {
+        radiusDelta: 3,
+        strokeWidth: 4,
+      },
+    })
+
+    expect(explicitScatter.highlight.radiusDelta).toBe(3)
+    expect(explicitScatter.highlight.strokeWidth).toBe(4)
   })
 
   it('appends custom schemas without growing hidden defaults', () => {
