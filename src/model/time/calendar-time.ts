@@ -1,4 +1,4 @@
-import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz'
+import { fromZonedTime, toZonedTime } from 'date-fns-tz'
 import type { ChartTimeUnit } from '@/model/types/chart-scale.types'
 
 const TIME_UNIT_ORDER: Array<ChartTimeUnit> = [
@@ -65,7 +65,7 @@ export function floorZonedTime(timestamp: number, unit: ChartTimeUnit, timezone 
 
   if (unit === 'week') {
     const dayStart = zonedPartsToUtcTimestamp({ ...parts, hour: 0, minute: 0, second: 0, millisecond: 0 }, timezone)
-    const day = utcToZonedTime(dayStart, timezone).getDay()
+    const day = toZonedTime(dayStart, timezone).getDay()
     const mondayOffset = day === 0 ? 6 : day - 1
     return addZonedTime(dayStart, 'day', -mondayOffset, timezone)
   }
@@ -133,7 +133,7 @@ export function addZonedTime(timestamp: number, unit: ChartTimeUnit, step: numbe
  * Возвращает локальные календарные части timestamp в заданной таймзоне.
  */
 export function getZonedDateParts(timestamp: number, timezone = 'UTC'): ChartZonedDateParts {
-  const zoned = utcToZonedTime(new Date(timestamp), timezone)
+  const zoned = toZonedTime(new Date(timestamp), timezone)
   return {
     year: zoned.getFullYear(),
     month: zoned.getMonth() + 1,
@@ -165,5 +165,5 @@ export function zonedPartsToUtcTimestamp(parts: ChartZonedDateParts, timezone = 
     `${parts.millisecond}`.padStart(3, '0'),
   ].join('')
 
-  return zonedTimeToUtc(localIso, timezone).getTime()
+  return fromZonedTime(localIso, timezone).getTime()
 }
