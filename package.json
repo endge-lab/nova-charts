@@ -1,7 +1,7 @@
 {
   "name": "@endge/nova-charts",
   "private": false,
-  "version": "0.10.4",
+  "version": "0.10.5",
   "type": "module",
   "module": "./dist/nova-charts.js",
   "types": "./dist/index.d.ts",
@@ -21,7 +21,9 @@
     "dev:watch": "vite build --watch",
     "build": "vite build",
     "test": "vitest run --config vite.config.ts",
-    "bench": "vitest run --config vite.bench.config.ts"
+    "bench": "vitest run --config vite.bench.config.ts",
+    "lint-check": "eslint . --cache",
+    "lint-fix": "eslint . --fix --cache"
   },
   "dependencies": {
     "@endge/nova": "workspace:*",
@@ -32,9 +34,11 @@
     "gl-matrix": "^3.4.3"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "9.3.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/language-core": "^3.3.11",
     "@vue/tsconfig": "^0.9.1",
+    "eslint": "10.9.1",
     "jsdom": "^26.1.0",
     "rimraf": "^6.0.1",
     "typescript": "~6.0.3",
