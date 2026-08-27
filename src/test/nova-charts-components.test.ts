@@ -56,26 +56,12 @@ interface TestMixedSeriesProps {
 
 const TEST_MIXED_SERIES_TYPE = 'Test.MixedSeries'
 
-const TEST_MIXED_SERIES_DESCRIPTOR: NovaComponentDescriptor<
+let TEST_MIXED_SERIES_DESCRIPTOR: NovaComponentDescriptor<
   TestMixedSeriesProps,
   { refresh: () => void },
   Record<string, never>,
   TestMixedSeriesProps
-> = {
-  type: TEST_MIXED_SERIES_TYPE,
-  name: TEST_MIXED_SERIES_TYPE,
-  title: TEST_MIXED_SERIES_TYPE,
-  version: '0.1.0',
-  kind: 'node-component',
-  dirtyPolicy: NOVA_CHARTS_COMMON_DIRTY_POLICY,
-  normalize: schema => schema.props as TestMixedSeriesProps,
-  createNode: (context, schema: NovaComponentSchema<TestMixedSeriesProps>) => new TestMixedSeries(
-    context.app,
-    context.surface,
-    schema.props as TestMixedSeriesProps,
-    { componentId: schema.id },
-  ),
-}
+>
 
 class TestMixedSeries extends NovaUiComponentNode<
   TestMixedSeriesProps,
@@ -177,6 +163,21 @@ class TestMixedSeries extends NovaUiComponentNode<
   }
 }
 
+TEST_MIXED_SERIES_DESCRIPTOR = {
+  type: TEST_MIXED_SERIES_TYPE,
+  name: TEST_MIXED_SERIES_TYPE,
+  title: TEST_MIXED_SERIES_TYPE,
+  version: '0.1.0',
+  kind: 'node-component',
+  dirtyPolicy: NOVA_CHARTS_COMMON_DIRTY_POLICY,
+  normalize: schema => schema.props as TestMixedSeriesProps,
+  createNode: (context, schema: NovaComponentSchema<TestMixedSeriesProps>) => new TestMixedSeries(
+    context.app,
+    context.surface,
+    schema.props as TestMixedSeriesProps,
+    { componentId: schema.id },
+  ),
+}
 function installCanvasMocks(): void {
   Object.defineProperty(window, 'devicePixelRatio', {
     value: 1,

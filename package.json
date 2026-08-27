@@ -1,7 +1,7 @@
 {
   "name": "@endge/nova-charts",
   "type": "module",
-  "version": "0.10.10",
+  "version": "0.10.11",
   "private": false,
   "sideEffects": false,
   "exports": {
