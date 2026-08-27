@@ -29,10 +29,10 @@ import type {
   ChartTimeTickOptions,
 } from '@/model/types/chart-scale.types'
 
-export type NovaChartFieldAccessor<TData = Record<string, unknown>, TValue = unknown> =
-  | keyof TData
-  | string
-  | ((row: TData, index: number) => TValue)
+export type NovaChartFieldAccessor<TData = Record<string, unknown>, TValue = unknown>
+  = | keyof TData
+    | string
+    | ((row: TData, index: number) => TValue)
 
 export type NovaChartRowKey = string | number
 
@@ -54,41 +54,41 @@ export type NovaChartSeriesKind = 'bar' | 'line' | 'area' | 'scatter' | 'bubble'
 
 export type NovaChartVisualState = 'normal' | 'hovered' | 'selected' | 'muted' | 'focused' | 'disabled'
 
-export type NovaChartPartName =
-  | 'root'
-  | 'plot'
-  | 'bar'
-  | 'barLabel'
-  | 'lineSegment'
-  | 'lineMarker'
-  | 'areaFill'
-  | 'areaOutline'
-  | 'areaMarker'
-  | 'scatterPoint'
-  | 'bubble'
-  | 'axisTick'
-  | 'axisLabel'
-  | 'gridLine'
-  | 'legendItem'
-  | 'legendSwatch'
-  | 'legendLabel'
-  | 'tooltipSurface'
-  | 'tooltipContent'
-  | 'viewportTrack'
-  | 'viewportThumb'
+export type NovaChartPartName
+  = | 'root'
+    | 'plot'
+    | 'bar'
+    | 'barLabel'
+    | 'lineSegment'
+    | 'lineMarker'
+    | 'areaFill'
+    | 'areaOutline'
+    | 'areaMarker'
+    | 'scatterPoint'
+    | 'bubble'
+    | 'axisTick'
+    | 'axisLabel'
+    | 'gridLine'
+    | 'legendItem'
+    | 'legendSwatch'
+    | 'legendLabel'
+    | 'tooltipSurface'
+    | 'tooltipContent'
+    | 'viewportTrack'
+    | 'viewportThumb'
 
-export type NovaChartVisualPresetName =
-  | 'dashboard'
-  | 'editorial'
-  | 'financial'
-  | 'scientific'
-  | 'minimal'
-  | 'contrast'
-  | (string & {})
+export type NovaChartVisualPresetName
+  = | 'dashboard'
+    | 'editorial'
+    | 'financial'
+    | 'scientific'
+    | 'minimal'
+    | 'contrast'
+    | (string & {})
 
-export type NovaChartStyleValue<TData = Record<string, unknown>, TValue = unknown> =
-  | TValue
-  | ((context: NovaChartStyleContext<TData>) => TValue)
+export type NovaChartStyleValue<TData = Record<string, unknown>, TValue = unknown>
+  = | TValue
+    | ((context: NovaChartStyleContext<TData>) => TValue)
 
 export interface NovaChartStyleContext<TData = Record<string, unknown>, TGeometry = unknown> {
   componentId: string
@@ -137,11 +137,11 @@ export interface NovaChartSeriesStyleOptions<TData = Record<string, unknown>>
   datum?: (context: NovaChartStyleContext<TData>) => NovaChartMarkStyle<TData> | null | undefined
 }
 
-export type NovaChartStateStyleMap<TData = Record<string, unknown>> =
-  Partial<Record<NovaChartVisualState, NovaChartMarkStyle<TData> & NovaChartTextStyle<TData>>>
+export type NovaChartStateStyleMap<TData = Record<string, unknown>>
+  = Partial<Record<NovaChartVisualState, NovaChartMarkStyle<TData> & NovaChartTextStyle<TData>>>
 
-export type NovaChartPartStyleMap<TData = Record<string, unknown>> =
-  Partial<Record<NovaChartPartName | string, NovaChartMarkStyle<TData> & NovaChartTextStyle<TData>>>
+export type NovaChartPartStyleMap<TData = Record<string, unknown>>
+  = Partial<Record<NovaChartPartName | string, NovaChartMarkStyle<TData> & NovaChartTextStyle<TData>>>
 
 export interface NovaChartSemanticTokens {
   axisColor?: string
@@ -167,13 +167,13 @@ export interface NovaChartPreset<TData = Record<string, unknown>> {
 }
 
 export interface NovaChartMotionOptions {
-  enter?: boolean | { duration?: number; easing?: string }
-  update?: boolean | { duration?: number; easing?: string }
-  exit?: boolean | { duration?: number; easing?: string }
-  hover?: boolean | { duration?: number; easing?: string }
-  selection?: boolean | { duration?: number; easing?: string }
-  viewport?: boolean | { duration?: number; easing?: string }
-  legend?: boolean | { duration?: number; easing?: string }
+  enter?: boolean | { duration?: number, easing?: string }
+  update?: boolean | { duration?: number, easing?: string }
+  exit?: boolean | { duration?: number, easing?: string }
+  hover?: boolean | { duration?: number, easing?: string }
+  selection?: boolean | { duration?: number, easing?: string }
+  viewport?: boolean | { duration?: number, easing?: string }
+  legend?: boolean | { duration?: number, easing?: string }
   reducedMotion?: boolean
 }
 
@@ -477,7 +477,7 @@ export interface NovaChartPlotResolvedProps extends NovaUiCommonResolvedProps {
 export interface NovaChartPlotApi {
   refresh: () => void
   setChildren: (children: Array<NovaTemplateChildSchema>) => void
-  getRect: () => { x: number; y: number; width: number; height: number }
+  getRect: () => { x: number, y: number, width: number, height: number }
 }
 
 export interface NovaChartAxisProps extends NovaUiCommonProps {
@@ -1003,7 +1003,7 @@ export interface NovaChartAreaLayoutArea {
   seriesKey: string
   color: string
   strokeColor: string
-  points: Array<{ x: number; y: number }>
+  points: Array<{ x: number, y: number }>
 }
 
 export interface NovaChartAreaSeriesDiagnostics extends NovaChartSeriesDiagnostics {
@@ -1517,12 +1517,12 @@ type NovaChartComposedSeriesBase<TProps> = {
   yScaleId?: string
 }
 
-export type NovaChartComposedSeriesConfig<TData = Record<string, unknown>> =
-  | ({ type: 'bar' } & NovaChartComposedSeriesBase<NovaChartBarSeriesProps<TData>>)
-  | ({ type: 'line' } & NovaChartComposedSeriesBase<NovaChartLineSeriesProps<TData>>)
-  | ({ type: 'area' } & NovaChartComposedSeriesBase<NovaChartAreaSeriesProps<TData>>)
-  | ({ type: 'scatter' } & NovaChartComposedSeriesBase<NovaChartScatterSeriesProps<TData>>)
-  | ({ type: 'bubble' } & NovaChartComposedSeriesBase<NovaChartBubbleSeriesProps<TData>>)
+export type NovaChartComposedSeriesConfig<TData = Record<string, unknown>>
+  = | ({ type: 'bar' } & NovaChartComposedSeriesBase<NovaChartBarSeriesProps<TData>>)
+    | ({ type: 'line' } & NovaChartComposedSeriesBase<NovaChartLineSeriesProps<TData>>)
+    | ({ type: 'area' } & NovaChartComposedSeriesBase<NovaChartAreaSeriesProps<TData>>)
+    | ({ type: 'scatter' } & NovaChartComposedSeriesBase<NovaChartScatterSeriesProps<TData>>)
+    | ({ type: 'bubble' } & NovaChartComposedSeriesBase<NovaChartBubbleSeriesProps<TData>>)
 
 export interface NovaChartComposedChartProps<TData = Record<string, unknown>>
   extends NovaUiCommonProps, NovaChartCustomizationProps<TData>, Omit<NovaChartSeriesCustomizationProps<TData>, 'style' | 'motion'> {

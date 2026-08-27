@@ -1,20 +1,20 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { describe, expect, it } from 'vitest'
 import { NovaSemanticService } from '@endge/nova'
-import { BandScale } from '@/model/scale/BandScale'
-import { ChartDataStore } from '@/model/data/ChartDataStore'
-import { LinearScale } from '@/model/scale/LinearScale'
-import { TimeScale } from '@/model/scale/TimeScale'
+import { describe, expect, it } from 'vitest'
 import { createAreaSeriesLayout } from '@/model/area/create-area-series-layout'
 import { createBarSeriesLayout } from '@/model/bar/create-bar-series-layout'
+import { hitTestBarLayoutPlan } from '@/model/bar/hit-test-bar-layout'
 import { createBubbleSeriesLayout } from '@/model/bubble/create-bubble-series-layout'
 import { hitTestBubbleLayoutPlan } from '@/model/bubble/hit-test-bubble-layout'
+import { NovaChartCustomizationController, renderWithSlot } from '@/model/customization/chart-customization'
+import { ChartDataStore } from '@/model/data/ChartDataStore'
 import { createLineSeriesLayout } from '@/model/line/create-line-series-layout'
+import { BandScale } from '@/model/scale/BandScale'
+import { LinearScale } from '@/model/scale/LinearScale'
+import { TimeScale } from '@/model/scale/TimeScale'
 import { createScatterSeriesLayout } from '@/model/scatter/create-scatter-series-layout'
 import { hitTestScatterLayoutPlan } from '@/model/scatter/hit-test-scatter-layout'
-import { hitTestBarLayoutPlan } from '@/model/bar/hit-test-bar-layout'
-import { NovaChartCustomizationController, renderWithSlot } from '@/model/customization/chart-customization'
 import {
   chartViewportDeltaToSteps,
   normalizeChartViewportControllerOptions,
@@ -64,7 +64,7 @@ const OUTPUT_DIR = path.resolve(process.cwd(), 'output')
 const REPORT_JSON = path.join(OUTPUT_DIR, 'nova-charts-bench-report.json')
 const REPORT_MD = path.join(OUTPUT_DIR, 'nova-charts-bench-report.md')
 
-describe('Nova Charts benchmarks', () => {
+describe('nova Charts benchmarks', () => {
   it('writes performance report and enforces virtualization invariants', async () => {
     const results: Array<BenchScenarioResult> = []
 
@@ -330,7 +330,9 @@ describe('Nova Charts benchmarks', () => {
       const options = normalizeChartViewportControllerOptions({
         wheel: { axis: 'horizontal', speed: 1, thresholdPx: 1 },
       })
-      if (!options) throw new Error('controller options expected')
+      if (!options) {
+        throw new Error('controller options expected')
+      }
       let value = 0
       const max = 99_960
       for (let index = 0; index < 100_000; index += 1) {
@@ -340,7 +342,9 @@ describe('Nova Charts benchmarks', () => {
           orientation: 'horizontal',
           scaleId: 'x',
         }, options)
-        if (!intent) continue
+        if (!intent) {
+          continue
+        }
         value = Math.max(0, Math.min(max, value + chartViewportDeltaToSteps(intent, options)))
       }
       expect(value).toBeGreaterThanOrEqual(0)
@@ -355,7 +359,9 @@ describe('Nova Charts benchmarks', () => {
       const options = normalizeChartViewportControllerOptions({
         mapWheel: event => ({ axis: 'horizontal', delta: event.deltaY || 1, mode: 'domain', source: 'custom' }),
       })
-      if (!options) throw new Error('controller options expected')
+      if (!options) {
+        throw new Error('controller options expected')
+      }
       let value = 0
       for (let index = 0; index < 100_000; index += 1) {
         const intent = resolveChartViewportWheelIntent({ deltaX: 0, deltaY: 1, deltaMode: 0, shiftKey: false } as WheelEvent, {
@@ -363,7 +369,9 @@ describe('Nova Charts benchmarks', () => {
           orientation: 'horizontal',
           scaleId: 'x',
         }, options)
-        if (intent) value += chartViewportDeltaToSteps(intent, options)
+        if (intent) {
+          value += chartViewportDeltaToSteps(intent, options)
+        }
       }
       expect(value).toBe(100_000)
       return {
@@ -393,10 +401,12 @@ describe('Nova Charts benchmarks', () => {
         x: item.x + item.width / 2,
         y: item.y + item.height / 2,
       })
-      const schema = hit ? [
-        { type: 'rect', x: hit.bounds.x, y: hit.bounds.y, width: 160, height: 42 },
-        { type: 'text', text: `${hit.label}\nValue: ${hit.value}` },
-      ] : []
+      const schema = hit
+        ? [
+            { type: 'rect', x: hit.bounds.x, y: hit.bounds.y, width: 160, height: 42 },
+            { type: 'text', text: `${hit.label}\nValue: ${hit.value}` },
+          ]
+        : []
       expect(schema.length).toBeLessThanOrEqual(2)
       return {
         renderedBars: plan.diagnostics.renderedBars,
@@ -439,7 +449,9 @@ describe('Nova Charts benchmarks', () => {
         })
       }
       const snapshot = service.snapshot({ scope: 'bench' })
-      for (let index = 0; index < maxMarks; index += 1) service.focusNext({ scope: 'bench' })
+      for (let index = 0; index < maxMarks; index += 1) {
+        service.focusNext({ scope: 'bench' })
+      }
       expect(snapshot.regions.length).toBeLessThanOrEqual(maxMarks + 6)
       expect(snapshot.regions.filter(region => region.role === 'mark')).toHaveLength(maxMarks)
       return {
@@ -582,7 +594,7 @@ function createLayout(
   rows: number,
   width: number,
   maxRenderedBars: number,
-  options: { plotWidth?: number; minBarWidthPx?: number } = {},
+  options: { plotWidth?: number, minBarWidthPx?: number } = {},
 ) {
   return createBarSeriesLayout(createLayoutInput(rows, width, maxRenderedBars, options))
 }
@@ -604,7 +616,7 @@ function createLayoutInput(
   rows: number,
   width: number,
   maxRenderedBars: number,
-  options: { plotWidth?: number; minBarWidthPx?: number } = {},
+  options: { plotWidth?: number, minBarWidthPx?: number } = {},
 ) {
   const data = createRows(rows)
   const store = new ChartDataStore<Row>({ data, keyField: 'id' })
@@ -619,10 +631,10 @@ function createLayoutInput(
 
   return {
     props: normalizeChartBarSeriesProps<Row>({
-    xScaleId: 'x',
-    yScaleId: 'y',
-    xField: 'category',
-    yField: 'value',
+      xScaleId: 'x',
+      yScaleId: 'y',
+      xField: 'category',
+      yField: 'value',
       virtualization: { maxRenderedBars, minBarWidthPx: options.minBarWidthPx },
     }),
     dataStore: store,

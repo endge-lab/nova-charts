@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
+import type { NovaChartAxisProps } from '@/model/types/chart-components.types'
+import type { ChartAxisDescriptor } from '@/ui/axis/axis.config'
 import { ChartAxis } from '@/ui/axis/Axis'
 import {
+
   createChartAxisDescriptor,
   normalizeChartAxisProps,
-  type ChartAxisDescriptor,
 } from '@/ui/axis/axis.config'
-import type { NovaChartAxisProps } from '@/model/types/chart-components.types'
 
 export const CHART_AXIS_DESCRIPTOR: ChartAxisDescriptor = createChartAxisDescriptor((context, schema) => {
   return new ChartAxis(

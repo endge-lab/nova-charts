@@ -1,14 +1,15 @@
 import type { NovaApp, NovaSchema, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode, resolveSpacing } from '@endge/nova-ui-kit'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import type {
   NovaChartLegendApi,
   NovaChartLegendProps,
   NovaChartLegendResolvedProps,
   NovaChartSeriesMetadata,
 } from '@/model/types/chart-components.types'
-import { CHART_LEGEND_NODE_DESCRIPTOR, type ChartLegendDescriptor } from '@/ui/legend/legend.config'
+import type { ChartLegendDescriptor } from '@/ui/legend/legend.config'
+import { NovaUiComponentNode, resolveSpacing } from '@endge/nova-ui-kit'
+import { CHART_LEGEND_NODE_DESCRIPTOR } from '@/ui/legend/legend.config'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 /**
  * Legend читает series metadata из chart runtime и рендерит canvas entries.
@@ -54,7 +55,9 @@ export class ChartLegend<E extends EventList = Record<string, any>>
    */
   render(): void {
     const series = this.resolveSeries()
-    if (series.length === 0) return
+    if (series.length === 0) {
+      return
+    }
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
 
     const padding = resolveSpacing(this.props.padding)
@@ -166,12 +169,15 @@ export class ChartLegend<E extends EventList = Record<string, any>>
           cursorX = padding.left
           cursorY += itemHeight + 4
         }
-      } else {
+      }
+      else {
         cursorY += itemHeight + gap
       }
     }
 
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
     if (runtime && runtime.props.accessibility !== false && runtime.props.accessibility.exposeLegend) {
       runtime.publishSemanticRegions(`${this.componentId}:legend`, [
         {
@@ -192,7 +198,8 @@ export class ChartLegend<E extends EventList = Record<string, any>>
         },
         ...semanticRegions,
       ])
-    } else {
+    }
+    else {
       runtime?.clearSemanticRegions(`${this.componentId}:legend`)
     }
   }
@@ -216,7 +223,9 @@ export class ChartLegend<E extends EventList = Record<string, any>>
    */
   private resolveSeries(): Array<NovaChartSeriesMetadata> {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
-    if (!runtime) return []
+    if (!runtime) {
+      return []
+    }
     const hidden = new Set(this.props.hiddenSeriesIds)
     const series = runtime.getSeriesMetadata()
       .filter(item => item.id !== '__default')

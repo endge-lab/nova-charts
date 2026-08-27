@@ -1,5 +1,12 @@
 import type { ChartDataStore } from '@/model/data/ChartDataStore'
 import type {
+  NovaChartBubbleLayoutPlan,
+  NovaChartBubbleLayoutPoint,
+  NovaChartBubbleSeriesDiagnostics,
+  NovaChartBubbleSeriesResolvedProps,
+  NovaChartPointContext,
+} from '@/model/types/chart-components.types'
+import type {
   ChartScale,
   ChartScaleDomain,
   ChartScaleValue,
@@ -12,13 +19,6 @@ import {
   resolveCartesianYDomain,
   windowCartesianPointCandidates,
 } from '@/model/cartesian/point-series'
-import type {
-  NovaChartBubbleLayoutPlan,
-  NovaChartBubbleLayoutPoint,
-  NovaChartBubbleSeriesDiagnostics,
-  NovaChartBubbleSeriesResolvedProps,
-  NovaChartPointContext,
-} from '@/model/types/chart-components.types'
 
 export interface NovaChartBubbleLayoutInput<TData = Record<string, unknown>> {
   props: NovaChartBubbleSeriesResolvedProps<TData>
@@ -46,7 +46,7 @@ export function createBubbleSeriesLayout<TData>(
 
   const candidates = createCartesianPointCandidates(pointInput, rows)
   const { visibleCandidates, renderedCandidates, mode } = windowCartesianPointCandidates(pointInput, candidates)
-  const points = renderedCandidates.map(candidate => {
+  const points = renderedCandidates.map((candidate) => {
     const sizeValue = Number(input.dataStore.readField(candidate.row as TData, candidate.rowIndex, input.props.sizeField))
     const radius = resolveRadius(input, sizeValue, sizeDomain)
     return {
@@ -121,10 +121,18 @@ function createPointInput<TData>(input: NovaChartBubbleLayoutInput<TData>) {
     colorField: input.props.colors.colorField,
     virtualization: input.props.virtualization,
     resolveColor: (context: NovaChartPointContext<TData>, series?: { color: string }) => {
-      if (typeof input.props.fill === 'function') return input.props.fill(context)
-      if (typeof input.props.colors.fill === 'function') return input.props.colors.fill(context)
-      if (typeof input.props.colors.fill === 'string') return input.props.colors.fill
-      if (typeof input.props.fill === 'string') return input.props.fill
+      if (typeof input.props.fill === 'function') {
+        return input.props.fill(context)
+      }
+      if (typeof input.props.colors.fill === 'function') {
+        return input.props.colors.fill(context)
+      }
+      if (typeof input.props.colors.fill === 'string') {
+        return input.props.colors.fill
+      }
+      if (typeof input.props.fill === 'string') {
+        return input.props.fill
+      }
       return series?.color
     },
   }
@@ -135,7 +143,9 @@ function resolveRadius<TData>(
   rawValue: number,
   domain: [number, number],
 ): number {
-  if (!Number.isFinite(rawValue)) return input.props.minRadius
+  if (!Number.isFinite(rawValue)) {
+    return input.props.minRadius
+  }
   const [min, max] = domain
   const span = max - min
   const normalized = span <= 0 ? 0.5 : Math.max(0, Math.min(1, (rawValue - min) / span))

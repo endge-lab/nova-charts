@@ -25,9 +25,9 @@ export interface ChartScaleExplicitTick<TValue extends ChartScaleValue = ChartSc
   major?: boolean
 }
 
-export type ChartScaleExplicitTickInput<TValue extends ChartScaleValue = ChartScaleValue> =
-  | TValue
-  | ChartScaleExplicitTick<TValue>
+export type ChartScaleExplicitTickInput<TValue extends ChartScaleValue = ChartScaleValue>
+  = | TValue
+    | ChartScaleExplicitTick<TValue>
 
 export interface ChartScaleTickOptions {
   minStepPx?: number
@@ -42,13 +42,13 @@ export interface ChartScale<TValue extends ChartScaleValue = ChartScaleValue> {
   readonly id: string
   readonly type: ChartScaleType
 
-  getDomain(): ChartScaleDomain
-  getRange(): ChartScaleRange
-  setDomain(domain: ChartScaleDomain): void
-  setRange(range: ChartScaleRange): void
-  toPx(value: TValue): number
-  fromPx(px: number): TValue
-  ticks(options?: ChartScaleTickOptions): Array<ChartScaleTick<TValue>>
+  getDomain: () => ChartScaleDomain
+  getRange: () => ChartScaleRange
+  setDomain: (domain: ChartScaleDomain) => void
+  setRange: (range: ChartScaleRange) => void
+  toPx: (value: TValue) => number
+  fromPx: (px: number) => TValue
+  ticks: (options?: ChartScaleTickOptions) => Array<ChartScaleTick<TValue>>
 }
 
 export interface ChartLinearScaleOptions {
@@ -80,16 +80,16 @@ export interface ChartBandScaleOptions {
 
 export type ChartScaleOptions = ChartLinearScaleOptions | ChartTimeScaleOptions | ChartBandScaleOptions
 
-export type ChartTimeUnit =
-  | 'millisecond'
-  | 'second'
-  | 'minute'
-  | 'hour'
-  | 'day'
-  | 'week'
-  | 'month'
-  | 'quarter'
-  | 'year'
+export type ChartTimeUnit
+  = | 'millisecond'
+    | 'second'
+    | 'minute'
+    | 'hour'
+    | 'day'
+    | 'week'
+    | 'month'
+    | 'quarter'
+    | 'year'
 
 export interface ChartTimeTickOptions extends ChartScaleTickOptions {
   strategy?: 'auto' | 'fixed' | 'calendar'

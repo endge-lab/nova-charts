@@ -1,18 +1,19 @@
 import type { NovaApp, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import { NovaChartRuntimeToken } from '@/model/context/nova-chart-runtime'
-import { resolveChartScale } from '@/model/scale/resolve-chart-scale'
-import { requireNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
-import type {
-  ChartScale,
-} from '@/model/types/chart-scale.types'
 import type {
   NovaChartScaleApi,
   NovaChartScaleProps,
   NovaChartScaleResolvedProps,
 } from '@/model/types/chart-components.types'
-import { CHART_SCALE_NODE_DESCRIPTOR, type ChartScaleDescriptor } from '@/ui/scale/scale.config'
+import type {
+  ChartScale,
+} from '@/model/types/chart-scale.types'
+import type { ChartScaleDescriptor } from '@/ui/scale/scale.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import { NovaChartRuntimeToken } from '@/model/context/nova-chart-runtime'
+import { resolveChartScale } from '@/model/scale/resolve-chart-scale'
+import { CHART_SCALE_NODE_DESCRIPTOR } from '@/ui/scale/scale.config'
+import { requireNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 /**
  * Декларативная шкала chart runtime.

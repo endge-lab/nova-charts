@@ -1,8 +1,9 @@
 import type { NovaComponentNode } from '@endge/nova'
+import type { NovaChartRuntime } from '@/model/context/nova-chart-runtime'
 import {
-  NovaChartRuntimeToken,
   isNovaChartRuntimeHost,
-  type NovaChartRuntime,
+
+  NovaChartRuntimeToken,
 } from '@/model/context/nova-chart-runtime'
 
 export function resolveNovaChartRuntime<TData>(
@@ -10,11 +11,17 @@ export function resolveNovaChartRuntime<TData>(
   chartRef?: string,
 ): NovaChartRuntime<TData> | null {
   const scoped = node.injectOptional(NovaChartRuntimeToken)
-  if (scoped) return scoped as NovaChartRuntime<TData>
+  if (scoped) {
+    return scoped as NovaChartRuntime<TData>
+  }
 
-  if (!chartRef) return null
+  if (!chartRef) {
+    return null
+  }
   const host = node.nova.components.get(chartRef)
-  if (isNovaChartRuntimeHost<TData>(host)) return host.getNovaChartRuntime()
+  if (isNovaChartRuntimeHost<TData>(host)) {
+    return host.getNovaChartRuntime()
+  }
   return null
 }
 

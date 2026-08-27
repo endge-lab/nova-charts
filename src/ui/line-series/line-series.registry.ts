@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
-import { ChartLineSeries } from '@/ui/line-series/LineSeries'
+import type { NovaChartLineSeriesProps } from '@/model/types/chart-components.types'
+import type { ChartLineSeriesDescriptor } from '@/ui/line-series/line-series.config'
 import {
+
   createChartLineSeriesDescriptor,
   normalizeChartLineSeriesProps,
-  type ChartLineSeriesDescriptor,
 } from '@/ui/line-series/line-series.config'
-import type { NovaChartLineSeriesProps } from '@/model/types/chart-components.types'
+import { ChartLineSeries } from '@/ui/line-series/LineSeries'
 
 export const CHART_LINE_SERIES_DESCRIPTOR: ChartLineSeriesDescriptor = createChartLineSeriesDescriptor((context, schema) => {
   return new ChartLineSeries(

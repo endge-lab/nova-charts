@@ -1,9 +1,9 @@
 import type {
   ChartContinuousScaleType,
-  ChartScaleExplicitTickInput,
   ChartNumericDomain,
   ChartScale,
   ChartScaleDomain,
+  ChartScaleExplicitTickInput,
   ChartScaleRange,
   ChartScaleTick,
   ChartScaleTickOptions,
@@ -75,7 +75,9 @@ export class LinearScale implements ChartScale<number> {
     const [domainStart, domainEnd] = this.domain
     const [rangeStart, rangeEnd] = this.range
     const domainSpan = domainEnd - domainStart
-    if (domainSpan === 0) return rangeStart
+    if (domainSpan === 0) {
+      return rangeStart
+    }
 
     const normalized = (value - domainStart) / domainSpan
     const ratio = this.clampValues ? clamp(normalized, 0, 1) : normalized
@@ -89,7 +91,9 @@ export class LinearScale implements ChartScale<number> {
     const [domainStart, domainEnd] = this.domain
     const [rangeStart, rangeEnd] = this.range
     const rangeSpan = rangeEnd - rangeStart
-    if (rangeSpan === 0) return domainStart
+    if (rangeSpan === 0) {
+      return domainStart
+    }
 
     const normalized = (px - rangeStart) / rangeSpan
     const ratio = this.clampValues ? clamp(normalized, 0, 1) : normalized
@@ -134,9 +138,11 @@ function createExplicitNumericTicks(
   values: ReadonlyArray<ChartScaleExplicitTickInput>,
   options: ChartScaleTickOptions,
 ): Array<ChartScaleTick<number>> {
-  return values.flatMap(item => {
+  return values.flatMap((item) => {
     const value = readExplicitTickValue(item)
-    if (typeof value !== 'number' || !Number.isFinite(value)) return []
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return []
+    }
 
     return [{
       value,
@@ -182,15 +188,23 @@ function clamp(value: number, min: number, max: number): number {
  */
 export function createNiceStep(start: number, end: number, maxCount: number): number {
   const span = Math.abs(end - start)
-  if (span === 0) return 1
+  if (span === 0) {
+    return 1
+  }
 
   const rough = span / Math.max(1, maxCount)
   const magnitude = 10 ** Math.floor(Math.log10(rough))
   const normalized = rough / magnitude
 
-  if (normalized <= 1) return magnitude
-  if (normalized <= 2) return 2 * magnitude
-  if (normalized <= 5) return 5 * magnitude
+  if (normalized <= 1) {
+    return magnitude
+  }
+  if (normalized <= 2) {
+    return 2 * magnitude
+  }
+  if (normalized <= 5) {
+    return 5 * magnitude
+  }
   return 10 * magnitude
 }
 

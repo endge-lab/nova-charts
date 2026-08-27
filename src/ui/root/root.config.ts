@@ -5,16 +5,16 @@ import type {
   NovaComponentSchema,
 } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import type {
   NovaChartRootApi,
   NovaChartRootProps,
   NovaChartRootResolvedProps,
 } from '@/model/types/chart-components.types'
+import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import {
+  normalizeChartRootProps,
   NOVA_CHARTS_COMMON_DIRTY_POLICY,
   NOVA_CHARTS_COMMON_FIELD_DEFINITIONS,
-  normalizeChartRootProps,
 } from '@/ui/shared/chart-props'
 
 export type ChartRootDescriptor<TData = Record<string, unknown>> = NovaComponentDescriptor<
@@ -49,7 +49,9 @@ export function createChartRootDescriptor(createNode?: ChartRootNodeFactory): Ch
     measureBounds: (_context, schema) => commonMeasureBounds(schema, normalizeChartRootProps),
   }
 
-  if (createNode) descriptor.createNode = createNode
+  if (createNode) {
+    descriptor.createNode = createNode
+  }
   return descriptor
 }
 

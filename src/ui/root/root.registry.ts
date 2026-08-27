@@ -1,12 +1,13 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
+import type { NovaChartRootProps } from '@/model/types/chart-components.types'
+import type { ChartRootDescriptor } from '@/ui/root/root.config'
 import { ChartRoot } from '@/ui/root/Root'
 import {
   CHART_ROOT_NODE_DESCRIPTOR,
+
   createChartRootDescriptor,
   normalizeChartRootProps,
-  type ChartRootDescriptor,
 } from '@/ui/root/root.config'
-import type { NovaChartRootProps } from '@/model/types/chart-components.types'
 
 export const CHART_ROOT_DESCRIPTOR: ChartRootDescriptor = createChartRootDescriptor((context, schema) => {
   return new ChartRoot(

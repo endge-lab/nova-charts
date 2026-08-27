@@ -1,41 +1,12 @@
-import {
-  reconcileNovaTemplateChildren,
-  type NovaApp,
-  type NovaExportImageOptions,
-  type NovaNode,
-  type NovaSemanticRegisterOptions,
-  type NovaSemanticSnapshotOptions,
-  type NovaSurface,
-  type NovaTemplateChildSchema,
-} from '@endge/nova'
+import type { NovaApp, NovaExportImageOptions, NovaNode, NovaSemanticRegisterOptions, NovaSemanticSnapshotOptions, NovaSurface, NovaTemplateChildSchema } from '@endge/nova'
+import type { NovaUiLayoutRect } from '@endge/nova-ui-kit'
 import type { EventList } from '@endge/utils'
-import {
-  NovaUiComponentNode,
-  buildBoxSchema,
-  type NovaUiLayoutRect,
-} from '@endge/nova-ui-kit'
-import { ChartDataStore } from '@/model/data/ChartDataStore'
-import { ChartScaleRegistry } from '@/model/scale/ChartScaleRegistry'
-import { NovaChartCustomizationController } from '@/model/customization/chart-customization'
-import { resolveScaleDomain } from '@/model/scale/resolve-chart-scale'
-import {
-  NovaChartRuntimeToken,
-  type NovaChartRuntime,
-  type NovaChartRuntimeHost,
-  type NovaChartScaleRegistration,
-} from '@/model/context/nova-chart-runtime'
-import type {
-  ChartScale,
-  ChartNumericDomain,
-  ChartScaleDomain,
-  ChartScaleRange,
-  ChartScaleValue,
-} from '@/model/types/chart-scale.types'
+import type { NovaChartRuntime, NovaChartRuntimeHost, NovaChartScaleRegistration } from '@/model/context/nova-chart-runtime'
 import type {
   NovaChartDataListener,
-  NovaChartInteractiveSeriesRegistration,
   NovaChartInteractionListener,
   NovaChartInteractionState,
+  NovaChartInteractiveSeriesRegistration,
   NovaChartRootApi,
   NovaChartRootDiagnostics,
   NovaChartRootProps,
@@ -44,7 +15,33 @@ import type {
   NovaChartSeriesDiagnostics,
   NovaChartSeriesMetadata,
 } from '@/model/types/chart-components.types'
-import { CHART_ROOT_NODE_DESCRIPTOR, type ChartRootDescriptor } from '@/ui/root/root.config'
+import type {
+  ChartNumericDomain,
+  ChartScale,
+  ChartScaleDomain,
+  ChartScaleRange,
+  ChartScaleValue,
+} from '@/model/types/chart-scale.types'
+import type { ChartRootDescriptor } from '@/ui/root/root.config'
+import {
+
+  reconcileNovaTemplateChildren,
+} from '@endge/nova'
+import {
+  buildBoxSchema,
+  NovaUiComponentNode,
+
+} from '@endge/nova-ui-kit'
+import {
+
+  NovaChartRuntimeToken,
+
+} from '@/model/context/nova-chart-runtime'
+import { NovaChartCustomizationController } from '@/model/customization/chart-customization'
+import { ChartDataStore } from '@/model/data/ChartDataStore'
+import { ChartScaleRegistry } from '@/model/scale/ChartScaleRegistry'
+import { resolveScaleDomain } from '@/model/scale/resolve-chart-scale'
+import { CHART_ROOT_NODE_DESCRIPTOR } from '@/ui/root/root.config'
 
 /**
  * Корень chart runtime: данные, шкалы, refs и подписки.
@@ -72,6 +69,7 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     tooltipVisible: false,
     revision: 0,
   }
+
   private lastEvent = 'init'
 
   /**
@@ -81,7 +79,7 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     app: NovaApp<E>,
     surface: NovaSurface<E>,
     props: NovaChartRootResolvedProps<TData>,
-    options: { componentId?: string; children?: Array<NovaTemplateChildSchema> } = {},
+    options: { componentId?: string, children?: Array<NovaTemplateChildSchema> } = {},
     descriptor: ChartRootDescriptor<TData> = CHART_ROOT_NODE_DESCRIPTOR as ChartRootDescriptor<TData>,
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
@@ -187,7 +185,9 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    */
   override applyLayoutRect(rect: NovaUiLayoutRect): boolean {
     const changed = super.applyLayoutRect(rect)
-    if (changed) this.applyChildrenRect()
+    if (changed) {
+      this.applyChildrenRect()
+    }
     return changed
   }
 
@@ -203,8 +203,12 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    */
   render(): void {
     const schema = buildBoxSchema(this.props, this.width, this.height)
-    if (schema.length > 0) this.renderer.schema(schema)
-    if (this.props.clip) this.renderer.clip(0, 0, this.width, this.height)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
+    if (this.props.clip) {
+      this.renderer.clip(0, 0, this.width, this.height)
+    }
     this.syncRootSemantics()
   }
 
@@ -276,7 +280,9 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    */
   private refreshScale(id: string): void {
     const registration = this.scaleRegistrations.get(id)
-    if (!registration) return
+    if (!registration) {
+      return
+    }
     const sourceDomain = this.resolveScaleSourceDomain(registration)
     registration.scale.setDomain(sourceDomain)
     this.scaleSourceDomains.set(id, [...sourceDomain] as ChartScaleDomain)
@@ -288,7 +294,9 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    * Синхронизирует актуальное состояние ChartRoot.
    */
   private refreshScales(): void {
-    for (const id of this.scaleRegistrations.keys()) this.refreshScale(id)
+    for (const id of this.scaleRegistrations.keys()) {
+      this.refreshScale(id)
+    }
   }
 
   /**
@@ -352,7 +360,9 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    */
   private removeScaleDomainContribution(id: string): void {
     const previous = this.scaleDomainContributions.get(id)
-    if (!previous) return
+    if (!previous) {
+      return
+    }
     this.scaleDomainContributions.delete(id)
     this.refreshScale(previous.scaleId)
   }
@@ -448,11 +458,13 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     return {
       ...this.interactionState,
       pointer: this.interactionState.pointer ? { ...this.interactionState.pointer } : null,
-      hovered: this.interactionState.hovered ? {
-        ...this.interactionState.hovered,
-        bounds: this.interactionState.hovered.bounds ? { ...this.interactionState.hovered.bounds } : undefined,
-        point: this.interactionState.hovered.point ? { ...this.interactionState.hovered.point } : undefined,
-      } : null,
+      hovered: this.interactionState.hovered
+        ? {
+            ...this.interactionState.hovered,
+            bounds: this.interactionState.hovered.bounds ? { ...this.interactionState.hovered.bounds } : undefined,
+            point: this.interactionState.hovered.point ? { ...this.interactionState.hovered.point } : undefined,
+          }
+        : null,
     }
   }
 
@@ -476,7 +488,9 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
       || this.interactionState.pointer?.plotY !== next.pointer?.plotY
       || this.interactionState.tooltipVisible !== next.tooltipVisible
 
-    if (!changed) return
+    if (!changed) {
+      return
+    }
 
     this.interactionState = next
     const hoveredChanged = previousKey !== nextKey || previousSeriesId !== nextSeriesId
@@ -485,11 +499,14 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     }
     if (hoveredChanged && nextSeriesId) {
       this.interactiveSeries.get(nextSeriesId)?.dirty()
-    } else if (hoveredChanged && previousSeriesId) {
+    }
+    else if (hoveredChanged && previousSeriesId) {
       this.interactiveSeries.get(previousSeriesId)?.dirty()
     }
 
-    for (const listener of this.interactionListeners) listener(this.getInteractionState())
+    for (const listener of this.interactionListeners) {
+      listener(this.getInteractionState())
+    }
     this.customization.notifyInteraction(this.getInteractionState())
     this.syncRootSemantics()
   }
@@ -664,10 +681,14 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    */
   private resolveScaleSourceDomain(registration: NovaChartScaleRegistration<TData>): ChartScaleDomain {
     const baseDomain = resolveScaleDomain(registration.props, this.dataStore)
-    if (registration.props.domain) return [...baseDomain] as ChartScaleDomain
+    if (registration.props.domain) {
+      return [...baseDomain] as ChartScaleDomain
+    }
 
     const contributions = this.getScaleDomainContributions(registration.id).map(item => item.domain)
-    if (contributions.length === 0) return [...baseDomain] as ChartScaleDomain
+    if (contributions.length === 0) {
+      return [...baseDomain] as ChartScaleDomain
+    }
 
     if (registration.props.scaleType === 'band') {
       return mergeBandDomains(baseDomain, contributions)
@@ -685,7 +706,9 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     this.dirtyChildren()
     this.dirty({ update: true, render: true })
     const diagnostics = this.getDiagnostics()
-    for (const listener of this.listeners) listener(diagnostics)
+    for (const listener of this.listeners) {
+      listener(diagnostics)
+    }
   }
 
   /**
@@ -752,15 +775,19 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
 }
 
 function formatDatumLabel(datum: NovaChartInteractionState<any>['hovered']): string {
-  if (!datum) return 'Chart mark'
+  if (!datum) {
+    return 'Chart mark'
+  }
   const series = datum.seriesLabel ?? datum.seriesKey ?? datum.seriesId
   const label = datum.label ?? datum.category ?? datum.xValue
   const value = datum.yValue ?? datum.value
   return `${series}: ${label ?? datum.key} ${value ?? ''}`.trim()
 }
 
-function pointBounds(point: { x: number; y: number } | undefined) {
-  if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) return undefined
+function pointBounds(point: { x: number, y: number } | undefined) {
+  if (!point || !Number.isFinite(point.x) || !Number.isFinite(point.y)) {
+    return undefined
+  }
   return {
     x: point.x - 6,
     y: point.y - 6,
@@ -791,10 +818,12 @@ function applyChildRect(child: NovaNode<any>, rect: NovaUiLayoutRect): void {
   }
 }
 
-function dirtySubtree(node: { dirty?: (flags: { update?: boolean; render?: boolean }) => void; children?: ReadonlyArray<unknown> }): void {
+function dirtySubtree(node: { dirty?: (flags: { update?: boolean, render?: boolean }) => void, children?: ReadonlyArray<unknown> }): void {
   node.dirty?.({ update: true, render: true })
   for (const child of node.children ?? []) {
-    if (!child || typeof child !== 'object') continue
+    if (!child || typeof child !== 'object') {
+      continue
+    }
     dirtySubtree(child)
   }
 }
@@ -815,7 +844,9 @@ function mergeBandDomains(
   for (const domain of [baseDomain, ...contributionDomains]) {
     for (const value of domain) {
       const key = String(value)
-      if (seen.has(key)) continue
+      if (seen.has(key)) {
+        continue
+      }
       seen.add(key)
       merged.push(key)
     }
@@ -832,10 +863,14 @@ function resolveNumericSourceDomain(
   let max = Number.NEGATIVE_INFINITY
 
   for (const domain of domains) {
-    if (domain.length < 2) continue
+    if (domain.length < 2) {
+      continue
+    }
     const start = Number(domain[0])
     const end = Number(domain[domain.length - 1])
-    if (!Number.isFinite(start) || !Number.isFinite(end)) continue
+    if (!Number.isFinite(start) || !Number.isFinite(end)) {
+      continue
+    }
     min = Math.min(min, start, end)
     max = Math.max(max, start, end)
   }
@@ -865,9 +900,13 @@ function resolveNumericSourceDomain(
 }
 
 function niceNumericDomain(min: number, max: number): ChartNumericDomain {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1]
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return [0, 1]
+  }
   const span = Math.abs(max - min)
-  if (span === 0) return [Math.floor(min), Math.ceil(max + 1)]
+  if (span === 0) {
+    return [Math.floor(min), Math.ceil(max + 1)]
+  }
 
   const power = 10 ** Math.floor(Math.log10(span))
   const step = power / 2

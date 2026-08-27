@@ -1,4 +1,14 @@
+import type { NovaChartCartesianPointCandidate } from '@/model/cartesian/point-series'
 import type { ChartDataStore } from '@/model/data/ChartDataStore'
+import type {
+  NovaChartAreaLayoutArea,
+  NovaChartAreaLayoutPlan,
+  NovaChartAreaLayoutPoint,
+  NovaChartAreaSeriesDiagnostics,
+  NovaChartAreaSeriesResolvedProps,
+  NovaChartLineLayoutSegment,
+  NovaChartPointContext,
+} from '@/model/types/chart-components.types'
 import type {
   ChartScale,
   ChartScaleDomain,
@@ -9,19 +19,10 @@ import {
   createCartesianPointCandidates,
   createCartesianSeriesMetadata,
   extentDomain,
+
   resolveCartesianXDomain,
   windowCartesianPointCandidates,
-  type NovaChartCartesianPointCandidate,
 } from '@/model/cartesian/point-series'
-import type {
-  NovaChartAreaLayoutArea,
-  NovaChartAreaLayoutPlan,
-  NovaChartAreaLayoutPoint,
-  NovaChartAreaSeriesDiagnostics,
-  NovaChartAreaSeriesResolvedProps,
-  NovaChartLineLayoutSegment,
-  NovaChartPointContext,
-} from '@/model/types/chart-components.types'
 
 export interface NovaChartAreaLayoutInput<TData = Record<string, unknown>> {
   props: NovaChartAreaSeriesResolvedProps<TData>
@@ -88,29 +89,39 @@ export function resolveAreaYDomain<TData>(input: NovaChartAreaLayoutInput<TData>
   const values: Array<number> = [input.props.baselineValue]
 
   if (input.props.mode === 'stacked') {
-    const totals = new Map<string, { positive: number; negative: number }>()
+    const totals = new Map<string, { positive: number, negative: number }>()
     rows.forEach((row, rowIndex) => {
       const xValue = input.dataStore.readField(row, rowIndex, input.props.xField)
       const key = String(xValue ?? '')
       const value = Number(input.dataStore.readField(row, rowIndex, input.props.yField))
-      if (!Number.isFinite(value)) return
+      if (!Number.isFinite(value)) {
+        return
+      }
       let total = totals.get(key)
       if (!total) {
         total = { positive: input.props.baselineValue, negative: input.props.baselineValue }
         totals.set(key, total)
       }
-      if (value >= 0) total.positive += value
-      else total.negative += value
+      if (value >= 0) {
+        total.positive += value
+      }
+      else { total.negative += value }
     })
-    for (const total of totals.values()) values.push(total.negative, total.positive)
+    for (const total of totals.values()) {
+      values.push(total.negative, total.positive)
+    }
     return extentDomain(values)
   }
 
   rows.forEach((row, rowIndex) => {
     const value = Number(input.dataStore.readField(row, rowIndex, input.props.yField))
     const baseline = readBaseline(input, row, rowIndex)
-    if (Number.isFinite(value)) values.push(value)
-    if (Number.isFinite(baseline)) values.push(baseline)
+    if (Number.isFinite(value)) {
+      values.push(value)
+    }
+    if (Number.isFinite(baseline)) {
+      values.push(baseline)
+    }
   })
   return extentDomain(values)
 }
@@ -137,8 +148,12 @@ function createPointInput<TData>(input: NovaChartAreaLayoutInput<TData>) {
     connectNulls: input.props.connectNulls,
     defined: input.props.defined,
     resolveColor: (context: NovaChartPointContext<TData>, series?: { color: string }) => {
-      if (typeof input.props.colors.stroke === 'function') return input.props.colors.stroke(context)
-      if (typeof input.props.colors.stroke === 'string') return input.props.colors.stroke
+      if (typeof input.props.colors.stroke === 'function') {
+        return input.props.colors.stroke(context)
+      }
+      if (typeof input.props.colors.stroke === 'string') {
+        return input.props.colors.stroke
+      }
       return series?.color ?? input.props.stroke
     },
   }
@@ -148,8 +163,10 @@ function createAreaPoints<TData>(
   input: NovaChartAreaLayoutInput<TData>,
   candidates: Array<NovaChartCartesianPointCandidate<TData>>,
 ): Array<NovaChartAreaLayoutPoint<TData>> {
-  if (input.props.mode === 'stacked') return createStackedAreaPoints(input, candidates)
-  return candidates.map(candidate => {
+  if (input.props.mode === 'stacked') {
+    return createStackedAreaPoints(input, candidates)
+  }
+  return candidates.map((candidate) => {
     const baselineValue = readBaseline(input, candidate.row as TData, candidate.rowIndex)
     const baselineY = Number(input.yScale.toPx(baselineValue as ChartScaleValue))
     return {
@@ -164,7 +181,7 @@ function createStackedAreaPoints<TData>(
   input: NovaChartAreaLayoutInput<TData>,
   candidates: Array<NovaChartCartesianPointCandidate<TData>>,
 ): Array<NovaChartAreaLayoutPoint<TData>> {
-  const offsets = new Map<string, { positive: number; negative: number }>()
+  const offsets = new Map<string, { positive: number, negative: number }>()
   const points: Array<NovaChartAreaLayoutPoint<TData>> = []
 
   for (const candidate of candidates) {
@@ -177,8 +194,10 @@ function createStackedAreaPoints<TData>(
     const value = candidate.yValue
     const baseValue = value >= 0 ? offset.positive : offset.negative
     const endValue = baseValue + value
-    if (value >= 0) offset.positive = endValue
-    else offset.negative = endValue
+    if (value >= 0) {
+      offset.positive = endValue
+    }
+    else { offset.negative = endValue }
 
     points.push({
       ...candidate,
@@ -204,9 +223,13 @@ function createAreas<TData>(points: Array<NovaChartAreaLayoutPoint<TData>>): Arr
 
   const areas: Array<NovaChartAreaLayoutArea> = []
   for (const [key, group] of groups) {
-    if (group.length < 2) continue
+    if (group.length < 2) {
+      continue
+    }
     const first = group[0]
-    if (!first) continue
+    if (!first) {
+      continue
+    }
     areas.push({
       key,
       seriesKey: first.seriesKey,
@@ -228,7 +251,9 @@ function readBaseline<TData>(
 ): number {
   if (input.props.baselineField && row) {
     const value = Number(input.dataStore.readField(row, rowIndex, input.props.baselineField))
-    if (Number.isFinite(value)) return value
+    if (Number.isFinite(value)) {
+      return value
+    }
   }
   return input.props.baselineValue
 }

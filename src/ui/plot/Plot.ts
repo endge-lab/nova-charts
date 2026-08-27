@@ -1,23 +1,23 @@
-import {
-  reconcileNovaTemplateChildren,
-  type NovaApp,
-  type NovaNode,
-  type NovaSurface,
-  type NovaTemplateChildSchema,
-} from '@endge/nova'
+import type { NovaApp, NovaNode, NovaSurface, NovaTemplateChildSchema } from '@endge/nova'
+import type { NovaUiLayoutRect } from '@endge/nova-ui-kit'
 import type { EventList } from '@endge/utils'
-import {
-  NovaUiComponentNode,
-  buildBoxSchema,
-  type NovaUiLayoutRect,
-} from '@endge/nova-ui-kit'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import type {
   NovaChartPlotApi,
   NovaChartPlotProps,
   NovaChartPlotResolvedProps,
 } from '@/model/types/chart-components.types'
-import { CHART_PLOT_NODE_DESCRIPTOR, type ChartPlotDescriptor } from '@/ui/plot/plot.config'
+import type { ChartPlotDescriptor } from '@/ui/plot/plot.config'
+import {
+
+  reconcileNovaTemplateChildren,
+} from '@endge/nova'
+import {
+  buildBoxSchema,
+  NovaUiComponentNode,
+
+} from '@endge/nova-ui-kit'
+import { CHART_PLOT_NODE_DESCRIPTOR } from '@/ui/plot/plot.config'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 /**
  * Plot area назначает pixel ranges шкалам и держит содержимое графика.
@@ -34,7 +34,7 @@ export class ChartPlot<E extends EventList = Record<string, any>>
     app: NovaApp<E>,
     surface: NovaSurface<E>,
     props: NovaChartPlotResolvedProps,
-    options: { componentId?: string; children?: Array<NovaTemplateChildSchema> } = {},
+    options: { componentId?: string, children?: Array<NovaTemplateChildSchema> } = {},
     descriptor: ChartPlotDescriptor = CHART_PLOT_NODE_DESCRIPTOR,
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
@@ -65,7 +65,9 @@ export class ChartPlot<E extends EventList = Record<string, any>>
    */
   override applyLayoutRect(rect: NovaUiLayoutRect): boolean {
     const changed = super.applyLayoutRect(rect)
-    if (changed) this.refresh()
+    if (changed) {
+      this.refresh()
+    }
     return changed
   }
 
@@ -82,7 +84,9 @@ export class ChartPlot<E extends EventList = Record<string, any>>
    */
   render(): void {
     const schema = buildBoxSchema(this.props, this.width, this.height)
-    if (schema.length > 0) this.renderSchema(schema)
+    if (schema.length > 0) {
+      this.renderSchema(schema)
+    }
   }
 
   /**
@@ -122,7 +126,8 @@ export class ChartPlot<E extends EventList = Record<string, any>>
       this.renderPluginLayer('underlay', runtime)
       super.renderChildren()
       this.renderPluginLayer('overlay', runtime)
-    } finally {
+    }
+    finally {
       this.renderer.clearClip()
     }
   }
@@ -134,7 +139,9 @@ export class ChartPlot<E extends EventList = Record<string, any>>
     this.updateScaleRanges()
     this.applyChildrenRect()
     this.dirty({ update: true, render: true })
-    for (const child of this.managedChildren) child.dirty({ update: true, render: true })
+    for (const child of this.managedChildren) {
+      child.dirty({ update: true, render: true })
+    }
   }
 
   /**
@@ -142,9 +149,13 @@ export class ChartPlot<E extends EventList = Record<string, any>>
    */
   private updateScaleRanges(): void {
     const runtime = resolveNovaChartRuntime(this, this.props.chartRef)
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
 
-    if (this.props.xScaleId) setScaleRangeIfChanged(runtime, this.props.xScaleId, [0, this.width])
+    if (this.props.xScaleId) {
+      setScaleRangeIfChanged(runtime, this.props.xScaleId, [0, this.width])
+    }
     if (this.props.yScaleId) {
       const yScale = runtime.getScale(this.props.yScaleId)
       setScaleRangeIfChanged(runtime, this.props.yScaleId, yScale?.type === 'band' ? [0, this.height] : [this.height, 0])
@@ -167,7 +178,9 @@ export class ChartPlot<E extends EventList = Record<string, any>>
     layer: 'underlay' | 'overlay',
     runtime: ReturnType<typeof resolveNovaChartRuntime<Record<string, unknown>>>,
   ): void {
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
     const schema = runtime.customization.renderPluginLayer(layer, {
       componentId: this.componentId,
       componentName: 'Plot',
@@ -182,17 +195,23 @@ export class ChartPlot<E extends EventList = Record<string, any>>
       },
       tokens: runtime.customization.tokens,
     })
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
   }
 }
 
 function setScaleRangeIfChanged(
-  runtime: { getScale: (id: string) => { getRange: () => readonly [number, number] } | undefined; setScaleRange: (id: string, range: readonly [number, number]) => void },
+  runtime: { getScale: (id: string) => { getRange: () => readonly [number, number] } | undefined, setScaleRange: (id: string, range: readonly [number, number]) => void },
   id: string,
   range: readonly [number, number],
 ): void {
   const current = runtime.getScale(id)?.getRange()
-  if (!current) return
-  if (current[0] === range[0] && current[1] === range[1]) return
+  if (!current) {
+    return
+  }
+  if (current[0] === range[0] && current[1] === range[1]) {
+    return
+  }
   runtime.setScaleRange(id, range)
 }

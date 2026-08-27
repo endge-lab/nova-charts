@@ -1,13 +1,3 @@
-import {
-  NOVA_UI_COMMON_DIRTY_POLICY,
-  NOVA_UI_COMMON_FIELD_DEFINITIONS,
-  finiteNumber,
-  normalizeCommonProps,
-} from '@endge/nova-ui-kit'
-import { DEFAULT_BAR_VIRTUALIZATION } from '@/model/bar/create-bar-series-layout'
-import { DEFAULT_LINE_VIRTUALIZATION } from '@/model/line/create-line-series-layout'
-import { DEFAULT_POINT_SERIES_VIRTUALIZATION } from '@/model/cartesian/point-series'
-import { normalizeChartViewportControllerOptions } from '@/model/viewport-controller/viewport-controller'
 import type {
   NovaChartAreaSeriesProps,
   NovaChartAreaSeriesResolvedProps,
@@ -15,37 +5,47 @@ import type {
   NovaChartAxisResolvedProps,
   NovaChartBarChartProps,
   NovaChartBarChartResolvedProps,
+  NovaChartBarSeriesProps,
+  NovaChartBarSeriesResolvedProps,
   NovaChartBubbleSeriesProps,
   NovaChartBubbleSeriesResolvedProps,
   NovaChartComposedChartProps,
   NovaChartComposedChartResolvedProps,
+  NovaChartGridProps,
+  NovaChartGridResolvedProps,
   NovaChartInteractionProps,
   NovaChartInteractionResolvedProps,
-  NovaChartBarSeriesProps,
-  NovaChartBarSeriesResolvedProps,
   NovaChartLegendProps,
   NovaChartLegendResolvedProps,
   NovaChartLineSeriesProps,
   NovaChartLineSeriesResolvedProps,
-  NovaChartPointSeriesVirtualizationOptions,
-  NovaChartScatterSeriesProps,
-  NovaChartScatterSeriesResolvedProps,
-  NovaChartGridProps,
-  NovaChartGridResolvedProps,
   NovaChartPlotProps,
   NovaChartPlotResolvedProps,
+  NovaChartPointSeriesVirtualizationOptions,
   NovaChartRootProps,
   NovaChartRootResolvedProps,
   NovaChartScaleProps,
   NovaChartScaleResolvedProps,
+  NovaChartScatterSeriesProps,
+  NovaChartScatterSeriesResolvedProps,
   NovaChartTooltipProps,
   NovaChartTooltipResolvedProps,
   NovaChartViewportControllerProps,
-  NovaChartViewportControllerResolvedProps,
   NovaChartViewportControllerResolvedOptions,
+  NovaChartViewportControllerResolvedProps,
   NovaChartViewportProps,
   NovaChartViewportResolvedProps,
 } from '@/model/types/chart-components.types'
+import {
+  finiteNumber,
+  normalizeCommonProps,
+  NOVA_UI_COMMON_DIRTY_POLICY,
+  NOVA_UI_COMMON_FIELD_DEFINITIONS,
+} from '@endge/nova-ui-kit'
+import { DEFAULT_BAR_VIRTUALIZATION } from '@/model/bar/create-bar-series-layout'
+import { DEFAULT_POINT_SERIES_VIRTUALIZATION } from '@/model/cartesian/point-series'
+import { DEFAULT_LINE_VIRTUALIZATION } from '@/model/line/create-line-series-layout'
+import { normalizeChartViewportControllerOptions } from '@/model/viewport-controller/viewport-controller'
 
 export const NOVA_CHARTS_COMMON_FIELD_DEFINITIONS = {
   ...NOVA_UI_COMMON_FIELD_DEFINITIONS,
@@ -176,8 +176,12 @@ export function normalizeChartBarSeriesProps<TData>(
   const orientation = props.orientation ?? 'vertical'
   const categoryField = props.categoryField ?? props.xField
   const valueField = props.valueField ?? props.yField
-  if (!categoryField) throw new Error('[NovaCharts] BarSeries requires categoryField or xField')
-  if (!valueField) throw new Error('[NovaCharts] BarSeries requires valueField or yField')
+  if (!categoryField) {
+    throw new Error('[NovaCharts] BarSeries requires categoryField or xField')
+  }
+  if (!valueField) {
+    throw new Error('[NovaCharts] BarSeries requires valueField or yField')
+  }
 
   return {
     ...normalizeCommonProps(props, {
@@ -225,16 +229,18 @@ export function normalizeChartBarSeriesProps<TData>(
       formatter: props.labels?.formatter,
     },
     colors: {
-      palette: props.colors?.palette?.length ? [...props.colors.palette] : [
-        '#2563eb',
-        '#16a34a',
-        '#f59e0b',
-        '#dc2626',
-        '#7c3aed',
-        '#0891b2',
-        '#db2777',
-        '#475569',
-      ],
+      palette: props.colors?.palette?.length
+        ? [...props.colors.palette]
+        : [
+            '#2563eb',
+            '#16a34a',
+            '#f59e0b',
+            '#dc2626',
+            '#7c3aed',
+            '#0891b2',
+            '#db2777',
+            '#475569',
+          ],
       colorField: props.colors?.colorField,
       fill: props.colors?.fill,
       highlight: props.colors?.highlight,
@@ -276,16 +282,18 @@ export function normalizeChartLineSeriesProps<TData>(
       strokeWidth: Math.max(0, finiteNumber(props.markers?.strokeWidth, 1.5)),
     },
     colors: {
-      palette: props.colors?.palette?.length ? [...props.colors.palette] : [
-        '#ea580c',
-        '#0ea5e9',
-        '#16a34a',
-        '#7c3aed',
-        '#dc2626',
-        '#0891b2',
-        '#db2777',
-        '#475569',
-      ],
+      palette: props.colors?.palette?.length
+        ? [...props.colors.palette]
+        : [
+            '#ea580c',
+            '#0ea5e9',
+            '#16a34a',
+            '#7c3aed',
+            '#dc2626',
+            '#0891b2',
+            '#db2777',
+            '#475569',
+          ],
       colorField: props.colors?.colorField,
       stroke: props.colors?.stroke,
     },
@@ -332,16 +340,18 @@ export function normalizeChartScatterSeriesProps<TData>(
     strokeWidth,
     opacity: Math.max(0, Math.min(1, finiteNumber(props.opacity, 0.9))),
     colors: {
-      palette: props.colors?.palette?.length ? [...props.colors.palette] : [
-        '#2563eb',
-        '#16a34a',
-        '#f59e0b',
-        '#dc2626',
-        '#7c3aed',
-        '#0891b2',
-        '#db2777',
-        '#475569',
-      ],
+      palette: props.colors?.palette?.length
+        ? [...props.colors.palette]
+        : [
+            '#2563eb',
+            '#16a34a',
+            '#f59e0b',
+            '#dc2626',
+            '#7c3aed',
+            '#0891b2',
+            '#db2777',
+            '#475569',
+          ],
       colorField: props.colors?.colorField,
       fill: props.colors?.fill,
     },
@@ -388,16 +398,18 @@ export function normalizeChartAreaSeriesProps<TData>(
     strokeWidth: Math.max(0, finiteNumber(props.strokeWidth, 2)),
     opacity: Math.max(0, Math.min(1, finiteNumber(props.opacity, 0.32))),
     colors: {
-      palette: props.colors?.palette?.length ? [...props.colors.palette] : [
-        '#2563eb',
-        '#16a34a',
-        '#f59e0b',
-        '#dc2626',
-        '#7c3aed',
-        '#0891b2',
-        '#db2777',
-        '#475569',
-      ],
+      palette: props.colors?.palette?.length
+        ? [...props.colors.palette]
+        : [
+            '#2563eb',
+            '#16a34a',
+            '#f59e0b',
+            '#dc2626',
+            '#7c3aed',
+            '#0891b2',
+            '#db2777',
+            '#475569',
+          ],
       colorField: props.colors?.colorField,
       fill: props.colors?.fill,
       stroke: props.colors?.stroke,
@@ -452,16 +464,18 @@ export function normalizeChartBubbleSeriesProps<TData>(
     strokeWidth,
     opacity: Math.max(0, Math.min(1, finiteNumber(props.opacity, 0.58))),
     colors: {
-      palette: props.colors?.palette?.length ? [...props.colors.palette] : [
-        '#0ea5e9',
-        '#f97316',
-        '#16a34a',
-        '#7c3aed',
-        '#dc2626',
-        '#0891b2',
-        '#db2777',
-        '#475569',
-      ],
+      palette: props.colors?.palette?.length
+        ? [...props.colors.palette]
+        : [
+            '#0ea5e9',
+            '#f97316',
+            '#16a34a',
+            '#7c3aed',
+            '#dc2626',
+            '#0891b2',
+            '#db2777',
+            '#475569',
+          ],
       colorField: props.colors?.colorField,
       fill: props.colors?.fill,
     },
@@ -657,16 +671,18 @@ export function normalizeChartBarChartProps<TData>(
     interaction,
     viewport,
     colors: {
-      palette: props.colors?.palette?.length ? [...props.colors.palette] : [
-        '#2563eb',
-        '#16a34a',
-        '#f59e0b',
-        '#dc2626',
-        '#7c3aed',
-        '#0891b2',
-        '#db2777',
-        '#475569',
-      ],
+      palette: props.colors?.palette?.length
+        ? [...props.colors.palette]
+        : [
+            '#2563eb',
+            '#16a34a',
+            '#f59e0b',
+            '#dc2626',
+            '#7c3aed',
+            '#0891b2',
+            '#db2777',
+            '#475569',
+          ],
       colorField: props.colors?.colorField,
       fill: props.colors?.fill,
       highlight: props.colors?.highlight,
@@ -770,7 +786,9 @@ function normalizePointVirtualization(
 }
 
 function normalizeChartAccessibilityOptions<TData>(options: NovaChartRootProps<TData>['accessibility']) {
-  if (options === false) return false
+  if (options === false) {
+    return false
+  }
   return {
     label: options?.label,
     description: options?.description,

@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
-import { ChartBubbleSeries } from '@/ui/bubble-series/BubbleSeries'
+import type { NovaChartBubbleSeriesProps } from '@/model/types/chart-components.types'
+import type { ChartBubbleSeriesDescriptor } from '@/ui/bubble-series/bubble-series.config'
 import {
+
   createChartBubbleSeriesDescriptor,
   normalizeChartBubbleSeriesProps,
-  type ChartBubbleSeriesDescriptor,
 } from '@/ui/bubble-series/bubble-series.config'
-import type { NovaChartBubbleSeriesProps } from '@/model/types/chart-components.types'
+import { ChartBubbleSeries } from '@/ui/bubble-series/BubbleSeries'
 
 export const CHART_BUBBLE_SERIES_DESCRIPTOR: ChartBubbleSeriesDescriptor = createChartBubbleSeriesDescriptor((context, schema) => {
   return new ChartBubbleSeries(

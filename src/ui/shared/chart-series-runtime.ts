@@ -1,15 +1,15 @@
+import type { NovaChartRuntime } from '@/model/context/nova-chart-runtime'
 import type {
   NovaChartInteractiveSeriesApi,
   NovaChartScaleDomainContribution,
   NovaChartSeriesDiagnostics,
   NovaChartSeriesMetadata,
 } from '@/model/types/chart-components.types'
-import type { NovaChartRuntime } from '@/model/context/nova-chart-runtime'
 import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 interface ChartSeriesRuntimeOwner {
   componentId: string
-  dirty: (flags: { update?: boolean; render?: boolean }) => void
+  dirty: (flags: { update?: boolean, render?: boolean }) => void
   props: {
     chartRef?: string
   }
@@ -54,10 +54,14 @@ export class ChartSeriesRuntimeBinding<TData = Record<string, unknown>> {
   publishContributions(runtime: NovaChartRuntime<TData>, contributions: Array<NovaChartScaleDomainContribution>): void {
     const nextIds = new Set(contributions.map(item => item.id))
     for (const id of this.contributionIds) {
-      if (!nextIds.has(id)) runtime.removeScaleDomainContribution(id)
+      if (!nextIds.has(id)) {
+        runtime.removeScaleDomainContribution(id)
+      }
     }
     this.contributionIds = nextIds
-    for (const contribution of contributions) runtime.setScaleDomainContribution(contribution)
+    for (const contribution of contributions) {
+      runtime.setScaleDomainContribution(contribution)
+    }
   }
 
   /**
@@ -79,9 +83,13 @@ export class ChartSeriesRuntimeBinding<TData = Record<string, unknown>> {
    */
   cleanup(): void {
     const runtime = this.runtime()
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
     runtime.unregisterInteractiveSeries(this.owner.componentId)
-    for (const id of this.contributionIds) runtime.removeScaleDomainContribution(id)
+    for (const id of this.contributionIds) {
+      runtime.removeScaleDomainContribution(id)
+    }
     this.contributionIds.clear()
     runtime.clearSemanticRegions(`${this.owner.componentId}:marks`)
     runtime.removeSeriesMetadata(this.owner.componentId)

@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
-import { ChartComposedChart } from '@/ui/composed-chart/ComposedChart'
+import type { NovaChartComposedChartProps } from '@/model/types/chart-components.types'
+import type { ChartComposedChartDescriptor } from '@/ui/composed-chart/composed-chart.config'
 import {
+
   createChartComposedChartDescriptor,
   normalizeChartComposedChartProps,
-  type ChartComposedChartDescriptor,
 } from '@/ui/composed-chart/composed-chart.config'
-import type { NovaChartComposedChartProps } from '@/model/types/chart-components.types'
+import { ChartComposedChart } from '@/ui/composed-chart/ComposedChart'
 
 export const CHART_COMPOSED_CHART_DESCRIPTOR: ChartComposedChartDescriptor = createChartComposedChartDescriptor((context, schema) => {
   return new ChartComposedChart(

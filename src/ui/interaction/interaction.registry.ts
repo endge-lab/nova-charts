@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
+import type { NovaChartInteractionProps } from '@/model/types/chart-components.types'
+import type { ChartInteractionDescriptor } from '@/ui/interaction/interaction.config'
 import { ChartInteraction } from '@/ui/interaction/Interaction'
 import {
+
   createChartInteractionDescriptor,
   normalizeChartInteractionProps,
-  type ChartInteractionDescriptor,
 } from '@/ui/interaction/interaction.config'
-import type { NovaChartInteractionProps } from '@/model/types/chart-components.types'
 
 export const CHART_INTERACTION_DESCRIPTOR: ChartInteractionDescriptor = createChartInteractionDescriptor((context, schema) => {
   return new ChartInteraction(

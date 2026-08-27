@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
-import { ChartBarSeries } from '@/ui/bar-series/BarSeries'
+import type { NovaChartBarSeriesProps } from '@/model/types/chart-components.types'
+import type { ChartBarSeriesDescriptor } from '@/ui/bar-series/bar-series.config'
 import {
+
   createChartBarSeriesDescriptor,
   normalizeChartBarSeriesProps,
-  type ChartBarSeriesDescriptor,
 } from '@/ui/bar-series/bar-series.config'
-import type { NovaChartBarSeriesProps } from '@/model/types/chart-components.types'
+import { ChartBarSeries } from '@/ui/bar-series/BarSeries'
 
 export const CHART_BAR_SERIES_DESCRIPTOR: ChartBarSeriesDescriptor = createChartBarSeriesDescriptor((context, schema) => {
   return new ChartBarSeries(

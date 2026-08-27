@@ -15,8 +15,8 @@ import type {
   NovaChartVisualPresetName,
   NovaChartVisualState,
 } from '@/model/types/chart-components.types'
-import { NovaChartStyleSheet } from '@/model/customization/chart-style-sheet'
 import { resolveNovaChartPreset } from '@/model/customization/chart-presets'
+import { NovaChartStyleSheet } from '@/model/customization/chart-style-sheet'
 
 export interface NovaChartCustomizationRuntime<TData = Record<string, unknown>> {
   readonly tokens: NovaChartSemanticTokens
@@ -37,7 +37,7 @@ export interface NovaChartCustomizationRuntime<TData = Record<string, unknown>> 
 }
 
 export class NovaChartCustomizationController<TData = Record<string, unknown>>
-  implements NovaChartCustomizationRuntime<TData> {
+implements NovaChartCustomizationRuntime<TData> {
   private cleanupPlugins: Array<() => void> = []
   private styleSheet = new NovaChartStyleSheet()
   private bridge: NovaChartRuntimeBridge<TData>
@@ -63,7 +63,9 @@ export class NovaChartCustomizationController<TData = Record<string, unknown>>
 
     for (const plugin of this.plugins) {
       const cleanup = plugin.setup?.({ runtime: this.bridge, tokens: this.tokens })
-      if (typeof cleanup === 'function') this.cleanupPlugins.push(cleanup)
+      if (typeof cleanup === 'function') {
+        this.cleanupPlugins.push(cleanup)
+      }
     }
   }
 
@@ -122,20 +124,24 @@ export class NovaChartCustomizationController<TData = Record<string, unknown>>
   }
 
   notifyInteraction(state: Parameters<NonNullable<NovaChartPlugin<TData>['onInteractionState']>>[0]): void {
-    for (const plugin of this.plugins) plugin.onInteractionState?.(state)
+    for (const plugin of this.plugins) {
+      plugin.onInteractionState?.(state)
+    }
   }
 
   dispose(): void {
-    for (const cleanup of this.cleanupPlugins.splice(0)) cleanup()
+    for (const cleanup of this.cleanupPlugins.splice(0)) {
+      cleanup()
+    }
   }
 
   private resolvePresetPartStyle(context: NovaChartStyleContext<TData>): NovaChartResolvedMarkStyle {
     const styles = this.visualPreset.styles ?? {}
     return resolveStyleObject(
       styles[`${context.componentName}::${context.part}`]
-        ?? styles[`NovaCharts.${context.componentName}::${context.part}`]
-        ?? styles[`*::${context.part}`]
-        ?? styles[context.part],
+      ?? styles[`NovaCharts.${context.componentName}::${context.part}`]
+      ?? styles[`*::${context.part}`]
+      ?? styles[context.part],
       context,
     )
   }
@@ -151,16 +157,26 @@ export function resolveVisualState(
   componentId: string,
   key: string | undefined,
   context: {
-    hovered?: { seriesId?: string; key?: string } | null
+    hovered?: { seriesId?: string, key?: string } | null
     attrs?: Record<string, unknown>
     disabled?: boolean
   },
 ): NovaChartVisualState {
-  if (context.disabled) return 'disabled'
-  if (context.attrs?.focused === true || context.attrs?.['data-state'] === 'focused') return 'focused'
-  if (context.attrs?.selected === true || context.attrs?.['data-state'] === 'selected') return 'selected'
-  if (context.attrs?.muted === true || context.attrs?.['data-state'] === 'muted') return 'muted'
-  if (context.hovered?.seriesId === componentId && (!key || context.hovered.key === key)) return 'hovered'
+  if (context.disabled) {
+    return 'disabled'
+  }
+  if (context.attrs?.focused === true || context.attrs?.['data-state'] === 'focused') {
+    return 'focused'
+  }
+  if (context.attrs?.selected === true || context.attrs?.['data-state'] === 'selected') {
+    return 'selected'
+  }
+  if (context.attrs?.muted === true || context.attrs?.['data-state'] === 'muted') {
+    return 'muted'
+  }
+  if (context.hovered?.seriesId === componentId && (!key || context.hovered.key === key)) {
+    return 'hovered'
+  }
   return 'normal'
 }
 
@@ -168,9 +184,13 @@ export function appendSchema(
   target: NovaSchema,
   input: NovaSchemaItem | NovaSchema | null | undefined,
 ): void {
-  if (!input) return
-  if (Array.isArray(input)) target.push(...input)
-  else target.push(input)
+  if (!input) {
+    return
+  }
+  if (Array.isArray(input)) {
+    target.push(...input)
+  }
+  else { target.push(input) }
 }
 
 export function renderWithSlot(
@@ -184,7 +204,9 @@ export function renderWithSlot(
     return
   }
   const output = renderer({ ...context, defaultSchema: fallback })
-  if (output === null) return
+  if (output === null) {
+    return
+  }
   appendSchema(target, output ?? fallback)
 }
 
@@ -209,7 +231,9 @@ function resolveSeriesStyle<TData>(
   value: NovaChartStyleLayers<TData>['series'],
   context: NovaChartStyleContext<TData>,
 ): NovaChartResolvedMarkStyle {
-  if (!value) return {}
+  if (!value) {
+    return {}
+  }
   const { datum: _datum, ...rest } = value
   return resolveStyleObject(rest, context)
 }
@@ -218,11 +242,14 @@ function resolveStyleObject<TData>(
   style: NovaChartMarkStyle<TData> | Record<string, unknown> | null | undefined,
   context: NovaChartStyleContext<TData>,
 ): NovaChartResolvedMarkStyle {
-  if (!style) return {}
+  if (!style) {
+    return {}
+  }
   const resolved: NovaChartResolvedMarkStyle = {}
   for (const [key, value] of Object.entries(style as Record<string, unknown>)) {
-    if (key === 'datum' || value === undefined) continue
-    ;(resolved as Record<string, unknown>)[key] = resolveStyleValue(value as NovaChartStyleValue<TData>, context)
+    if (key === 'datum' || value === undefined) {
+      continue
+    }(resolved as Record<string, unknown>)[key] = resolveStyleValue(value as NovaChartStyleValue<TData>, context)
   }
   return resolved
 }
@@ -231,13 +258,19 @@ function resolveStyleValue<TData>(
   value: NovaChartStyleValue<TData>,
   context: NovaChartStyleContext<TData>,
 ): unknown {
-  if (typeof value === 'function') return (value as (context: NovaChartStyleContext<TData>) => unknown)(context)
+  if (typeof value === 'function') {
+    return (value as (context: NovaChartStyleContext<TData>) => unknown)(context)
+  }
   return value
 }
 
 function mergeResolvedStyle(target: NovaChartResolvedMarkStyle, source: NovaChartResolvedMarkStyle | null | undefined): void {
-  if (!source) return
+  if (!source) {
+    return
+  }
   for (const [key, value] of Object.entries(source)) {
-    if (value !== undefined) (target as Record<string, unknown>)[key] = value
+    if (value !== undefined) {
+      (target as Record<string, unknown>)[key] = value
+    }
   }
 }

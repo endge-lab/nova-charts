@@ -1,8 +1,5 @@
 import type { NovaApp, NovaSchema, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { mat3 } from 'gl-matrix'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import type {
   NovaChartAxisApi,
   NovaChartAxisProps,
@@ -10,7 +7,11 @@ import type {
   NovaChartResolvedMarkStyle,
 } from '@/model/types/chart-components.types'
 import type { ChartScale, ChartScaleTickOptions, ChartScaleValue } from '@/model/types/chart-scale.types'
-import { CHART_AXIS_NODE_DESCRIPTOR, type ChartAxisDescriptor } from '@/ui/axis/axis.config'
+import type { ChartAxisDescriptor } from '@/ui/axis/axis.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import { mat3 } from 'gl-matrix'
+import { CHART_AXIS_NODE_DESCRIPTOR } from '@/ui/axis/axis.config'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 /**
  * Ось строится как обычный Nova-компонент и не владеет position.
@@ -110,18 +111,24 @@ export class ChartAxis<E extends EventList = Record<string, any>>
         }
       }
 
-      if (schema.length > 0) this.renderSchema(schema)
+      if (schema.length > 0) {
+        this.renderSchema(schema)
+      }
 
       if (labelRotation !== 0) {
         for (const tick of ticks) {
           this.renderRotatedLabel(tick.label, tick.position, labelY, labelRotation)
         }
-      } else {
-        for (const label of labels) this.renderer.text(label)
+      }
+      else {
+        for (const label of labels) {
+          this.renderer.text(label)
+        }
       }
       this.publishSemantics(runtime, ticks.length)
       return
-    } else {
+    }
+    else {
       const baselineX = this.props.tickSide === 'start' ? this.width - 0.5 : 0.5
       const tickDirection = this.props.tickSide === 'start' ? -1 : 1
       const labelX = this.props.labelSide === 'start'
@@ -169,8 +176,12 @@ export class ChartAxis<E extends EventList = Record<string, any>>
       }
     }
 
-    if (schema.length > 0) this.renderSchema(schema)
-    for (const label of labels) this.renderer.text(label)
+    if (schema.length > 0) {
+      this.renderSchema(schema)
+    }
+    for (const label of labels) {
+      this.renderer.text(label)
+    }
     this.publishSemantics(runtime, ticks.length)
   }
 
@@ -193,7 +204,9 @@ export class ChartAxis<E extends EventList = Record<string, any>>
   private readTicks() {
     const runtime = resolveNovaChartRuntime(this, this.props.chartRef)
     const scale = runtime?.getScale(this.props.scaleId)
-    if (scale) this.ensureRenderableScaleRange(scale)
+    if (scale) {
+      this.ensureRenderableScaleRange(scale)
+    }
     return scale?.ticks(this.props.ticks as ChartScaleTickOptions | undefined) ?? []
   }
 
@@ -223,7 +236,9 @@ export class ChartAxis<E extends EventList = Record<string, any>>
    */
   private ensureRenderableScaleRange(scale: ChartScale<ChartScaleValue>): void {
     const current = scale.getRange()
-    if (current[0] !== 0 || current[1] !== 1) return
+    if (current[0] !== 0 || current[1] !== 1) {
+      return
+    }
 
     if (this.props.orientation === 'horizontal' && this.width > 1) {
       scale.setRange([0, this.width])
@@ -238,9 +253,13 @@ export class ChartAxis<E extends EventList = Record<string, any>>
   /**
    * Нормализует и возвращает итоговое значение ChartAxis.
    */
-  private resolveHorizontalLabelRotation(ticks: Array<{ label: string; position: number }>): number {
-    if (this.props.labelRotation !== 'auto') return degreesToRadians(this.props.labelRotation)
-    if (ticks.length <= 1) return 0
+  private resolveHorizontalLabelRotation(ticks: Array<{ label: string, position: number }>): number {
+    if (this.props.labelRotation !== 'auto') {
+      return degreesToRadians(this.props.labelRotation)
+    }
+    if (ticks.length <= 1) {
+      return 0
+    }
 
     const first = ticks[0]!
     const last = ticks[ticks.length - 1]!
@@ -248,9 +267,15 @@ export class ChartAxis<E extends EventList = Record<string, any>>
     const available = span / Math.max(1, ticks.length - 1)
     const longestLabelPx = ticks.reduce((max, tick) => Math.max(max, tick.label.length * 6.6), 0)
 
-    if (available >= longestLabelPx + 10) return 0
-    if (available >= longestLabelPx * 0.68) return Math.PI / 6
-    if (available >= longestLabelPx * 0.42) return Math.PI / 4
+    if (available >= longestLabelPx + 10) {
+      return 0
+    }
+    if (available >= longestLabelPx * 0.68) {
+      return Math.PI / 6
+    }
+    if (available >= longestLabelPx * 0.42) {
+      return Math.PI / 4
+    }
     return Math.PI / 2
   }
 
@@ -287,7 +312,9 @@ export class ChartAxis<E extends EventList = Record<string, any>>
 }
 
 function degreesToRadians(value: number): number {
-  if (!Number.isFinite(value) || value === 0) return 0
+  if (!Number.isFinite(value) || value === 0) {
+    return 0
+  }
   return (value * Math.PI) / 180
 }
 

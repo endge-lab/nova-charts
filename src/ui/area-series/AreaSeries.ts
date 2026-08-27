@@ -1,20 +1,10 @@
 import type { NovaApp, NovaSchema, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import {
-  createAreaSeriesLayout,
-  resolveAreaXDomain,
-  resolveAreaYDomain,
-} from '@/model/area/create-area-series-layout'
-import { hitTestAreaLayoutPlan } from '@/model/area/hit-test-area-layout'
-import { renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
-import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
-import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
 import type { NovaChartRuntime } from '@/model/context/nova-chart-runtime'
 import type {
   NovaChartAreaLayoutArea,
-  NovaChartAreaLayoutPoint,
   NovaChartAreaLayoutPlan,
+  NovaChartAreaLayoutPoint,
   NovaChartAreaSeriesApi,
   NovaChartAreaSeriesDiagnostics,
   NovaChartAreaSeriesProps,
@@ -26,11 +16,22 @@ import type {
   NovaChartResolvedMarkStyle,
   NovaChartStyleContext,
 } from '@/model/types/chart-components.types'
+import type { ChartAreaSeriesDescriptor } from '@/ui/area-series/area-series.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import {
+  createAreaSeriesLayout,
+  resolveAreaXDomain,
+  resolveAreaYDomain,
+} from '@/model/area/create-area-series-layout'
+import { hitTestAreaLayoutPlan } from '@/model/area/hit-test-area-layout'
+import { renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
 import {
   CHART_AREA_SERIES_NODE_DESCRIPTOR,
+
   normalizeChartAreaSeriesProps,
-  type ChartAreaSeriesDescriptor,
 } from '@/ui/area-series/area-series.config'
+import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
+import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
 
 const EMPTY_DIAGNOSTICS: NovaChartAreaSeriesDiagnostics = {
   kind: 'area',
@@ -183,7 +184,9 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
     }
 
     this.publishSchemaDiagnostics(schemaStart)
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
   }
 
   setVirtualization(options: NovaChartPointSeriesVirtualizationOptions): void {
@@ -206,7 +209,9 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
 
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartAreaSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
-    if (changedKeys.includes('chartRef')) this.runtimeBinding.syncInteractive()
+    if (changedKeys.includes('chartRef')) {
+      this.runtimeBinding.syncInteractive()
+    }
     this.refresh()
   }
 
@@ -285,7 +290,9 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
   }
 
   private resolveAreaFill(seriesColor: string): string {
-    if (typeof this.props.colors.fill === 'string') return this.props.colors.fill
+    if (typeof this.props.colors.fill === 'string') {
+      return this.props.colors.fill
+    }
     return this.props.fill === '#bfdbfe' ? seriesColor : this.props.fill
   }
 
@@ -300,7 +307,9 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
       },
     }
     const runtime = this.runtimeBinding.runtime()
-    if (runtime) this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+    if (runtime) {
+      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+    }
   }
 
   private createAreaStyleContext(
@@ -439,7 +448,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
   private resolveMarkerStyle(
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
-    legacy: { radius: number; fill: string; strokeColor: string },
+    legacy: { radius: number, fill: string, strokeColor: string },
   ): NovaChartResolvedMarkStyle {
     return runtime?.customization.resolveMarkStyle(context, {
       legacy: {

@@ -1,7 +1,7 @@
+import type { ChartScale, ChartScaleOptions } from '@/model/types/chart-scale.types'
 import { BandScale } from '@/model/scale/BandScale'
 import { LinearScale } from '@/model/scale/LinearScale'
 import { TimeScale } from '@/model/scale/TimeScale'
-import type { ChartScale, ChartScaleOptions } from '@/model/types/chart-scale.types'
 
 /**
  * Создает шкалу по декларативной конфигурации.

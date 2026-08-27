@@ -1,14 +1,14 @@
+import type { NovaChartRuntimeBridge, NovaChartStyleContext } from '@/index'
 import { describe, expect, it, vi } from 'vitest'
 import {
-  NovaChartCustomizationController,
   appendSchema,
   createNovaChartPreset,
   defineNovaChartPlugin,
+  NovaChartCustomizationController,
+
   registerNovaChartPreset,
   renderWithSlot,
   resolveVisualState,
-  type NovaChartRuntimeBridge,
-  type NovaChartStyleContext,
 } from '@/index'
 import {
   normalizeChartBubbleSeriesProps,
@@ -52,7 +52,7 @@ function context(part = 'bar', state: NovaChartStyleContext<Row>['state'] = 'nor
   }
 }
 
-describe('Nova Charts customization layer', () => {
+describe('nova Charts customization layer', () => {
   it('resolves style precedence from preset, stylesheet, legacy props, series, state, datum and plugins', () => {
     const plugin = defineNovaChartPlugin<Row>({
       name: 'accent-plugin',

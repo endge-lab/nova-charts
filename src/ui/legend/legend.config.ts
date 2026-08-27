@@ -5,16 +5,16 @@ import type {
   NovaComponentSchema,
 } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import type {
   NovaChartLegendApi,
   NovaChartLegendProps,
   NovaChartLegendResolvedProps,
 } from '@/model/types/chart-components.types'
+import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import {
+  normalizeChartLegendProps,
   NOVA_CHARTS_COMMON_DIRTY_POLICY,
   NOVA_CHARTS_COMMON_FIELD_DEFINITIONS,
-  normalizeChartLegendProps,
 } from '@/ui/shared/chart-props'
 
 export type ChartLegendDescriptor = NovaComponentDescriptor<
@@ -50,7 +50,9 @@ export function createChartLegendDescriptor(createNode?: ChartLegendNodeFactory)
     measureBounds: (_context, schema) => commonMeasureBounds(schema, normalizeChartLegendProps),
   }
 
-  if (createNode) descriptor.createNode = createNode
+  if (createNode) {
+    descriptor.createNode = createNode
+  }
   return descriptor
 }
 

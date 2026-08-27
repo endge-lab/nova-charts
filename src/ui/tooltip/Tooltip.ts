@@ -1,12 +1,6 @@
 import type { NovaApp, NovaSchema, NovaSchemaItem, NovaSurface } from '@endge/nova'
+import type { TooltipContent, TooltipProps } from '@endge/nova-ui-kit'
 import type { EventList } from '@endge/utils'
-import {
-  NovaUiComponentNode,
-  createTooltipSchema,
-  type TooltipContent,
-  type TooltipProps,
-} from '@endge/nova-ui-kit'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import type {
   NovaChartInteractionState,
   NovaChartTooltipApi,
@@ -14,7 +8,14 @@ import type {
   NovaChartTooltipProps,
   NovaChartTooltipResolvedProps,
 } from '@/model/types/chart-components.types'
-import { CHART_TOOLTIP_NODE_DESCRIPTOR, type ChartTooltipDescriptor } from '@/ui/tooltip/tooltip.config'
+import type { ChartTooltipDescriptor } from '@/ui/tooltip/tooltip.config'
+import {
+  createTooltipSchema,
+  NovaUiComponentNode,
+
+} from '@endge/nova-ui-kit'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
+import { CHART_TOOLTIP_NODE_DESCRIPTOR } from '@/ui/tooltip/tooltip.config'
 
 /**
  * Tooltip читает chart interaction state и делегирует визуальный слой Nova UIKit.
@@ -118,7 +119,9 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
     } as TooltipProps)
 
     this.applyCollision(schema)
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
     if (runtime?.props.accessibility !== false && runtime?.props.accessibility.exposeTooltip) {
       runtime.publishSemanticRegions(`${this.componentId}:tooltip`, [{
         id: `${runtime.id}:${this.componentId}:tooltip`,
@@ -138,7 +141,8 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
           part: 'tooltip',
         },
       }])
-    } else {
+    }
+    else {
       runtime?.clearSemanticRegions(`${this.componentId}:tooltip`)
     }
   }
@@ -167,7 +171,9 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
    */
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartTooltipResolvedProps>): void {
     this.applyCommonPropsChanged(changedKeys)
-    if (changedKeys.includes('chartRef')) this.subscribeRuntime()
+    if (changedKeys.includes('chartRef')) {
+      this.subscribeRuntime()
+    }
     this.dirty({ render: true })
   }
 
@@ -178,10 +184,12 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
     this.unsubscribeInteraction?.()
     this.unsubscribeInteraction = null
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
 
     this.interactionState = runtime.getInteractionState()
-    this.unsubscribeInteraction = runtime.subscribeInteraction(state => {
+    this.unsubscribeInteraction = runtime.subscribeInteraction((state) => {
       this.interactionState = state
       this.dirty({ render: true })
     })
@@ -191,7 +199,9 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
    * Создает formatter context для пользовательского content.
    */
   private createContext(): NovaChartTooltipContext | null {
-    if (!this.props.enabled || !this.interactionState?.tooltipVisible || !this.interactionState.hovered) return null
+    if (!this.props.enabled || !this.interactionState?.tooltipVisible || !this.interactionState.hovered) {
+      return null
+    }
     const datum = this.interactionState.hovered
     const fallbackLabel = datum.mode === 'bucket'
       ? `Bucket ${datum.label ?? datum.key}`
@@ -236,7 +246,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   /**
    * Вычисляет anchor tooltip в координатах plot.
    */
-  private resolveAnchor(): { x: number; y: number } {
+  private resolveAnchor(): { x: number, y: number } {
     const hovered = this.interactionState?.hovered
     const pointer = this.interactionState?.pointer
     if (this.props.followCursor && pointer) {
@@ -252,13 +262,17 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
    * Применяет boundary shift к schema, созданной UIKit helper.
    */
   private applyCollision(schema: NovaSchema): void {
-    if (schema.length === 0 || !this.props.collision.shift) return
+    if (schema.length === 0 || !this.props.collision.shift) {
+      return
+    }
 
     const bounds = resolveSchemaBounds(schema)
     const padding = this.props.collision.padding
     const dx = Math.min(0, this.width - padding - (bounds.x + bounds.width)) + Math.max(0, padding - bounds.x)
     const dy = Math.min(0, this.height - padding - (bounds.y + bounds.height)) + Math.max(0, padding - bounds.y)
-    if (dx === 0 && dy === 0) return
+    if (dx === 0 && dy === 0) {
+      return
+    }
 
     for (const item of schema) {
       const shape = item as NovaSchemaItem & Record<string, any>
@@ -268,7 +282,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   }
 }
 
-function resolveSchemaBounds(schema: NovaSchema): { x: number; y: number; width: number; height: number } {
+function resolveSchemaBounds(schema: NovaSchema): { x: number, y: number, width: number, height: number } {
   let minX = Number.POSITIVE_INFINITY
   let minY = Number.POSITIVE_INFINITY
   let maxX = Number.NEGATIVE_INFINITY
@@ -286,7 +300,9 @@ function resolveSchemaBounds(schema: NovaSchema): { x: number; y: number; width:
     maxY = Math.max(maxY, y + height)
   }
 
-  if (!Number.isFinite(minX)) return { x: 0, y: 0, width: 0, height: 0 }
+  if (!Number.isFinite(minX)) {
+    return { x: 0, y: 0, width: 0, height: 0 }
+  }
   return { x: minX, y: minY, width: maxX - minX, height: maxY - minY }
 }
 

@@ -32,31 +32,31 @@ const STATE_ALIASES: Record<string, NovaChartVisualState> = {
 }
 
 const STYLE_PROPERTY_MAP: Record<string, keyof NovaChartResolvedMarkStyle> = {
-  background: 'background',
-  fill: 'fill',
-  color: 'color',
-  stroke: 'stroke',
+  'background': 'background',
+  'fill': 'fill',
+  'color': 'color',
+  'stroke': 'stroke',
   'stroke-color': 'strokeColor',
-  strokecolor: 'strokeColor',
+  'strokecolor': 'strokeColor',
   'stroke-width': 'strokeWidth',
-  strokewidth: 'strokeWidth',
+  'strokewidth': 'strokeWidth',
   'line-width': 'lineWidth',
-  linewidth: 'lineWidth',
-  width: 'width',
-  opacity: 'opacity',
-  radius: 'radius',
+  'linewidth': 'lineWidth',
+  'width': 'width',
+  'opacity': 'opacity',
+  'radius': 'radius',
   'border-radius': 'borderRadius',
-  borderradius: 'borderRadius',
+  'borderradius': 'borderRadius',
   'dash-pattern': 'dashPattern',
-  dashpattern: 'dashPattern',
+  'dashpattern': 'dashPattern',
   'font-family': 'fontFamily',
-  fontfamily: 'fontFamily',
+  'fontfamily': 'fontFamily',
   'font-size': 'fontSize',
-  fontsize: 'fontSize',
+  'fontsize': 'fontSize',
   'font-weight': 'fontWeight',
-  fontweight: 'fontWeight',
+  'fontweight': 'fontWeight',
   'line-height': 'lineHeight',
-  lineheight: 'lineHeight',
+  'lineheight': 'lineHeight',
 }
 
 const PART_ALIASES: Record<string, Record<string, string>> = {
@@ -80,11 +80,15 @@ export class NovaChartStyleSheet {
   }
 
   resolve<TData>(context: NovaChartStyleContext<TData>): NovaChartResolvedMarkStyle {
-    if (this.rules.length === 0) return {}
+    if (this.rules.length === 0) {
+      return {}
+    }
 
     const key = createCacheKey(context)
     const cached = this.cache.get(key)
-    if (cached) return cached
+    if (cached) {
+      return cached
+    }
 
     const matched = this.rules
       .filter(rule => matchesSelector(rule.selector, context))
@@ -107,7 +111,9 @@ export function styleSheetToPartStyles(source?: string): Record<string, NovaChar
   const rules = parseStyleSheet(source ?? '')
   const styles: Record<string, NovaChartMarkStyle> = {}
   for (const rule of rules) {
-    if (!rule.selector.part) continue
+    if (!rule.selector.part) {
+      continue
+    }
     styles[`${rule.selector.component ?? '*'}::${rule.selector.part}`] = {
       ...(styles[`${rule.selector.component ?? '*'}::${rule.selector.part}`] ?? {}),
       ...rule.style,
@@ -127,7 +133,9 @@ function parseStyleSheet(source: string): Array<ChartStyleRule> {
     const style = parseDeclarations(match[2] ?? '')
     for (const selectorSource of selectors) {
       const selector = parseSelector(selectorSource)
-      if (!selector) continue
+      if (!selector) {
+        continue
+      }
       rules.push({
         selector,
         style,
@@ -146,18 +154,22 @@ function parseSelector(source: string): ChartStyleSelector | null {
   let attrMatch: RegExpExecArray | null
   while ((attrMatch = attrPattern.exec(source)) !== null) {
     const attrName = attrMatch[1]
-    if (attrName) selector.attrs[attrName] = attrMatch[3] ?? true
+    if (attrName) {
+      selector.attrs[attrName] = attrMatch[3] ?? true
+    }
   }
   clean = clean.replace(attrPattern, '')
 
-  const classPattern = /\.([A-Za-z0-9_-]+)/g
+  const classPattern = /\.([\w-]+)/g
   let classMatch: RegExpExecArray | null
   while ((classMatch = classPattern.exec(clean)) !== null) {
-    if (classMatch[1]) selector.classes.push(classMatch[1])
+    if (classMatch[1]) {
+      selector.classes.push(classMatch[1])
+    }
   }
   clean = clean.replace(classPattern, '')
 
-  const idMatch = clean.match(/#([A-Za-z0-9_:-]+)/)
+  const idMatch = clean.match(/#([\w:-]+)/)
   if (idMatch) {
     selector.id = idMatch[1]
     clean = clean.replace(idMatch[0], '')
@@ -177,9 +189,14 @@ function parseSelector(source: string): ChartStyleSelector | null {
     const [componentRaw, partRaw] = cleanSelector.split('::')
     const component = componentRaw?.trim()
     const part = partRaw?.trim()
-    if (component) selector.component = normalizeComponentName(component)
-    if (part) selector.part = normalizePartName(selector.component, part)
-  } else if (cleanSelector) {
+    if (component) {
+      selector.component = normalizeComponentName(component)
+    }
+    if (part) {
+      selector.part = normalizePartName(selector.component, part)
+    }
+  }
+  else if (cleanSelector) {
     selector.component = normalizeComponentName(cleanSelector)
   }
 
@@ -193,17 +210,22 @@ function parseDeclarations(source: string): NovaChartResolvedMarkStyle {
   for (const declaration of source.split(';')) {
     const [rawName, ...rawValueParts] = declaration.split(':')
     const valueSource = rawValueParts.join(':').trim()
-    if (!rawName || !valueSource) continue
+    if (!rawName || !valueSource) {
+      continue
+    }
     const property = STYLE_PROPERTY_MAP[rawName.trim().toLowerCase()]
-    if (!property) continue
-    ;(style as Record<string, unknown>)[property] = parseStyleValue(property, valueSource)
+    if (!property) {
+      continue
+    }(style as Record<string, unknown>)[property] = parseStyleValue(property, valueSource)
   }
   return style
 }
 
 function parseStyleValue(property: keyof NovaChartResolvedMarkStyle, value: string): unknown {
   const trimmed = value.trim()
-  if (trimmed.startsWith('var(')) return trimmed
+  if (trimmed.startsWith('var(')) {
+    return trimmed
+  }
   if (property === 'dashPattern') {
     return trimmed.split(/[,\s]+/).map(Number).filter(Number.isFinite)
   }
@@ -224,23 +246,37 @@ function parseStyleValue(property: keyof NovaChartResolvedMarkStyle, value: stri
 }
 
 function matchesSelector<TData>(selector: ChartStyleSelector, context: NovaChartStyleContext<TData>): boolean {
-  if (selector.component && normalizeComponentName(context.componentName) !== selector.component) return false
-  if (selector.part && selector.part !== context.part) return false
-  if (selector.state && selector.state !== context.state) return false
-  if (selector.id && selector.id !== context.componentId) return false
+  if (selector.component && normalizeComponentName(context.componentName) !== selector.component) {
+    return false
+  }
+  if (selector.part && selector.part !== context.part) {
+    return false
+  }
+  if (selector.state && selector.state !== context.state) {
+    return false
+  }
+  if (selector.id && selector.id !== context.componentId) {
+    return false
+  }
 
   const classes = new Set(normalizeClassList(context.className))
   for (const className of selector.classes) {
-    if (!classes.has(className)) return false
+    if (!classes.has(className)) {
+      return false
+    }
   }
 
   for (const [key, expected] of Object.entries(selector.attrs)) {
     const actual = context.attrs?.[key]
     if (expected === true) {
-      if (actual === undefined || actual === false || actual === null) return false
+      if (actual === undefined || actual === false || actual === null) {
+        return false
+      }
       continue
     }
-    if (String(actual) !== expected) return false
+    if (String(actual) !== expected) {
+      return false
+    }
   }
 
   return true
@@ -260,8 +296,10 @@ function resolveTokenValues<TData>(
 }
 
 function resolveTokenValue<TData>(value: string, context: NovaChartStyleContext<TData>): string {
-  const match = value.match(/^var\((--[A-Za-z0-9_-]+)(?:,\s*(.+))?\)$/)
-  if (!match) return value
+  const match = value.match(/^var\((--[\w-]+)(?:,\s*(.+))?\)$/)
+  if (!match) {
+    return value
+  }
   const rawTokenName = match[1] ?? ''
   const tokenName = rawTokenName.replace(/^--nova-chart-/, '')
   const normalized = tokenName.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase())
@@ -292,7 +330,9 @@ function createCacheKey<TData>(context: NovaChartStyleContext<TData>): string {
 }
 
 function normalizeComponentName(value?: string): string | undefined {
-  if (!value) return undefined
+  if (!value) {
+    return undefined
+  }
   return value.replace(/^NovaCharts\./, '')
 }
 
@@ -301,6 +341,8 @@ function normalizePartName(component: string | undefined, part: string): string 
 }
 
 function normalizeClassList(className?: string | Array<string>): Array<string> {
-  if (Array.isArray(className)) return className.flatMap(item => item.split(/\s+/)).filter(Boolean)
+  if (Array.isArray(className)) {
+    return className.flatMap(item => item.split(/\s+/)).filter(Boolean)
+  }
   return className?.split(/\s+/).filter(Boolean) ?? []
 }

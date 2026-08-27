@@ -1,15 +1,16 @@
 import type { NovaApp, NovaSchema, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
-import type { ChartScaleTickOptions } from '@/model/types/chart-scale.types'
 import type {
   NovaChartGridApi,
   NovaChartGridProps,
   NovaChartGridResolvedProps,
   NovaChartResolvedMarkStyle,
 } from '@/model/types/chart-components.types'
-import { CHART_GRID_NODE_DESCRIPTOR, type ChartGridDescriptor } from '@/ui/grid/grid.config'
+import type { ChartScaleTickOptions } from '@/model/types/chart-scale.types'
+import type { ChartGridDescriptor } from '@/ui/grid/grid.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import { CHART_GRID_NODE_DESCRIPTOR } from '@/ui/grid/grid.config'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 /**
  * Grid использует те же ticks scale API, что Axis.
@@ -56,7 +57,9 @@ export class ChartGrid<E extends EventList = Record<string, any>>
    */
   render(): void {
     const runtime = resolveNovaChartRuntime(this, this.props.chartRef)
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
 
     const schema: NovaSchema = []
     const style: NovaChartResolvedMarkStyle = runtime.customization.resolveMarkStyle({
@@ -106,7 +109,9 @@ export class ChartGrid<E extends EventList = Record<string, any>>
     }
 
     this.lineCount = schema.length
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
     runtime.publishSemanticRegions(`${this.componentId}:grid`, [{
       id: `${runtime.id}:${this.componentId}:grid`,
       role: 'grid',

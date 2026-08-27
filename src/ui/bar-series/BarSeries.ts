@@ -1,14 +1,6 @@
 import type { NovaApp, NovaSchema, NovaSchemaItem, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import { createBarSeriesLayout } from '@/model/bar/create-bar-series-layout'
-import { hitTestBarLayoutPlan } from '@/model/bar/hit-test-bar-layout'
-import { appendSchema, renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
 import type { NovaChartRuntime } from '@/model/context/nova-chart-runtime'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
-import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
-import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
-import type { ChartScaleDomain } from '@/model/types/chart-scale.types'
 import type {
   NovaChartBarLayoutPlan,
   NovaChartBarSeriesApi,
@@ -21,11 +13,20 @@ import type {
   NovaChartResolvedMarkStyle,
   NovaChartStyleContext,
 } from '@/model/types/chart-components.types'
+import type { ChartScaleDomain } from '@/model/types/chart-scale.types'
+import type { ChartBarSeriesDescriptor } from '@/ui/bar-series/bar-series.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import { createBarSeriesLayout } from '@/model/bar/create-bar-series-layout'
+import { hitTestBarLayoutPlan } from '@/model/bar/hit-test-bar-layout'
+import { appendSchema, renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
 import {
   CHART_BAR_SERIES_NODE_DESCRIPTOR,
+
   normalizeChartBarSeriesProps,
-  type ChartBarSeriesDescriptor,
 } from '@/ui/bar-series/bar-series.config'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
+import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
+import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
 
 const EMPTY_DIAGNOSTICS: NovaChartBarSeriesDiagnostics = {
   kind: 'bar',
@@ -153,7 +154,9 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
       },
     }
     this.publishDiagnostics()
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
     this.renderLabels(runtime)
   }
 
@@ -189,7 +192,9 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
    */
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartBarSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
-    if (changedKeys.includes('chartRef')) this.runtimeBinding.syncInteractive()
+    if (changedKeys.includes('chartRef')) {
+      this.runtimeBinding.syncInteractive()
+    }
     this.refresh()
   }
 
@@ -288,21 +293,27 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
    */
   private resolveValueDomain(runtime: NovaChartRuntime<TData>): ChartScaleDomain {
     const rows = runtime.dataStore.getData()
-    if (rows.length === 0) return [0, 1]
+    if (rows.length === 0) {
+      return [0, 1]
+    }
 
     if (this.props.mode === 'stacked') {
-      const totals = new Map<string, { positive: number; negative: number }>()
+      const totals = new Map<string, { positive: number, negative: number }>()
       rows.forEach((row, rowIndex) => {
         const category = String(runtime.dataStore.readField(row, rowIndex, this.props.categoryField) ?? '')
         const value = Number(runtime.dataStore.readField(row, rowIndex, this.props.valueField))
-        if (!Number.isFinite(value)) return
+        if (!Number.isFinite(value)) {
+          return
+        }
         let total = totals.get(category)
         if (!total) {
           total = { positive: 0, negative: 0 }
           totals.set(category, total)
         }
-        if (value >= 0) total.positive += value
-        else total.negative += value
+        if (value >= 0) {
+          total.positive += value
+        }
+        else { total.negative += value }
       })
       const values = Array.from(totals.values()).flatMap(total => [total.negative, total.positive])
       return extentDomain(values)
@@ -339,7 +350,9 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
    */
   private publishDiagnostics(): void {
     const runtime = resolveNovaChartRuntime<TData>(this, this.props.chartRef)
-    if (runtime) this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+    if (runtime) {
+      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+    }
   }
 
   /**
@@ -358,10 +371,14 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
    * Рисует подписи баров поверх bounded schema.
    */
   private renderLabels(runtime: NovaChartRuntime<TData> | null | undefined): void {
-    if (!this.props.labels.visible) return
+    if (!this.props.labels.visible) {
+      return
+    }
 
     for (const item of this.layoutPlan.items) {
-      if (!item.labelText) continue
+      if (!item.labelText) {
+        continue
+      }
       const rect = resolveLabelRect(this.props.orientation, this.props.labels.position, item)
       const context = this.createStyleContext('barLabel', item, runtime)
       const style = this.resolveLabelStyle(context, runtime)
@@ -397,9 +414,14 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
       if (this.props.renderers?.barLabel) {
         const schema: NovaSchema = [] as unknown as NovaSchema
         const output = this.props.renderers.barLabel({ ...context, style, defaultSchema })
-        if (output !== null) appendSchema(schema, output ?? defaultSchema)
-        if (schema.length > 0) this.renderer.schema(schema)
-      } else {
+        if (output !== null) {
+          appendSchema(schema, output ?? defaultSchema)
+        }
+        if (schema.length > 0) {
+          this.renderer.schema(schema)
+        }
+      }
+      else {
         this.renderer.text(defaultSchema)
       }
     }
@@ -454,13 +476,15 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
     const highlighted = this.isItemHighlighted(item.key, runtime?.getInteractionState().hovered)
     const stateStyle = {
       ...(this.props.states?.[context.state] ?? {}),
-      ...(highlighted ? {
-        background: this.props.highlight.fill,
-        fill: this.props.highlight.fill,
-        opacity: this.props.highlight.opacity,
-        strokeColor: this.props.highlight.strokeColor,
-        strokeWidth: this.props.highlight.strokeWidth,
-      } : {}),
+      ...(highlighted
+        ? {
+            background: this.props.highlight.fill,
+            fill: this.props.highlight.fill,
+            opacity: this.props.highlight.opacity,
+            strokeColor: this.props.highlight.strokeColor,
+            strokeWidth: this.props.highlight.strokeWidth,
+          }
+        : {}),
     }
     const datumStyle = this.props.style?.datum?.(context as NovaChartStyleContext<TData>)
     return runtime?.customization.resolveMarkStyle(context, {
@@ -513,9 +537,15 @@ function extentDomain(values: Array<number>): ChartScaleDomain {
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY
   for (const value of values) {
-    if (!Number.isFinite(value)) continue
-    if (value < min) min = value
-    if (value > max) max = value
+    if (!Number.isFinite(value)) {
+      continue
+    }
+    if (value < min) {
+      min = value
+    }
+    if (value > max) {
+      max = value
+    }
   }
   return min === Number.POSITIVE_INFINITY ? [0, 1] : [min, max]
 }
@@ -524,7 +554,7 @@ function resolveLabelRect(
   orientation: NovaChartBarSeriesResolvedProps['orientation'],
   position: NovaChartBarSeriesResolvedProps['labels']['position'],
   item: NovaChartBarLayoutPlan<any>['items'][number],
-): { x: number; y: number; width: number; height: number; align: 'left' | 'center' | 'right' } {
+): { x: number, y: number, width: number, height: number, align: 'left' | 'center' | 'right' } {
   const height = 16
   if (orientation === 'horizontal') {
     if (position === 'inside' || position === 'end') {

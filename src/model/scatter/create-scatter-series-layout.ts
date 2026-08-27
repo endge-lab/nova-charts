@@ -1,5 +1,12 @@
 import type { ChartDataStore } from '@/model/data/ChartDataStore'
 import type {
+  NovaChartPointContext,
+  NovaChartScatterLayoutPlan,
+  NovaChartScatterLayoutPoint,
+  NovaChartScatterSeriesDiagnostics,
+  NovaChartScatterSeriesResolvedProps,
+} from '@/model/types/chart-components.types'
+import type {
   ChartScale,
   ChartScaleDomain,
   ChartScaleValue,
@@ -11,13 +18,6 @@ import {
   resolveCartesianYDomain,
   windowCartesianPointCandidates,
 } from '@/model/cartesian/point-series'
-import type {
-  NovaChartPointContext,
-  NovaChartScatterLayoutPlan,
-  NovaChartScatterLayoutPoint,
-  NovaChartScatterSeriesDiagnostics,
-  NovaChartScatterSeriesResolvedProps,
-} from '@/model/types/chart-components.types'
 
 export interface NovaChartScatterLayoutInput<TData = Record<string, unknown>> {
   props: NovaChartScatterSeriesResolvedProps<TData>
@@ -96,10 +96,18 @@ function createPointInput<TData>(input: NovaChartScatterLayoutInput<TData>) {
     colorField: input.props.colors.colorField,
     virtualization: input.props.virtualization,
     resolveColor: (context: NovaChartPointContext<TData>, series?: { color: string }) => {
-      if (typeof input.props.fill === 'function') return input.props.fill(context)
-      if (typeof input.props.colors.fill === 'function') return input.props.colors.fill(context)
-      if (typeof input.props.colors.fill === 'string') return input.props.colors.fill
-      if (typeof input.props.fill === 'string') return input.props.fill
+      if (typeof input.props.fill === 'function') {
+        return input.props.fill(context)
+      }
+      if (typeof input.props.colors.fill === 'function') {
+        return input.props.colors.fill(context)
+      }
+      if (typeof input.props.colors.fill === 'string') {
+        return input.props.colors.fill
+      }
+      if (typeof input.props.fill === 'string') {
+        return input.props.fill
+      }
       return series?.color
     },
   }

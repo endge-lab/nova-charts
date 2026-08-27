@@ -1,9 +1,4 @@
-import { BandScale } from '@/model/scale/BandScale'
 import type { ChartDataStore } from '@/model/data/ChartDataStore'
-import type {
-  ChartScale,
-  ChartScaleValue,
-} from '@/model/types/chart-scale.types'
 import type {
   NovaChartBarColorContext,
   NovaChartBarLabelContext,
@@ -13,6 +8,11 @@ import type {
   NovaChartBarSeriesResolvedProps,
   NovaChartSeriesMetadata,
 } from '@/model/types/chart-components.types'
+import type {
+  ChartScale,
+  ChartScaleValue,
+} from '@/model/types/chart-scale.types'
+import { BandScale } from '@/model/scale/BandScale'
 
 export const DEFAULT_BAR_VIRTUALIZATION = {
   enabled: true,
@@ -74,7 +74,8 @@ export function createBarSeriesLayout<TData>(
   const canAggregate = props.mode === 'single' && !props.seriesField
   if (!props.virtualization.enabled) {
     items = createDirectItems(input, allRows.map((_row, index) => index), series)
-  } else {
+  }
+  else {
     const bandwidth = categoryScale instanceof BandScale ? categoryScale.bandwidth() : Number.POSITIVE_INFINITY
     const visibleRowUpperBound = Math.min(allRows.length, visibleCategoryCount * Math.max(1, series.length))
     const needsAggregation = canAggregate && (
@@ -88,7 +89,8 @@ export function createBarSeriesLayout<TData>(
       items = aggregated.items
       aggregatedBuckets = aggregated.bucketCount
       visibleRows = aggregated.visibleRows
-    } else {
+    }
+    else {
       const visibleRowIndices = dataStore.visibleRowsByCategoryRange(
         props.categoryField,
         domain,
@@ -137,8 +139,12 @@ function createDirectItems<TData>(
   series: Array<NovaChartSeriesMetadata>,
 ): Array<NovaChartBarLayoutItem<TData>> {
   const rows = normalizeRows(input, rowIndices)
-  if (input.props.mode === 'stacked') return createStackedItems(input, rows, series)
-  if (input.props.mode === 'grouped') return createGroupedItems(input, rows, series)
+  if (input.props.mode === 'stacked') {
+    return createStackedItems(input, rows, series)
+  }
+  if (input.props.mode === 'grouped') {
+    return createGroupedItems(input, rows, series)
+  }
   return createSingleItems(input, rows, series)
 }
 
@@ -154,7 +160,7 @@ function createSingleItems<TData>(
     ? Math.max(0, categoryScale.bandwidth())
     : Math.max(1, resolveCategoryViewportSize(input) / Math.max(1, rows.length))
 
-  return rows.map(row => {
+  return rows.map((row) => {
     const categoryStart = categoryScale.toPx(row.category) as number
     return createBarItem(input, row, series, categoryStart, barSize, baseline, row.value, 0)
   }).filter(isRenderableItem)
@@ -175,7 +181,7 @@ function createGroupedItems<TData>(
   const barSize = Math.max(1, (groupSize - gap * Math.max(0, series.length - 1)) / Math.max(1, series.length))
   const seriesIndex = new Map(series.map((item, index) => [item.id, index]))
 
-  return rows.map(row => {
+  return rows.map((row) => {
     const index = seriesIndex.get(row.seriesKey) ?? 0
     const categoryStart = (categoryScale.toPx(row.category) as number) + index * (barSize + gap)
     return createBarItem(input, row, series, categoryStart, barSize, baseline, row.value, 0)
@@ -193,7 +199,7 @@ function createStackedItems<TData>(
   const barSize = categoryScale instanceof BandScale
     ? Math.max(0, categoryScale.bandwidth())
     : Math.max(1, resolveCategoryViewportSize(input) / Math.max(1, rows.length))
-  const offsets = new Map<string, { positive: number; negative: number }>()
+  const offsets = new Map<string, { positive: number, negative: number }>()
   const items: Array<NovaChartBarLayoutItem<TData>> = []
 
   for (const row of rows) {
@@ -203,12 +209,16 @@ function createStackedItems<TData>(
       offsets.set(row.category, offset)
     }
     const baseValue = row.value >= 0 ? offset.positive : offset.negative
-    if (row.value >= 0) offset.positive += row.value
-    else offset.negative += row.value
+    if (row.value >= 0) {
+      offset.positive += row.value
+    }
+    else { offset.negative += row.value }
 
     const categoryStart = categoryScale.toPx(row.category) as number
     const item = createBarItem(input, row, series, categoryStart, barSize, baseline, baseValue + row.value, baseValue)
-    if (isRenderableItem(item)) items.push(item)
+    if (isRenderableItem(item)) {
+      items.push(item)
+    }
   }
 
   return items
@@ -276,14 +286,16 @@ function createBarItem<TData>(
 function createAggregatedItems<TData>(
   input: NovaChartBarLayoutInput<TData>,
   domain: ReadonlyArray<string>,
-  visibleRange: { startIndex: number; endIndex: number },
+  visibleRange: { startIndex: number, endIndex: number },
   series: Array<NovaChartSeriesMetadata>,
-): { items: Array<NovaChartBarLayoutItem<TData>>; bucketCount: number; visibleRows: number } {
+): { items: Array<NovaChartBarLayoutItem<TData>>, bucketCount: number, visibleRows: number } {
   const { props, dataStore } = input
   const categoryScale = resolveCategoryScale(input)
   const valueScale = resolveValueScale(input)
   const visibleCount = Math.max(0, visibleRange.endIndex - visibleRange.startIndex + 1)
-  if (visibleCount === 0) return { items: [], bucketCount: 0, visibleRows: 0 }
+  if (visibleCount === 0) {
+    return { items: [], bucketCount: 0, visibleRows: 0 }
+  }
 
   const maxBucketsByPixels = Math.max(1, Math.floor(resolveCategoryViewportSize(input) / Math.max(1, props.virtualization.minBarWidthPx)))
   const bucketCount = Math.min(props.virtualization.maxRenderedBars, maxBucketsByPixels, visibleCount)
@@ -296,15 +308,21 @@ function createAggregatedItems<TData>(
     rows.forEach((row, rowIndex) => {
       const category = String(dataStore.readField(row as TData, rowIndex, props.categoryField) ?? '')
       const categoryIndex = categoryScale.indexOf(category)
-      if (categoryIndex < visibleRange.startIndex || categoryIndex > visibleRange.endIndex) return
+      if (categoryIndex < visibleRange.startIndex || categoryIndex > visibleRange.endIndex) {
+        return
+      }
 
       const bucketIndex = Math.min(bucketCount - 1, Math.floor((categoryIndex - visibleRange.startIndex) / categoriesPerBucket))
       const value = Number(dataStore.readField(row as TData, rowIndex, props.valueField))
-      if (!Number.isFinite(value)) return
+      if (!Number.isFinite(value)) {
+        return
+      }
 
       visibleRows += 1
       const bucket = buckets[bucketIndex]
-      if (bucket) addBucketValue(bucket, value)
+      if (bucket) {
+        addBucketValue(bucket, value)
+      }
     })
   }
 
@@ -313,11 +331,15 @@ function createAggregatedItems<TData>(
 
   for (let bucket = 0; bucket < bucketCount; bucket += 1) {
     const startIndex = visibleRange.startIndex + bucket * categoriesPerBucket
-    if (startIndex > visibleRange.endIndex) break
+    if (startIndex > visibleRange.endIndex) {
+      break
+    }
     const endIndex = Math.min(visibleRange.endIndex, startIndex + categoriesPerBucket - 1)
     const currentBucket = buckets[bucket]
     const aggregate = currentBucket ? readBucketValue(currentBucket, props.virtualization.aggregation) : null
-    if (aggregate === null) continue
+    if (aggregate === null) {
+      continue
+    }
 
     const startCategory = domain[startIndex] ?? ''
     const endCategory = domain[endIndex] ?? startCategory
@@ -349,10 +371,12 @@ function normalizeRows<TData>(
 ): Array<BarLayoutRow<TData>> {
   const { props, dataStore } = input
   const rows = dataStore.getData()
-  return rowIndices.flatMap(rowIndex => {
+  return rowIndices.flatMap((rowIndex) => {
     const row = rows[rowIndex] as TData
     const value = Number(dataStore.readField(row, rowIndex, props.valueField))
-    if (!Number.isFinite(value)) return []
+    if (!Number.isFinite(value)) {
+      return []
+    }
     const category = String(dataStore.readField(row, rowIndex, props.categoryField) ?? '')
     const seriesValue = props.seriesField ? dataStore.readField(row, rowIndex, props.seriesField) : undefined
     const seriesKey = seriesValue === undefined || seriesValue === null ? '__default' : String(seriesValue)
@@ -380,7 +404,9 @@ function createSeriesMetadata<TData>(
   rows.forEach((row, rowIndex) => {
     const value = props.seriesField ? dataStore.readField(row, rowIndex, props.seriesField) : undefined
     const id = value === undefined || value === null ? '__default' : String(value)
-    if (seen.has(id)) return
+    if (seen.has(id)) {
+      return
+    }
     seen.add(id)
     result.push({
       id,
@@ -395,17 +421,19 @@ function createSeriesMetadata<TData>(
     })
   })
 
-  return result.length > 0 ? result : [{
-    id: '__default',
-    kind: 'bar',
-    scaleIds: {
-      x: props.xScaleId,
-      y: props.yScaleId,
-    },
-    label: 'Value',
-    color: props.fill,
-    visible: true,
-  }]
+  return result.length > 0
+    ? result
+    : [{
+        id: '__default',
+        kind: 'bar',
+        scaleIds: {
+          x: props.xScaleId,
+          y: props.yScaleId,
+        },
+        label: 'Value',
+        color: props.fill,
+        visible: true,
+      }]
 }
 
 function resolveItemColor<TData>(
@@ -424,10 +452,14 @@ function resolveItemColor<TData>(
     }
     return props.colors.fill(context)
   }
-  if (typeof props.colors.fill === 'string') return props.colors.fill
+  if (typeof props.colors.fill === 'string') {
+    return props.colors.fill
+  }
   if (props.colors.colorField && row.row) {
     const color = dataStore.readField(row.row, row.rowIndex, props.colors.colorField)
-    if (typeof color === 'string' && color) return color
+    if (typeof color === 'string' && color) {
+      return color
+    }
   }
   return series?.color ?? props.fill
 }
@@ -437,7 +469,9 @@ function resolveItemLabel<TData>(
   row: BarLayoutRow<TData>,
 ): string | undefined {
   const { props } = input
-  if (!props.labels.visible) return undefined
+  if (!props.labels.visible) {
+    return undefined
+  }
   const context: NovaChartBarLabelContext<TData> = {
     row: row.row,
     key: row.key,
@@ -461,18 +495,30 @@ function createAggregationBuckets(count: number): Array<AggregationBucket> {
 function addBucketValue(bucket: AggregationBucket, value: number): void {
   bucket.count += 1
   bucket.sum += value
-  if (value < bucket.min) bucket.min = value
-  if (value > bucket.max) bucket.max = value
+  if (value < bucket.min) {
+    bucket.min = value
+  }
+  if (value > bucket.max) {
+    bucket.max = value
+  }
 }
 
 function readBucketValue(
   bucket: AggregationBucket,
   aggregation: NovaChartBarSeriesResolvedProps['virtualization']['aggregation'],
 ): number | null {
-  if (bucket.count === 0) return null
-  if (aggregation === 'min') return bucket.min
-  if (aggregation === 'max') return bucket.max
-  if (aggregation === 'sum') return bucket.sum
+  if (bucket.count === 0) {
+    return null
+  }
+  if (aggregation === 'min') {
+    return bucket.min
+  }
+  if (aggregation === 'max') {
+    return bucket.max
+  }
+  if (aggregation === 'sum') {
+    return bucket.sum
+  }
   return bucket.sum / bucket.count
 }
 
@@ -497,7 +543,7 @@ function resolveVisibleRange(
   scale: ChartScale<ChartScaleValue>,
   size: number,
   overscanPx: number,
-): { startIndex: number; endIndex: number } {
+): { startIndex: number, endIndex: number } {
   if (scale instanceof BandScale) {
     return scale.visibleIndexRange(-overscanPx, size + overscanPx)
   }

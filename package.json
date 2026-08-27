@@ -1,17 +1,17 @@
 {
   "name": "@endge/nova-charts",
-  "private": false,
-  "version": "0.10.5",
   "type": "module",
-  "module": "./dist/nova-charts.js",
-  "types": "./dist/index.d.ts",
+  "version": "0.10.6",
+  "private": false,
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/nova-charts.js"
     }
   },
-  "sideEffects": false,
+  "module": "./dist/nova-charts.js",
+  "types": "./dist/index.d.ts",
   "files": [
     "dist"
   ],

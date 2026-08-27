@@ -5,16 +5,16 @@ import type {
   NovaComponentSchema,
 } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import type {
   NovaChartTooltipApi,
   NovaChartTooltipProps,
   NovaChartTooltipResolvedProps,
 } from '@/model/types/chart-components.types'
+import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import {
+  normalizeChartTooltipProps,
   NOVA_CHARTS_COMMON_DIRTY_POLICY,
   NOVA_CHARTS_COMMON_FIELD_DEFINITIONS,
-  normalizeChartTooltipProps,
 } from '@/ui/shared/chart-props'
 
 export type ChartTooltipDescriptor = NovaComponentDescriptor<
@@ -62,7 +62,9 @@ export function createChartTooltipDescriptor(createNode?: ChartTooltipNodeFactor
     measureBounds: (_context, schema) => commonMeasureBounds(schema, normalizeChartTooltipProps),
   }
 
-  if (createNode) descriptor.createNode = createNode
+  if (createNode) {
+    descriptor.createNode = createNode
+  }
   return descriptor
 }
 

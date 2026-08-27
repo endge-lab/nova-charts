@@ -26,7 +26,9 @@ export function publishChartMarkSemantics<TData>(
   seriesKind: NovaChartSeriesKind,
   marks: ReadonlyArray<ChartSemanticMark>,
 ): void {
-  if (!runtime) return
+  if (!runtime) {
+    return
+  }
   const accessibility = runtime.props.accessibility
   if (accessibility === false || !accessibility.includeVisibleMarks) {
     runtime.clearSemanticRegions(sourceId)

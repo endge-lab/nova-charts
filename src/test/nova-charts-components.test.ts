@@ -1,33 +1,23 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { NovaApp, NovaComponentDescriptor, NovaComponentSchema, NovaNode, NovaSurface } from '@endge/nova'
+import type { NovaChartBarChartApi, NovaChartBarSeriesApi, NovaChartDatumRef, NovaChartHitTestInput, NovaChartLegendApi, NovaChartLineSeriesApi, NovaChartRootApi, NovaChartTooltipContext, NovaChartViewportApi, NovaChartViewportControllerApi } from '@/index'
 import {
   Nova,
+
   RaphSchedulerType,
   RendererType,
-  type NovaComponentDescriptor,
-  type NovaComponentSchema,
-  type NovaApp,
-  type NovaNode,
-  type NovaSurface,
 } from '@endge/nova'
-import { NovaUIKit, NovaUiComponentNode, registerNovaUIKit } from '@endge/nova-ui-kit'
+import { NovaUiComponentNode, NovaUIKit, registerNovaUIKit } from '@endge/nova-ui-kit'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+
   NovaCharts,
+
   registerNovaCharts,
-  type NovaChartBarChartApi,
-  type NovaChartBarSeriesApi,
-  type NovaChartDatumRef,
-  type NovaChartHitTestInput,
-  type NovaChartLegendApi,
-  type NovaChartLineSeriesApi,
-  type NovaChartRootApi,
-  type NovaChartTooltipContext,
-  type NovaChartViewportControllerApi,
-  type NovaChartViewportApi,
 } from '@/index'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import { NOVA_CHARTS_COMMON_DIRTY_POLICY } from '@/ui/shared/chart-props'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 interface Row {
   id: string
@@ -115,7 +105,9 @@ class TestMixedSeries extends NovaUiComponentNode<
 
   update(): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this)
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
     runtime.setScaleDomainContribution({
       id: `${this.componentId}:x`,
       scaleId: this.props.xScaleId,
@@ -159,9 +151,13 @@ class TestMixedSeries extends NovaUiComponentNode<
 
   private hitTest(input: NovaChartHitTestInput): NovaChartDatumRef<Record<string, unknown>> | null {
     const hit = this.props.hit
-    if (!hit) return null
+    if (!hit) {
+      return null
+    }
     const distancePx = Math.hypot(hit.x - input.x, hit.y - input.y)
-    if (distancePx > (input.maxDistancePx ?? 16)) return null
+    if (distancePx > (input.maxDistancePx ?? 16)) {
+      return null
+    }
     return {
       seriesId: this.componentId,
       seriesKind: 'line',
@@ -187,7 +183,9 @@ function installCanvasMocks(): void {
     configurable: true,
   })
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation((type: string) => {
-    if (type === RendererType.Web2D) return create2DContextStub()
+    if (type === RendererType.Web2D) {
+      return create2DContextStub()
+    }
     return null
   })
   vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation((mime?: string) => {
@@ -205,7 +203,9 @@ function create2DContextStub(): CanvasRenderingContext2D {
      * Возвращает значение состояния текущего класса.
      */
     get(target, prop) {
-      if (!(prop in target)) target[prop] = vi.fn()
+      if (!(prop in target)) {
+        target[prop] = vi.fn()
+      }
       return target[prop]
     },
     /**
@@ -925,7 +925,7 @@ function mountLineSeriesChart(
   app.raph.run()
 }
 
-describe('Nova Charts components', () => {
+describe('nova Charts components', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
     document.body.innerHTML = ''
@@ -1496,7 +1496,7 @@ describe('Nova Charts components', () => {
       orientation: 'horizontal',
       labels: {
         visible: true,
-        formatter: (context: { seriesKey?: string; value: number }) => `${context.seriesKey}:${context.value}`,
+        formatter: (context: { seriesKey?: string, value: number }) => `${context.seriesKey}:${context.value}`,
       },
     })
 

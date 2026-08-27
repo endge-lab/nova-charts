@@ -12,15 +12,21 @@ export function hitTestLineLayoutPlan<TData>(
   plan: NovaChartLineLayoutPlan<TData>,
   input: NovaChartHitTestInput,
 ): NovaChartHitTestResult<TData> | null {
-  if (plan.points.length === 0) return null
+  if (plan.points.length === 0) {
+    return null
+  }
 
   const maxDistancePx = input.maxDistancePx ?? 12
-  let best: { point: NovaChartLineLayoutPlan<TData>['points'][number]; distance: number } | null = null
+  let best: { point: NovaChartLineLayoutPlan<TData>['points'][number], distance: number } | null = null
 
   for (const point of plan.points) {
     const distance = Math.hypot(point.x - input.x, point.y - input.y)
-    if (distance > maxDistancePx) continue
-    if (!best || distance < best.distance) best = { point, distance }
+    if (distance > maxDistancePx) {
+      continue
+    }
+    if (!best || distance < best.distance) {
+      best = { point, distance }
+    }
   }
 
   return best ? toHitTestResult(seriesId, best.point, best.distance) : null

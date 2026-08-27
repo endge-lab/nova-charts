@@ -1,12 +1,12 @@
 import type {
   ChartBandDomain,
+  ChartBandVisibleRange,
   ChartScale,
   ChartScaleDomain,
   ChartScaleExplicitTickInput,
   ChartScaleRange,
   ChartScaleTick,
   ChartScaleTickOptions,
-  ChartBandVisibleRange,
 } from '@/model/types/chart-scale.types'
 
 const DEFAULT_RANGE: ChartScaleRange = [0, 1]
@@ -79,7 +79,9 @@ export class BandScale implements ChartScale<string> {
    */
   toPx(value: string): number {
     const index = this.indexByValue.get(value) ?? -1
-    if (index === -1) return Number.NaN
+    if (index === -1) {
+      return Number.NaN
+    }
     return this.bandStart(index)
   }
 
@@ -87,9 +89,13 @@ export class BandScale implements ChartScale<string> {
    * Возвращает категорию, которая находится под пикселем.
    */
   fromPx(px: number): string {
-    if (this.domain.length === 0) return ''
+    if (this.domain.length === 0) {
+      return ''
+    }
     const step = this.step()
-    if (step === 0) return this.domain[0] ?? ''
+    if (step === 0) {
+      return this.domain[0] ?? ''
+    }
 
     const [rangeStart] = this.range
     const index = Math.floor((px - rangeStart - step * this.paddingOuter) / step)
@@ -131,7 +137,9 @@ export class BandScale implements ChartScale<string> {
     const ticks: Array<ChartScaleTick<string>> = []
     for (let index = 0; index < this.domain.length; index += sampleStep) {
       const value = this.domain[index]
-      if (value === undefined) continue
+      if (value === undefined) {
+        continue
+      }
       ticks.push({
         value,
         position: this.center(value),
@@ -167,11 +175,15 @@ export class BandScale implements ChartScale<string> {
    * Возвращает индексный диапазон категорий, пересекающих pixel window.
    */
   visibleIndexRange(startPx: number, endPx: number): ChartBandVisibleRange {
-    if (this.domain.length === 0) return { startIndex: 0, endIndex: -1 }
+    if (this.domain.length === 0) {
+      return { startIndex: 0, endIndex: -1 }
+    }
 
     const [rangeStart] = this.range
     const step = this.step()
-    if (step === 0) return { startIndex: 0, endIndex: this.domain.length - 1 }
+    if (step === 0) {
+      return { startIndex: 0, endIndex: this.domain.length - 1 }
+    }
 
     const minPx = Math.min(startPx, endPx)
     const maxPx = Math.max(startPx, endPx)
@@ -188,7 +200,9 @@ export class BandScale implements ChartScale<string> {
    * Возвращает полный шаг между соседними категориями.
    */
   private step(): number {
-    if (this.domain.length === 0) return 0
+    if (this.domain.length === 0) {
+      return 0
+    }
     const [rangeStart, rangeEnd] = this.range
     const size = rangeEnd - rangeStart
     const denominator = Math.max(1, this.domain.length - this.paddingInner + this.paddingOuter * 2)
@@ -220,12 +234,16 @@ function createExplicitBandTicks(
   values: ReadonlyArray<ChartScaleExplicitTickInput>,
   options: ChartScaleTickOptions,
 ): Array<ChartScaleTick<string>> {
-  return values.flatMap(item => {
+  return values.flatMap((item) => {
     const value = readExplicitTickValue(item)
-    if (typeof value !== 'string') return []
+    if (typeof value !== 'string') {
+      return []
+    }
 
     const position = scale.center(value)
-    if (!Number.isFinite(position)) return []
+    if (!Number.isFinite(position)) {
+      return []
+    }
 
     return [{
       value,

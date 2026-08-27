@@ -1,7 +1,7 @@
 import type { NovaComponentDescriptor, NovaSchemaRegistry } from '@endge/nova'
 import { CHART_AREA_SERIES_DESCRIPTOR } from '@/ui/area-series/area-series.registry'
-import { CHART_BAR_CHART_DESCRIPTOR } from '@/ui/bar-chart/bar-chart.registry'
 import { CHART_AXIS_DESCRIPTOR } from '@/ui/axis/axis.registry'
+import { CHART_BAR_CHART_DESCRIPTOR } from '@/ui/bar-chart/bar-chart.registry'
 import { CHART_BAR_SERIES_DESCRIPTOR } from '@/ui/bar-series/bar-series.registry'
 import { CHART_BUBBLE_SERIES_DESCRIPTOR } from '@/ui/bubble-series/bubble-series.registry'
 import { CHART_COMPOSED_CHART_DESCRIPTOR } from '@/ui/composed-chart/composed-chart.registry'

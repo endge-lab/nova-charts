@@ -1,12 +1,12 @@
-import { createChartScale } from '@/model/scale/create-chart-scale'
 import type { ChartDataStore } from '@/model/data/ChartDataStore'
+import type { NovaChartScaleResolvedProps } from '@/model/types/chart-components.types'
 import type {
   ChartBandDomain,
   ChartNumericDomain,
   ChartScale,
   ChartScaleDomain,
 } from '@/model/types/chart-scale.types'
-import type { NovaChartScaleResolvedProps } from '@/model/types/chart-components.types'
+import { createChartScale } from '@/model/scale/create-chart-scale'
 
 /**
  * Создает chart scale из декларативного компонента и текущего data store.
@@ -54,7 +54,9 @@ export function resolveScaleDomain<TData>(
   props: NovaChartScaleResolvedProps<TData>,
   dataStore: ChartDataStore<TData>,
 ): ChartScaleDomain {
-  if (props.domain) return props.domain
+  if (props.domain) {
+    return props.domain
+  }
 
   if (props.scaleType === 'band') {
     return props.field ? dataStore.categoryDomain(props.field) : []
@@ -83,9 +85,13 @@ export function resolveScaleDomain<TData>(
 }
 
 function niceNumericDomain(min: number, max: number): ChartNumericDomain {
-  if (!Number.isFinite(min) || !Number.isFinite(max)) return [0, 1]
+  if (!Number.isFinite(min) || !Number.isFinite(max)) {
+    return [0, 1]
+  }
   const span = Math.abs(max - min)
-  if (span === 0) return [Math.floor(min), Math.ceil(max + 1)]
+  if (span === 0) {
+    return [Math.floor(min), Math.ceil(max + 1)]
+  }
 
   const power = 10 ** Math.floor(Math.log10(span))
   const step = power / 2

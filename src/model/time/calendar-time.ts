@@ -1,5 +1,5 @@
-import { fromZonedTime, toZonedTime } from 'date-fns-tz'
 import type { ChartTimeUnit } from '@/model/types/chart-scale.types'
+import { fromZonedTime, toZonedTime } from 'date-fns-tz'
 
 const TIME_UNIT_ORDER: Array<ChartTimeUnit> = [
   'millisecond',
@@ -108,15 +108,33 @@ export function addZonedTime(timestamp: number, unit: ChartTimeUnit, step: numbe
     parts.millisecond,
   ))
 
-  if (unit === 'year') localDate.setUTCFullYear(localDate.getUTCFullYear() + step)
-  if (unit === 'quarter') localDate.setUTCMonth(localDate.getUTCMonth() + step * 3)
-  if (unit === 'month') localDate.setUTCMonth(localDate.getUTCMonth() + step)
-  if (unit === 'week') localDate.setUTCDate(localDate.getUTCDate() + step * 7)
-  if (unit === 'day') localDate.setUTCDate(localDate.getUTCDate() + step)
-  if (unit === 'hour') localDate.setUTCHours(localDate.getUTCHours() + step)
-  if (unit === 'minute') localDate.setUTCMinutes(localDate.getUTCMinutes() + step)
-  if (unit === 'second') localDate.setUTCSeconds(localDate.getUTCSeconds() + step)
-  if (unit === 'millisecond') localDate.setUTCMilliseconds(localDate.getUTCMilliseconds() + step)
+  if (unit === 'year') {
+    localDate.setUTCFullYear(localDate.getUTCFullYear() + step)
+  }
+  if (unit === 'quarter') {
+    localDate.setUTCMonth(localDate.getUTCMonth() + step * 3)
+  }
+  if (unit === 'month') {
+    localDate.setUTCMonth(localDate.getUTCMonth() + step)
+  }
+  if (unit === 'week') {
+    localDate.setUTCDate(localDate.getUTCDate() + step * 7)
+  }
+  if (unit === 'day') {
+    localDate.setUTCDate(localDate.getUTCDate() + step)
+  }
+  if (unit === 'hour') {
+    localDate.setUTCHours(localDate.getUTCHours() + step)
+  }
+  if (unit === 'minute') {
+    localDate.setUTCMinutes(localDate.getUTCMinutes() + step)
+  }
+  if (unit === 'second') {
+    localDate.setUTCSeconds(localDate.getUTCSeconds() + step)
+  }
+  if (unit === 'millisecond') {
+    localDate.setUTCMilliseconds(localDate.getUTCMilliseconds() + step)
+  }
 
   return zonedPartsToUtcTimestamp({
     year: localDate.getUTCFullYear(),

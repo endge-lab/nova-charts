@@ -1,10 +1,3 @@
-import {
-  addZonedTime,
-  chartTimeUnitApproxMs,
-  floorZonedTime,
-  getChartTimeUnitRank,
-} from '@/model/time/calendar-time'
-import { LinearScale } from '@/model/scale/LinearScale'
 import type {
   ChartNumericDomain,
   ChartScaleDomain,
@@ -14,10 +7,17 @@ import type {
   ChartTimeTickOptions,
   ChartTimeUnit,
 } from '@/model/types/chart-scale.types'
+import { LinearScale } from '@/model/scale/LinearScale'
+import {
+  addZonedTime,
+  chartTimeUnitApproxMs,
+  floorZonedTime,
+  getChartTimeUnitRank,
+} from '@/model/time/calendar-time'
 
 const DEFAULT_RANGE: ChartScaleRange = [0, 1]
 
-const AUTO_TIME_STEPS: Array<{ unit: ChartTimeUnit; step: number }> = [
+const AUTO_TIME_STEPS: Array<{ unit: ChartTimeUnit, step: number }> = [
   { unit: 'second', step: 1 },
   { unit: 'second', step: 5 },
   { unit: 'second', step: 15 },
@@ -120,9 +120,11 @@ export class TimeScale extends LinearScale {
   ): Array<ChartScaleTick<number>> {
     const formatter = this.createFormatter(options, options.unit && options.unit !== 'auto' ? options.unit : 'day')
 
-    return values.flatMap(item => {
+    return values.flatMap((item) => {
       const value = typeof item === 'object' ? item.value : item
-      if (typeof value !== 'number' || !Number.isFinite(value)) return []
+      if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return []
+      }
 
       return [{
         value,
@@ -138,7 +140,7 @@ export class TimeScale extends LinearScale {
   /**
    * Выбирает единицу и шаг tick для текущего масштаба.
    */
-  private resolveTickUnit(options: ChartTimeTickOptions): { unit: ChartTimeUnit; step: number } {
+  private resolveTickUnit(options: ChartTimeTickOptions): { unit: ChartTimeUnit, step: number } {
     if (options.unit && options.unit !== 'auto') {
       return {
         unit: options.unit,
@@ -156,7 +158,9 @@ export class TimeScale extends LinearScale {
     for (const candidate of AUTO_TIME_STEPS) {
       const approxCount = span / (chartTimeUnitApproxMs[candidate.unit] * candidate.step)
       const stepPx = range / Math.max(1, approxCount)
-      if (approxCount <= maxCount && stepPx >= minStepPx) return candidate
+      if (approxCount <= maxCount && stepPx >= minStepPx) {
+        return candidate
+      }
     }
 
     const yearStep = Math.max(1, Math.ceil(span / chartTimeUnitApproxMs.year / maxCount))
@@ -167,7 +171,9 @@ export class TimeScale extends LinearScale {
    * Создает formatter обычного tick label.
    */
   private createFormatter(options: ChartTimeTickOptions, unit: ChartTimeUnit): (value: number) => string {
-    if (typeof options.format === 'function') return options.format
+    if (typeof options.format === 'function') {
+      return options.format
+    }
 
     const format = options.format ?? defaultTimeFormat(unit)
     const formatter = new Intl.DateTimeFormat(options.locale ?? this.locale, {
@@ -182,7 +188,9 @@ export class TimeScale extends LinearScale {
    * Создает formatter major tick label.
    */
   private createMajorFormatter(options: ChartTimeTickOptions, unit: ChartTimeUnit): (value: number) => string {
-    if (typeof options.majorFormat === 'function') return options.majorFormat
+    if (typeof options.majorFormat === 'function') {
+      return options.majorFormat
+    }
 
     const format = options.majorFormat ?? defaultMajorTimeFormat(unit)
     const formatter = new Intl.DateTimeFormat(options.locale ?? this.locale, {
@@ -203,7 +211,9 @@ export class TimeScale extends LinearScale {
     timezone: string,
   ): boolean {
     const majorUnit = explicitMajorUnit ?? defaultMajorUnit(unit)
-    if (getChartTimeUnitRank(majorUnit) <= getChartTimeUnitRank(unit)) return true
+    if (getChartTimeUnitRank(majorUnit) <= getChartTimeUnitRank(unit)) {
+      return true
+    }
     return floorZonedTime(value, majorUnit, timezone, 1) === value
   }
 }
@@ -212,11 +222,21 @@ export class TimeScale extends LinearScale {
  * Возвращает формат обычного label для календарной единицы.
  */
 function defaultTimeFormat(unit: ChartTimeUnit): Intl.DateTimeFormatOptions {
-  if (unit === 'year') return { year: 'numeric' }
-  if (unit === 'month' || unit === 'quarter') return { month: 'short', year: 'numeric' }
-  if (unit === 'week' || unit === 'day') return { day: '2-digit', month: 'short' }
-  if (unit === 'hour') return { hour: '2-digit', minute: '2-digit' }
-  if (unit === 'minute') return { hour: '2-digit', minute: '2-digit' }
+  if (unit === 'year') {
+    return { year: 'numeric' }
+  }
+  if (unit === 'month' || unit === 'quarter') {
+    return { month: 'short', year: 'numeric' }
+  }
+  if (unit === 'week' || unit === 'day') {
+    return { day: '2-digit', month: 'short' }
+  }
+  if (unit === 'hour') {
+    return { hour: '2-digit', minute: '2-digit' }
+  }
+  if (unit === 'minute') {
+    return { hour: '2-digit', minute: '2-digit' }
+  }
   return { minute: '2-digit', second: '2-digit' }
 }
 
@@ -224,9 +244,15 @@ function defaultTimeFormat(unit: ChartTimeUnit): Intl.DateTimeFormatOptions {
  * Возвращает формат крупного label для календарной единицы.
  */
 function defaultMajorTimeFormat(unit: ChartTimeUnit): Intl.DateTimeFormatOptions {
-  if (unit === 'year') return { year: 'numeric' }
-  if (unit === 'month' || unit === 'quarter') return { year: 'numeric' }
-  if (unit === 'week' || unit === 'day') return { month: 'long', year: 'numeric' }
+  if (unit === 'year') {
+    return { year: 'numeric' }
+  }
+  if (unit === 'month' || unit === 'quarter') {
+    return { year: 'numeric' }
+  }
+  if (unit === 'week' || unit === 'day') {
+    return { month: 'long', year: 'numeric' }
+  }
   return { day: '2-digit', month: 'short', year: 'numeric' }
 }
 
@@ -234,9 +260,17 @@ function defaultMajorTimeFormat(unit: ChartTimeUnit): Intl.DateTimeFormatOptions
  * Возвращает следующую крупную единицу для major ticks.
  */
 function defaultMajorUnit(unit: ChartTimeUnit): ChartTimeUnit {
-  if (unit === 'millisecond' || unit === 'second' || unit === 'minute') return 'hour'
-  if (unit === 'hour') return 'day'
-  if (unit === 'day' || unit === 'week') return 'month'
-  if (unit === 'month' || unit === 'quarter') return 'year'
+  if (unit === 'millisecond' || unit === 'second' || unit === 'minute') {
+    return 'hour'
+  }
+  if (unit === 'hour') {
+    return 'day'
+  }
+  if (unit === 'day' || unit === 'week') {
+    return 'month'
+  }
+  if (unit === 'month' || unit === 'quarter') {
+    return 'year'
+  }
   return 'year'
 }

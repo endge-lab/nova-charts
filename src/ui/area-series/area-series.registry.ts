@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
-import { ChartAreaSeries } from '@/ui/area-series/AreaSeries'
+import type { NovaChartAreaSeriesProps } from '@/model/types/chart-components.types'
+import type { ChartAreaSeriesDescriptor } from '@/ui/area-series/area-series.config'
 import {
+
   createChartAreaSeriesDescriptor,
   normalizeChartAreaSeriesProps,
-  type ChartAreaSeriesDescriptor,
 } from '@/ui/area-series/area-series.config'
-import type { NovaChartAreaSeriesProps } from '@/model/types/chart-components.types'
+import { ChartAreaSeries } from '@/ui/area-series/AreaSeries'
 
 export const CHART_AREA_SERIES_DESCRIPTOR: ChartAreaSeriesDescriptor = createChartAreaSeriesDescriptor((context, schema) => {
   return new ChartAreaSeries(

@@ -1,10 +1,11 @@
-import { ChartBarChart } from '@/ui/bar-chart/BarChart'
+import type { NovaChartBarChartProps } from '@/model/types/chart-components.types'
+import type { ChartBarChartDescriptor } from '@/ui/bar-chart/bar-chart.config'
 import {
+
   createChartBarChartDescriptor,
   normalizeChartBarChartProps,
-  type ChartBarChartDescriptor,
 } from '@/ui/bar-chart/bar-chart.config'
-import type { NovaChartBarChartProps } from '@/model/types/chart-components.types'
+import { ChartBarChart } from '@/ui/bar-chart/BarChart'
 
 export const CHART_BAR_CHART_DESCRIPTOR: ChartBarChartDescriptor = createChartBarChartDescriptor((context, schema) => {
   return new ChartBarChart(

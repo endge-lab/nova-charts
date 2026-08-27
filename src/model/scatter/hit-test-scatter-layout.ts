@@ -24,14 +24,20 @@ export function hitTestPointLayoutPlan<TData>(
   input: NovaChartHitTestInput,
   fallbackDistancePx: number,
 ): NovaChartHitTestResult<TData> | null {
-  if (points.length === 0) return null
+  if (points.length === 0) {
+    return null
+  }
 
-  let best: { point: NovaChartScatterLayoutPoint<TData>; distance: number } | null = null
+  let best: { point: NovaChartScatterLayoutPoint<TData>, distance: number } | null = null
   for (const point of points) {
     const maxDistancePx = Math.max(fallbackDistancePx, point.radius)
     const distance = Math.hypot(point.x - input.x, point.y - input.y)
-    if (distance > maxDistancePx) continue
-    if (!best || distance < best.distance) best = { point, distance }
+    if (distance > maxDistancePx) {
+      continue
+    }
+    if (!best || distance < best.distance) {
+      best = { point, distance }
+    }
   }
 
   return best ? toHitTestResult(seriesId, seriesKind, best.point, best.distance) : null

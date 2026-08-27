@@ -13,43 +13,55 @@ export function hitTestBarLayoutPlan<TData>(
   input: NovaChartHitTestInput,
 ): NovaChartHitTestResult<TData> | null {
   const items = plan.items
-  if (items.length === 0) return null
+  if (items.length === 0) {
+    return null
+  }
 
   const mode = input.mode ?? 'exact'
   const exact = findExactItem(items, input.x, input.y)
-  if (exact) return toHitTestResult(seriesId, plan, exact, input.x, input.y, 0)
-  if (mode !== 'nearest') return null
+  if (exact) {
+    return toHitTestResult(seriesId, plan, exact, input.x, input.y, 0)
+  }
+  if (mode !== 'nearest') {
+    return null
+  }
 
   const maxDistancePx = input.maxDistancePx ?? 16
   const nearest = findNearestItem(items, input.x, input.y, maxDistancePx)
   return nearest ? toHitTestResult(seriesId, plan, nearest.item, input.x, input.y, nearest.distance) : null
 }
 
-function findExactItem<TItem extends { x: number; y: number; width: number; height: number }>(
+function findExactItem<TItem extends { x: number, y: number, width: number, height: number }>(
   items: Array<TItem>,
   x: number,
   y: number,
 ): TItem | null {
   for (const item of items) {
-    if (x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height) return item
+    if (x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height) {
+      return item
+    }
   }
 
   return null
 }
 
-function findNearestItem<TItem extends { x: number; y: number; width: number; height: number }>(
+function findNearestItem<TItem extends { x: number, y: number, width: number, height: number }>(
   items: Array<TItem>,
   x: number,
   y: number,
   maxDistancePx: number,
-): { item: TItem; distance: number } | null {
-  let best: { item: TItem; distance: number } | null = null
+): { item: TItem, distance: number } | null {
+  let best: { item: TItem, distance: number } | null = null
   for (const item of items) {
     const centerX = item.x + item.width / 2
     const centerY = item.y + item.height / 2
     const distance = Math.hypot(centerX - x, centerY - y)
-    if (distance > maxDistancePx) continue
-    if (!best || distance < best.distance) best = { item, distance }
+    if (distance > maxDistancePx) {
+      continue
+    }
+    if (!best || distance < best.distance) {
+      best = { item, distance }
+    }
   }
   return best
 }
@@ -92,7 +104,7 @@ function toHitTestResult<TData>(
 }
 
 function distanceToRect(
-  item: { x: number; y: number; width: number; height: number },
+  item: { x: number, y: number, width: number, height: number },
   x: number,
   y: number,
 ): number {

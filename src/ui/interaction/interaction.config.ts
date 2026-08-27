@@ -5,16 +5,16 @@ import type {
   NovaComponentSchema,
 } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import type {
   NovaChartInteractionApi,
   NovaChartInteractionProps,
   NovaChartInteractionResolvedProps,
 } from '@/model/types/chart-components.types'
+import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import {
+  normalizeChartInteractionProps,
   NOVA_CHARTS_COMMON_DIRTY_POLICY,
   NOVA_CHARTS_COMMON_FIELD_DEFINITIONS,
-  normalizeChartInteractionProps,
 } from '@/ui/shared/chart-props'
 
 export type ChartInteractionDescriptor = NovaComponentDescriptor<
@@ -53,7 +53,9 @@ export function createChartInteractionDescriptor(createNode?: ChartInteractionNo
     measureBounds: (_context, schema) => commonMeasureBounds(schema, normalizeChartInteractionProps),
   }
 
-  if (createNode) descriptor.createNode = createNode
+  if (createNode) {
+    descriptor.createNode = createNode
+  }
   return descriptor
 }
 

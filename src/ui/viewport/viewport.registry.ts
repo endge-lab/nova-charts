@@ -1,10 +1,11 @@
+import type { NovaChartViewportProps } from '@/model/types/chart-components.types'
+import type { ChartViewportDescriptor } from '@/ui/viewport/viewport.config'
 import { ChartViewport } from '@/ui/viewport/Viewport'
 import {
+
   createChartViewportDescriptor,
   normalizeChartViewportProps,
-  type ChartViewportDescriptor,
 } from '@/ui/viewport/viewport.config'
-import type { NovaChartViewportProps } from '@/model/types/chart-components.types'
 
 export const CHART_VIEWPORT_DESCRIPTOR: ChartViewportDescriptor = createChartViewportDescriptor((context, schema) => {
   return new ChartViewport(

@@ -8,7 +8,9 @@ import type {
 export function normalizeChartViewportControllerOptions(
   options: false | NovaChartViewportControllerOptions | undefined,
 ): false | NovaChartViewportControllerResolvedOptions {
-  if (options === false) return false
+  if (options === false) {
+    return false
+  }
   const wheel = typeof options?.wheel === 'object' ? options.wheel : {}
   const trackpad = typeof options?.trackpad === 'object' ? options.trackpad : {}
   const pointerPan = typeof options?.pointerPan === 'object' ? options.pointerPan : {}
@@ -71,8 +73,12 @@ export function resolveChartViewportWheelIntent(
   options: NovaChartViewportControllerResolvedOptions,
 ): NovaChartViewportControllerWheelIntent | null {
   const custom = options.mapWheel?.(event, context)
-  if (custom) return custom
-  if (!options.wheel.enabled) return null
+  if (custom) {
+    return custom
+  }
+  if (!options.wheel.enabled) {
+    return null
+  }
 
   const horizontal = context.orientation === 'horizontal'
   const absX = Math.abs(event.deltaX)
@@ -83,21 +89,27 @@ export function resolveChartViewportWheelIntent(
   if (options.wheel.axis === 'horizontal') {
     axis = 'horizontal'
     delta = resolveHorizontalWheelDelta(event, options)
-  } else if (options.wheel.axis === 'vertical') {
+  }
+  else if (options.wheel.axis === 'vertical') {
     axis = 'vertical'
     delta = event.deltaY
-  } else if (options.wheel.useDeltaX && absX > absY) {
+  }
+  else if (options.wheel.useDeltaX && absX > absY) {
     axis = 'horizontal'
     delta = event.deltaX
-  } else if (horizontal && options.wheel.shiftYToX && event.shiftKey) {
+  }
+  else if (horizontal && options.wheel.shiftYToX && event.shiftKey) {
     axis = 'horizontal'
     delta = event.deltaY
-  } else if (horizontal) {
+  }
+  else if (horizontal) {
     axis = 'horizontal'
     delta = options.trackpad.preferDeltaX && absX > 0 ? event.deltaX : event.deltaY
   }
 
-  if (Math.abs(delta) < options.wheel.thresholdPx) return null
+  if (Math.abs(delta) < options.wheel.thresholdPx) {
+    return null
+  }
   return {
     axis,
     delta,
@@ -116,7 +128,9 @@ export function chartViewportDeltaToSteps(
       ? intent.delta
       : intent.delta / 48
   const signed = Math.sign(base)
-  if (signed === 0) return 0
+  if (signed === 0) {
+    return 0
+  }
   return signed * Math.max(1, Math.round(Math.abs(base) * options.wheel.speed))
 }
 
@@ -124,8 +138,12 @@ export function shouldPreventChartViewportWheelDefault(
   consumed: boolean,
   options: NovaChartViewportControllerResolvedOptions,
 ): boolean {
-  if (options.wheel.preventDefault === 'always') return true
-  if (options.wheel.preventDefault === 'never') return false
+  if (options.wheel.preventDefault === 'always') {
+    return true
+  }
+  if (options.wheel.preventDefault === 'never') {
+    return false
+  }
   return consumed
 }
 
@@ -133,8 +151,12 @@ function resolveHorizontalWheelDelta(
   event: WheelEvent,
   options: NovaChartViewportControllerResolvedOptions,
 ): number {
-  if (options.wheel.useDeltaX && Math.abs(event.deltaX) > 0) return event.deltaX
-  if (options.wheel.shiftYToX && event.shiftKey) return event.deltaY
+  if (options.wheel.useDeltaX && Math.abs(event.deltaX) > 0) {
+    return event.deltaX
+  }
+  if (options.wheel.shiftYToX && event.shiftKey) {
+    return event.deltaY
+  }
   return event.deltaY
 }
 

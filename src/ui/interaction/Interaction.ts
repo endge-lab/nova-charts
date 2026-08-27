@@ -1,17 +1,18 @@
 import type { NovaApp, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import type {
   NovaChartHitTestResult,
   NovaChartInteractionApi,
   NovaChartInteractionProps,
   NovaChartInteractionResolvedProps,
 } from '@/model/types/chart-components.types'
+import type { ChartInteractionDescriptor } from '@/ui/interaction/interaction.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
 import {
   CHART_INTERACTION_NODE_DESCRIPTOR,
-  type ChartInteractionDescriptor,
+
 } from '@/ui/interaction/interaction.config'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 
 /**
  * Универсальный pointer-layer chart interaction: hover, hit-test и tooltip state.
@@ -85,10 +86,14 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
    * Обрабатывает runtime-событие ChartInteraction.
    */
   private handlePointerMove(event: MouseEvent): void {
-    if (!this.props.enabled || !this.props.hover) return
+    if (!this.props.enabled || !this.props.hover) {
+      return
+    }
 
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
 
     const canvasPoint = this.nova.events.getCanvasMousePosition(event)
     const [plotX, plotY] = this.toLocal(canvasPoint.x, canvasPoint.y)
@@ -123,20 +128,28 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
    */
   private findHoveredDatum(x: number, y: number): NovaChartHitTestResult<Record<string, unknown>> | null {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
-    if (!runtime) return null
+    if (!runtime) {
+      return null
+    }
 
     const allowed = this.props.seriesIds.length > 0 ? new Set(this.props.seriesIds) : null
     let best: NovaChartHitTestResult | null = null
     for (const series of runtime.getInteractiveSeries()) {
-      if (allowed && !allowed.has(series.id)) continue
+      if (allowed && !allowed.has(series.id)) {
+        continue
+      }
       const hit = series.api.hitTest({
         x,
         y,
         mode: this.props.mode,
         maxDistancePx: this.props.maxDistancePx,
       })
-      if (!hit) continue
-      if (!best || hit.distancePx < best.distancePx) best = hit
+      if (!hit) {
+        continue
+      }
+      if (!best || hit.distancePx < best.distancePx) {
+        best = hit
+      }
     }
     return best
   }

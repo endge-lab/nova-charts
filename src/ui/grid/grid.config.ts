@@ -5,16 +5,16 @@ import type {
   NovaComponentSchema,
 } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import type {
   NovaChartGridApi,
   NovaChartGridProps,
   NovaChartGridResolvedProps,
 } from '@/model/types/chart-components.types'
+import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import {
+  normalizeChartGridProps,
   NOVA_CHARTS_COMMON_DIRTY_POLICY,
   NOVA_CHARTS_COMMON_FIELD_DEFINITIONS,
-  normalizeChartGridProps,
 } from '@/ui/shared/chart-props'
 
 export type ChartGridDescriptor = NovaComponentDescriptor<
@@ -52,7 +52,9 @@ export function createChartGridDescriptor(createNode?: ChartGridNodeFactory): Ch
     measureBounds: (_context, schema) => commonMeasureBounds(schema, normalizeChartGridProps),
   }
 
-  if (createNode) descriptor.createNode = createNode
+  if (createNode) {
+    descriptor.createNode = createNode
+  }
   return descriptor
 }
 

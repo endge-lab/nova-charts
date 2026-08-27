@@ -1,15 +1,5 @@
 import type { NovaApp, NovaSchema, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import {
-  createLineSeriesLayout,
-  resolveLineXDomain,
-  resolveLineYDomain,
-} from '@/model/line/create-line-series-layout'
-import { hitTestLineLayoutPlan } from '@/model/line/hit-test-line-layout'
-import { renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
-import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
-import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
 import type { NovaChartRuntime } from '@/model/context/nova-chart-runtime'
 import type {
   NovaChartHitTestInput,
@@ -25,11 +15,22 @@ import type {
   NovaChartResolvedMarkStyle,
   NovaChartStyleContext,
 } from '@/model/types/chart-components.types'
+import type { ChartLineSeriesDescriptor } from '@/ui/line-series/line-series.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import { renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
+import {
+  createLineSeriesLayout,
+  resolveLineXDomain,
+  resolveLineYDomain,
+} from '@/model/line/create-line-series-layout'
+import { hitTestLineLayoutPlan } from '@/model/line/hit-test-line-layout'
 import {
   CHART_LINE_SERIES_NODE_DESCRIPTOR,
+
   normalizeChartLineSeriesProps,
-  type ChartLineSeriesDescriptor,
 } from '@/ui/line-series/line-series.config'
+import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
+import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
 
 const EMPTY_DIAGNOSTICS: NovaChartLineSeriesDiagnostics = {
   kind: 'line',
@@ -197,8 +198,12 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
         totalMs: this.layoutPlan.diagnostics.domainMs + this.layoutPlan.diagnostics.layoutMs + schemaMs,
       },
     }
-    if (runtime) this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (runtime) {
+      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+    }
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
   }
 
   /**
@@ -233,7 +238,9 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
    */
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartLineSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
-    if (changedKeys.includes('chartRef')) this.runtimeBinding.syncInteractive()
+    if (changedKeys.includes('chartRef')) {
+      this.runtimeBinding.syncInteractive()
+    }
     this.refresh()
   }
 
@@ -397,7 +404,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
   private resolveMarkerStyle(
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
-    legacy: { fill: string; strokeColor: string; radius: number },
+    legacy: { fill: string, strokeColor: string, radius: number },
   ): NovaChartResolvedMarkStyle {
     const datumStyle = this.props.style?.datum?.(context)
     return runtime?.customization.resolveMarkStyle(context, {

@@ -1,11 +1,12 @@
 import type { NovaSchemaRegistry } from '@endge/nova'
+import type { NovaChartGridProps } from '@/model/types/chart-components.types'
+import type { ChartGridDescriptor } from '@/ui/grid/grid.config'
 import { ChartGrid } from '@/ui/grid/Grid'
 import {
+
   createChartGridDescriptor,
   normalizeChartGridProps,
-  type ChartGridDescriptor,
 } from '@/ui/grid/grid.config'
-import type { NovaChartGridProps } from '@/model/types/chart-components.types'
 
 export const CHART_GRID_DESCRIPTOR: ChartGridDescriptor = createChartGridDescriptor((context, schema) => {
   return new ChartGrid(

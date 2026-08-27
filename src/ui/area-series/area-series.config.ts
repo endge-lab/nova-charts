@@ -5,16 +5,16 @@ import type {
   NovaComponentSchema,
 } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import type {
   NovaChartAreaSeriesApi,
   NovaChartAreaSeriesProps,
   NovaChartAreaSeriesResolvedProps,
 } from '@/model/types/chart-components.types'
+import { commonMeasureBounds } from '@endge/nova-ui-kit'
 import {
+  normalizeChartAreaSeriesProps,
   NOVA_CHARTS_COMMON_DIRTY_POLICY,
   NOVA_CHARTS_COMMON_FIELD_DEFINITIONS,
-  normalizeChartAreaSeriesProps,
 } from '@/ui/shared/chart-props'
 
 export type ChartAreaSeriesDescriptor<TData = Record<string, unknown>> = NovaComponentDescriptor<
@@ -67,7 +67,9 @@ export function createChartAreaSeriesDescriptor(createNode?: ChartAreaSeriesNode
     measureBounds: (_context, schema) => commonMeasureBounds(schema, normalizeChartAreaSeriesProps),
   }
 
-  if (createNode) descriptor.createNode = createNode
+  if (createNode) {
+    descriptor.createNode = createNode
+  }
   return descriptor
 }
 

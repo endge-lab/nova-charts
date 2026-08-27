@@ -1,34 +1,30 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { NovaApp, NovaNode } from '@endge/nova'
+import type { NovaChartAreaSeriesApi, NovaChartBubbleSeriesApi, NovaChartComposedChartApi, NovaChartLegendApi, NovaChartRootApi, NovaChartScatterSeriesApi, NovaChartViewportApi } from '@/index'
 import {
   Nova,
+
   RaphSchedulerType,
   RendererType,
-  type NovaApp,
-  type NovaNode,
 } from '@endge/nova'
 import { NovaUIKit, registerNovaUIKit } from '@endge/nova-ui-kit'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   BandScale,
   ChartDataStore,
-  LinearScale,
-  NovaCharts,
   createAreaSeriesLayout,
   createBubbleSeriesLayout,
   hitTestAreaLayoutPlan,
   hitTestBubbleLayoutPlan,
+  LinearScale,
   normalizeChartAreaSeriesProps,
   normalizeChartBubbleSeriesProps,
+
+  NovaCharts,
+
   registerNovaCharts,
   resolveAreaYDomain,
-  type NovaChartAreaSeriesApi,
-  type NovaChartBubbleSeriesApi,
-  type NovaChartComposedChartApi,
-  type NovaChartLegendApi,
-  type NovaChartRootApi,
-  type NovaChartScatterSeriesApi,
-  type NovaChartViewportApi,
 } from '@/index'
 
 type TestEvents = Record<string, any>
@@ -50,7 +46,9 @@ function installCanvasMocks(): void {
     configurable: true,
   })
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockImplementation((type: string) => {
-    if (type === RendererType.Web2D) return create2DContextStub()
+    if (type === RendererType.Web2D) {
+      return create2DContextStub()
+    }
     return null
   })
 }
@@ -62,7 +60,9 @@ function create2DContextStub(): CanvasRenderingContext2D {
   }
   return new Proxy(state, {
     get(target, prop) {
-      if (!(prop in target)) target[prop] = vi.fn()
+      if (!(prop in target)) {
+        target[prop] = vi.fn()
+      }
       return target[prop]
     },
     set(target, prop, value) {
@@ -198,7 +198,7 @@ beforeEach(() => {
   installCanvasMocks()
 })
 
-describe('Nova Charts cartesian series', () => {
+describe('nova Charts cartesian series', () => {
   it('exports and registers new public schema names', () => {
     const app = createApp()
     expect(NovaCharts.ScatterSeries).toBe('NovaCharts.ScatterSeries')

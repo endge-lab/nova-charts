@@ -1,10 +1,4 @@
-import { BandScale } from '@/model/scale/BandScale'
 import type { ChartDataStore } from '@/model/data/ChartDataStore'
-import type {
-  ChartScale,
-  ChartScaleDomain,
-  ChartScaleValue,
-} from '@/model/types/chart-scale.types'
 import type {
   NovaChartLineColorContext,
   NovaChartLineLayoutPlan,
@@ -16,6 +10,12 @@ import type {
   NovaChartLineVirtualizationOptions,
   NovaChartSeriesMetadata,
 } from '@/model/types/chart-components.types'
+import type {
+  ChartScale,
+  ChartScaleDomain,
+  ChartScaleValue,
+} from '@/model/types/chart-scale.types'
+import { BandScale } from '@/model/scale/BandScale'
 
 export const DEFAULT_LINE_VIRTUALIZATION: Required<NovaChartLineVirtualizationOptions> = {
   enabled: true,
@@ -90,7 +90,9 @@ export function resolveLineXDomain<TData>(input: NovaChartLineLayoutInput<TData>
     const domain: Array<string> = []
     rows.forEach((row, rowIndex) => {
       const value = String(input.dataStore.readField(row, rowIndex, input.props.xField) ?? '')
-      if (seen.has(value)) return
+      if (seen.has(value)) {
+        return
+      }
       seen.add(value)
       domain.push(value)
     })
@@ -130,14 +132,18 @@ function normalizeRows<TData>(
       seriesLabel,
     }
     if (!isDefinedPoint(input, context)) {
-      if (!input.props.connectNulls) segmentGroups.set(seriesKey, (segmentGroups.get(seriesKey) ?? 0) + 1)
+      if (!input.props.connectNulls) {
+        segmentGroups.set(seriesKey, (segmentGroups.get(seriesKey) ?? 0) + 1)
+      }
       return
     }
 
     const x = resolveXPosition(input.xScale, xValue)
     const y = Number(input.yScale.toPx(yValue as ChartScaleValue))
     if (!Number.isFinite(x) || !Number.isFinite(y)) {
-      if (!input.props.connectNulls) segmentGroups.set(seriesKey, (segmentGroups.get(seriesKey) ?? 0) + 1)
+      if (!input.props.connectNulls) {
+        segmentGroups.set(seriesKey, (segmentGroups.get(seriesKey) ?? 0) + 1)
+      }
       return
     }
 
@@ -160,8 +166,12 @@ function normalizeRows<TData>(
   })
 
   return result.sort((a, b) => {
-    if (a.seriesKey !== b.seriesKey) return a.seriesKey.localeCompare(b.seriesKey)
-    if (a.segmentGroup !== b.segmentGroup) return a.segmentGroup - b.segmentGroup
+    if (a.seriesKey !== b.seriesKey) {
+      return a.seriesKey.localeCompare(b.seriesKey)
+    }
+    if (a.segmentGroup !== b.segmentGroup) {
+      return a.segmentGroup - b.segmentGroup
+    }
     return a.order - b.order || a.rowIndex - b.rowIndex
   })
 }
@@ -182,8 +192,12 @@ function createSegments<TData>(
     for (let index = 1; index < seriesPoints.length; index += 1) {
       const previous = seriesPoints[index - 1]
       const current = seriesPoints[index]
-      if (!previous || !current) continue
-      if (readSegmentGroup(previous) !== readSegmentGroup(current)) continue
+      if (!previous || !current) {
+        continue
+      }
+      if (readSegmentGroup(previous) !== readSegmentGroup(current)) {
+        continue
+      }
       if (input.props.curve === 'step') {
         const midKey = `${previous.key}:${current.key}:step`
         segments.push({
@@ -231,7 +245,9 @@ function createSeriesMetadata<TData>(
   rows.forEach((row, rowIndex) => {
     const value = input.props.seriesField ? input.dataStore.readField(row, rowIndex, input.props.seriesField) : undefined
     const id = value === undefined || value === null ? '__default' : String(value)
-    if (seen.has(id)) return
+    if (seen.has(id)) {
+      return
+    }
     seen.add(id)
     result.push({
       id,
@@ -246,17 +262,19 @@ function createSeriesMetadata<TData>(
     })
   })
 
-  return result.length > 0 ? result : [{
-    id: '__default',
-    kind: 'line',
-    scaleIds: {
-      x: input.props.xScaleId,
-      y: input.props.yScaleId,
-    },
-    label: 'Line',
-    color: input.props.stroke,
-    visible: true,
-  }]
+  return result.length > 0
+    ? result
+    : [{
+        id: '__default',
+        kind: 'line',
+        scaleIds: {
+          x: input.props.xScaleId,
+          y: input.props.yScaleId,
+        },
+        label: 'Line',
+        color: input.props.stroke,
+        visible: true,
+      }]
 }
 
 function createSeriesIndex(series: Array<NovaChartSeriesMetadata>): Map<string, NovaChartSeriesMetadata> {
@@ -273,7 +291,9 @@ function resolveXValue<TData>(
 }
 
 function resolveXPosition(scale: ChartScale<ChartScaleValue>, xValue: ChartScaleValue): number {
-  if (scale instanceof BandScale) return scale.center(String(xValue))
+  if (scale instanceof BandScale) {
+    return scale.center(String(xValue))
+  }
   return Number(scale.toPx(xValue))
 }
 
@@ -290,8 +310,12 @@ function isDefinedPoint<TData>(
   input: NovaChartLineLayoutInput<TData>,
   context: NovaChartLinePointContext<TData>,
 ): boolean {
-  if (!Number.isFinite(context.yValue)) return false
-  if (typeof context.xValue === 'number' && !Number.isFinite(context.xValue)) return false
+  if (!Number.isFinite(context.yValue)) {
+    return false
+  }
+  if (typeof context.xValue === 'number' && !Number.isFinite(context.xValue)) {
+    return false
+  }
   return input.props.defined?.(context) ?? true
 }
 
@@ -300,11 +324,17 @@ function resolvePointColor<TData>(
   context: NovaChartLineColorContext<TData>,
   series?: NovaChartSeriesMetadata,
 ): string {
-  if (typeof input.props.colors.stroke === 'function') return input.props.colors.stroke(context)
-  if (typeof input.props.colors.stroke === 'string') return input.props.colors.stroke
+  if (typeof input.props.colors.stroke === 'function') {
+    return input.props.colors.stroke(context)
+  }
+  if (typeof input.props.colors.stroke === 'string') {
+    return input.props.colors.stroke
+  }
   if (input.props.colors.colorField && context.row) {
     const color = input.dataStore.readField(context.row, context.rowIndex ?? -1, input.props.colors.colorField)
-    if (typeof color === 'string' && color) return color
+    if (typeof color === 'string' && color) {
+      return color
+    }
   }
   return series?.color ?? input.props.stroke
 }
@@ -325,7 +355,9 @@ function sampleCandidates<TData>(
   points: Array<LineCandidate<TData>>,
   maxRenderedPoints: number,
 ): Array<LineCandidate<TData>> {
-  if (points.length <= maxRenderedPoints) return points
+  if (points.length <= maxRenderedPoints) {
+    return points
+  }
   const sampleStep = Math.ceil(points.length / maxRenderedPoints)
   return points.filter((_point, index) => index % sampleStep === 0)
 }
@@ -335,8 +367,12 @@ function resolveRenderMode<TData>(
   visibleRows: number,
   renderedPoints: number,
 ): NovaChartLineSeriesDiagnostics['mode'] {
-  if (!input.props.virtualization.enabled) return 'direct'
-  if (renderedPoints < visibleRows) return 'sampled'
+  if (!input.props.virtualization.enabled) {
+    return 'direct'
+  }
+  if (renderedPoints < visibleRows) {
+    return 'sampled'
+  }
   return visibleRows < input.dataStore.rowCount ? 'windowed' : 'direct'
 }
 
@@ -355,9 +391,15 @@ function extentDomain(values: Array<number>): ChartScaleDomain {
   let min = Number.POSITIVE_INFINITY
   let max = Number.NEGATIVE_INFINITY
   for (const value of values) {
-    if (!Number.isFinite(value)) continue
-    if (value < min) min = value
-    if (value > max) max = value
+    if (!Number.isFinite(value)) {
+      continue
+    }
+    if (value < min) {
+      min = value
+    }
+    if (value > max) {
+      max = value
+    }
   }
   return min === Number.POSITIVE_INFINITY ? [0, 1] : [min, max]
 }

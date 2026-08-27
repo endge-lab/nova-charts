@@ -12,18 +12,26 @@ export function hitTestBubbleLayoutPlan<TData>(
   plan: NovaChartBubbleLayoutPlan<TData>,
   input: NovaChartHitTestInput,
 ): NovaChartHitTestResult<TData> | null {
-  if (plan.points.length === 0) return null
+  if (plan.points.length === 0) {
+    return null
+  }
 
   const tolerance = input.maxDistancePx ?? 8
-  let best: { point: NovaChartBubbleLayoutPlan<TData>['points'][number]; distance: number } | null = null
+  let best: { point: NovaChartBubbleLayoutPlan<TData>['points'][number], distance: number } | null = null
   for (const point of plan.points) {
     const centerDistance = Math.hypot(point.x - input.x, point.y - input.y)
     const edgeDistance = Math.max(0, centerDistance - point.radius)
-    if (edgeDistance > tolerance) continue
-    if (!best || edgeDistance < best.distance) best = { point, distance: edgeDistance }
+    if (edgeDistance > tolerance) {
+      continue
+    }
+    if (!best || edgeDistance < best.distance) {
+      best = { point, distance: edgeDistance }
+    }
   }
 
-  if (!best) return null
+  if (!best) {
+    return null
+  }
   const point = best.point
   return {
     seriesId,

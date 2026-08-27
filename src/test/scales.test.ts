@@ -6,7 +6,7 @@ import { createChartScale } from '@/model/scale/create-chart-scale'
 import { LinearScale } from '@/model/scale/LinearScale'
 import { TimeScale } from '@/model/scale/TimeScale'
 
-describe('LinearScale', () => {
+describe('linearScale', () => {
   it('maps values to pixels and back', () => {
     const scale = new LinearScale('value', {
       domain: [10, 20],
@@ -27,7 +27,7 @@ describe('LinearScale', () => {
   })
 })
 
-describe('BandScale', () => {
+describe('bandScale', () => {
   it('maps categories to bands and exposes centers', () => {
     const scale = new BandScale('groups', {
       domain: ['a', 'b', 'c'],
@@ -61,7 +61,7 @@ describe('BandScale', () => {
   })
 })
 
-describe('TimeScale', () => {
+describe('timeScale', () => {
   it('creates calendar month ticks without approximating month as 30 days', () => {
     const scale = new TimeScale('time', {
       domain: [
@@ -109,7 +109,7 @@ describe('TimeScale', () => {
   })
 })
 
-describe('ChartScaleRegistry', () => {
+describe('chartScaleRegistry', () => {
   it('stores scales by id and updates ranges', () => {
     const registry = new ChartScaleRegistry()
     registry.register(createChartScale({
@@ -124,7 +124,7 @@ describe('ChartScaleRegistry', () => {
   })
 })
 
-describe('ChartAxisModel', () => {
+describe('chartAxisModel', () => {
   it('creates axis render plans from registered scales', () => {
     const registry = new ChartScaleRegistry()
     registry.register(new LinearScale('value', {

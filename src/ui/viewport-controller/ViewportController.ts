@@ -1,12 +1,5 @@
 import type { NovaApp, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import {
-  chartViewportDeltaToSteps,
-  resolveChartViewportWheelIntent,
-  shouldPreventChartViewportWheelDefault,
-} from '@/model/viewport-controller/viewport-controller'
-import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import type {
   NovaChartHitTestResult,
   NovaChartViewportApi,
@@ -14,11 +7,19 @@ import type {
   NovaChartViewportControllerProps,
   NovaChartViewportControllerResolvedProps,
 } from '@/model/types/chart-components.types'
+import type { ChartViewportControllerDescriptor } from '@/ui/viewport-controller/viewport-controller.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import {
+  chartViewportDeltaToSteps,
+  resolveChartViewportWheelIntent,
+  shouldPreventChartViewportWheelDefault,
+} from '@/model/viewport-controller/viewport-controller'
+import { normalizeChartViewportControllerProps } from '@/ui/shared/chart-props'
+import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
 import {
   CHART_VIEWPORT_CONTROLLER_NODE_DESCRIPTOR,
-  type ChartViewportControllerDescriptor,
+
 } from '@/ui/viewport-controller/viewport-controller.config'
-import { normalizeChartViewportControllerProps } from '@/ui/shared/chart-props'
 
 /**
  * ViewportController - input-layer для wheel/trackpad/pan/keyboard над chart plot.
@@ -87,7 +88,9 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
 
   private handleWheel(event: WheelEvent): void {
     const viewport = this.viewport()
-    if (!this.props.enabled || !viewport) return
+    if (!this.props.enabled || !viewport) {
+      return
+    }
 
     const state = viewport.getViewportState()
     const intent = resolveChartViewportWheelIntent(event, {
@@ -109,7 +112,9 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     const consumed = viewport.canScroll(delta)
     const shouldPassThrough = !consumed && this.props.wheel.edgeBehavior === 'pass-through'
     this.allowWheelDefault(event, shouldPassThrough || !shouldPreventChartViewportWheelDefault(consumed, this.props))
-    if (consumed || this.props.wheel.edgeBehavior === 'clamp') viewport.scrollBy(delta, event)
+    if (consumed || this.props.wheel.edgeBehavior === 'clamp') {
+      viewport.scrollBy(delta, event)
+    }
     this.props.onInput?.({
       source: intent.source ?? 'wheel',
       value: viewport.getViewportState().value,
@@ -120,25 +125,37 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
   }
 
   private handleMouseDown(event: MouseEvent): void {
-    if (!this.props.enabled) return
+    if (!this.props.enabled) {
+      return
+    }
     this.focus(event)
-    if (!this.props.pointerPan.enabled || !matchesButton(event, this.props.pointerPan.button)) return
+    if (!this.props.pointerPan.enabled || !matchesButton(event, this.props.pointerPan.button)) {
+      return
+    }
     this.panning = true
     event.stopPropagation()
   }
 
   private handleDragMove(event: MouseEvent, dx: number, dy: number): void {
-    if (!this.panning) return
+    if (!this.panning) {
+      return
+    }
     const viewport = this.viewport()
-    if (!viewport) return
+    if (!viewport) {
+      return
+    }
 
     const horizontal = this.resolveOrientation() === 'horizontal'
     const raw = horizontal ? -dx : -dy
     const delta = Math.trunc(raw / 48 * this.props.pointerPan.speed)
-    if (delta === 0) return
+    if (delta === 0) {
+      return
+    }
 
     const consumed = viewport.canScroll(delta)
-    if (consumed || this.props.wheel.edgeBehavior === 'clamp') viewport.scrollBy(delta, event)
+    if (consumed || this.props.wheel.edgeBehavior === 'clamp') {
+      viewport.scrollBy(delta, event)
+    }
     this.props.onInput?.({
       source: 'pointer-pan',
       value: viewport.getViewportState().value,
@@ -150,31 +167,55 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
   }
 
   private handleDragEnd(event: MouseEvent): void {
-    if (!this.panning) return
+    if (!this.panning) {
+      return
+    }
     this.panning = false
     event.stopPropagation()
   }
 
   private handleKeydown(event: KeyboardEvent): void {
-    if (!this.props.enabled || !this.props.keyboard.enabled) return
+    if (!this.props.enabled || !this.props.keyboard.enabled) {
+      return
+    }
     const viewport = this.viewport()
-    if (!viewport) return
+    if (!viewport) {
+      return
+    }
 
     const horizontal = this.resolveOrientation() === 'horizontal'
     const keys = this.props.keyboard.keys
     let delta = 0
-    if (event.key === keys.home) delta = -viewport.getViewportState().value
-    else if (event.key === keys.end) delta = viewport.getViewportState().max - viewport.getViewportState().value
-    else if (horizontal && event.key === keys.left) delta = -this.props.keyboard.step
-    else if (horizontal && event.key === keys.right) delta = this.props.keyboard.step
-    else if (!horizontal && event.key === keys.up) delta = -this.props.keyboard.step
-    else if (!horizontal && event.key === keys.down) delta = this.props.keyboard.step
-    else if (event.key === keys.pageLeft || event.key === keys.pageUp) delta = -this.props.keyboard.pageStep
-    else if (event.key === keys.pageRight || event.key === keys.pageDown) delta = this.props.keyboard.pageStep
-    else return
+    if (event.key === keys.home) {
+      delta = -viewport.getViewportState().value
+    }
+    else if (event.key === keys.end) {
+      delta = viewport.getViewportState().max - viewport.getViewportState().value
+    }
+    else if (horizontal && event.key === keys.left) {
+      delta = -this.props.keyboard.step
+    }
+    else if (horizontal && event.key === keys.right) {
+      delta = this.props.keyboard.step
+    }
+    else if (!horizontal && event.key === keys.up) {
+      delta = -this.props.keyboard.step
+    }
+    else if (!horizontal && event.key === keys.down) {
+      delta = this.props.keyboard.step
+    }
+    else if (event.key === keys.pageLeft || event.key === keys.pageUp) {
+      delta = -this.props.keyboard.pageStep
+    }
+    else if (event.key === keys.pageRight || event.key === keys.pageDown) {
+      delta = this.props.keyboard.pageStep
+    }
+    else { return }
 
     const consumed = viewport.canScroll(delta)
-    if (consumed || this.props.wheel.edgeBehavior === 'clamp') viewport.scrollBy(delta, event)
+    if (consumed || this.props.wheel.edgeBehavior === 'clamp') {
+      viewport.scrollBy(delta, event)
+    }
     this.props.onInput?.({
       source: 'keyboard',
       value: viewport.getViewportState().value,
@@ -188,7 +229,9 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
 
   private forwardHover(event: MouseEvent): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
-    if (!runtime) return
+    if (!runtime) {
+      return
+    }
 
     const canvasPoint = this.nova.events.getCanvasMousePosition(event)
     const [plotX, plotY] = this.toLocal(canvasPoint.x, canvasPoint.y)
@@ -200,8 +243,12 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
         mode: 'nearest',
         maxDistancePx: 24,
       })
-      if (!hit) continue
-      if (!best || hit.distancePx < best.distancePx) best = hit
+      if (!hit) {
+        continue
+      }
+      if (!best || hit.distancePx < best.distancePx) {
+        best = hit
+      }
     }
 
     runtime.setInteractionState({
@@ -217,13 +264,17 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
   }
 
   private viewport(): NovaChartViewportApi | null {
-    if (!this.props.viewportRef) return null
+    if (!this.props.viewportRef) {
+      return null
+    }
     return this.nova.components.api<NovaChartViewportApi>(this.props.viewportRef) ?? null
   }
 
   private resolveOrientation(): 'horizontal' | 'vertical' {
     const axis = this.props.wheel.axis
-    if (axis === 'horizontal' || axis === 'vertical') return axis
+    if (axis === 'horizontal' || axis === 'vertical') {
+      return axis
+    }
     return this.props.scaleId === 'y' ? 'vertical' : 'horizontal'
   }
 
@@ -233,7 +284,11 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
 }
 
 function matchesButton(event: MouseEvent, button: 'primary' | 'middle' | 'secondary'): boolean {
-  if (button === 'primary') return event.button === 0
-  if (button === 'middle') return event.button === 1
+  if (button === 'primary') {
+    return event.button === 0
+  }
+  if (button === 'middle') {
+    return event.button === 1
+  }
   return event.button === 2
 }

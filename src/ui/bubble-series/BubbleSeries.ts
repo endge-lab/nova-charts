@@ -1,19 +1,9 @@
 import type { NovaApp, NovaSchema, NovaSurface } from '@endge/nova'
 import type { EventList } from '@endge/utils'
-import { NovaUiComponentNode } from '@endge/nova-ui-kit'
-import {
-  createBubbleSeriesLayout,
-  resolveBubbleXDomain,
-  resolveBubbleYDomain,
-} from '@/model/bubble/create-bubble-series-layout'
-import { hitTestBubbleLayoutPlan } from '@/model/bubble/hit-test-bubble-layout'
-import { renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
-import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
-import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
 import type { NovaChartRuntime } from '@/model/context/nova-chart-runtime'
 import type {
-  NovaChartBubbleLayoutPoint,
   NovaChartBubbleLayoutPlan,
+  NovaChartBubbleLayoutPoint,
   NovaChartBubbleSeriesApi,
   NovaChartBubbleSeriesDiagnostics,
   NovaChartBubbleSeriesProps,
@@ -24,11 +14,22 @@ import type {
   NovaChartResolvedMarkStyle,
   NovaChartStyleContext,
 } from '@/model/types/chart-components.types'
+import type { ChartBubbleSeriesDescriptor } from '@/ui/bubble-series/bubble-series.config'
+import { NovaUiComponentNode } from '@endge/nova-ui-kit'
+import {
+  createBubbleSeriesLayout,
+  resolveBubbleXDomain,
+  resolveBubbleYDomain,
+} from '@/model/bubble/create-bubble-series-layout'
+import { hitTestBubbleLayoutPlan } from '@/model/bubble/hit-test-bubble-layout'
+import { renderWithSlot, resolveVisualState } from '@/model/customization/chart-customization'
 import {
   CHART_BUBBLE_SERIES_NODE_DESCRIPTOR,
+
   normalizeChartBubbleSeriesProps,
-  type ChartBubbleSeriesDescriptor,
 } from '@/ui/bubble-series/bubble-series.config'
+import { publishChartMarkSemantics } from '@/ui/shared/chart-semantic-marks'
+import { ChartSeriesRuntimeBinding } from '@/ui/shared/chart-series-runtime'
 
 const EMPTY_DIAGNOSTICS: NovaChartBubbleSeriesDiagnostics = {
   kind: 'bubble',
@@ -108,24 +109,26 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
         this.props.renderers?.bubble,
         { ...context, style },
         {
-        type: 'circle',
-        x: point.x,
-        y: point.y,
+          type: 'circle',
+          x: point.x,
+          y: point.y,
           radius: Math.max(0, style.radius ?? point.radius),
-        styles: {
+          styles: {
             background: style.background ?? style.fill ?? point.color,
-          border: {
+            border: {
               color: style.strokeColor ?? style.stroke ?? point.strokeColor,
               width: style.strokeWidth ?? point.strokeWidth,
-          },
+            },
             opacity: style.opacity ?? point.opacity,
-        },
+          },
         },
       )
     }
 
     this.publishSchemaDiagnostics(schemaStart)
-    if (schema.length > 0) this.renderer.schema(schema)
+    if (schema.length > 0) {
+      this.renderer.schema(schema)
+    }
   }
 
   setVirtualization(options: NovaChartPointSeriesVirtualizationOptions): void {
@@ -148,7 +151,9 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
 
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartBubbleSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
-    if (changedKeys.includes('chartRef')) this.runtimeBinding.syncInteractive()
+    if (changedKeys.includes('chartRef')) {
+      this.runtimeBinding.syncInteractive()
+    }
     this.refresh()
   }
 
@@ -232,7 +237,9 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
       },
     }
     const runtime = this.runtimeBinding.runtime()
-    if (runtime) this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+    if (runtime) {
+      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+    }
   }
 
   private isPointHighlighted(
@@ -292,14 +299,16 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
     const highlighted = this.isPointHighlighted(point.key, runtime?.getInteractionState().hovered)
     const stateStyle = {
       ...(this.props.states?.[context.state] ?? {}),
-      ...(highlighted ? {
-        background: this.props.highlight.fill,
-        fill: this.props.highlight.fill,
-        opacity: this.props.highlight.opacity,
-        radius: point.radius + this.props.highlight.radiusDelta,
-        strokeColor: this.props.highlight.strokeColor,
-        strokeWidth: this.props.highlight.strokeWidth,
-      } : {}),
+      ...(highlighted
+        ? {
+            background: this.props.highlight.fill,
+            fill: this.props.highlight.fill,
+            opacity: this.props.highlight.opacity,
+            radius: point.radius + this.props.highlight.radiusDelta,
+            strokeColor: this.props.highlight.strokeColor,
+            strokeWidth: this.props.highlight.strokeWidth,
+          }
+        : {}),
     }
     const datumStyle = this.props.style?.datum?.(context)
     return runtime?.customization.resolveMarkStyle(context, {
