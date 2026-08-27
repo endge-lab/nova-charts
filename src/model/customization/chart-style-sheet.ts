@@ -339,7 +339,7 @@ function resolveTokenValue<TData>(
   value: string,
   context: NovaChartStyleContext<TData>,
 ): string {
-  const match = value.match(/^var\((--[\w-]+)(?:,\s*(.+))?\)$/)
+  const match = value.match(/^var\((--[\w-]+)(?:,(.+))?\)$/)
   if (!match) {
     return value
   }
