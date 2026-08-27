@@ -1,7 +1,7 @@
 {
   "name": "@endge/nova-charts",
   "type": "module",
-  "version": "0.10.7",
+  "version": "0.10.8",
   "private": false,
   "sideEffects": false,
   "exports": {
@@ -26,9 +26,9 @@
     "lint-fix": "eslint . --fix --cache"
   },
   "dependencies": {
-    "@endge/nova": "workspace:*",
-    "@endge/nova-ui-kit": "workspace:*",
-    "@endge/utils": "workspace:*",
+    "@endge/nova": "^0.13.11",
+    "@endge/nova-ui-kit": "^0.10.14",
+    "@endge/utils": "^0.25.3",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "gl-matrix": "^3.4.3"
