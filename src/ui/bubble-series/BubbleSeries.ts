@@ -57,9 +57,9 @@ const EMPTY_LAYOUT_PLAN: NovaChartBubbleLayoutPlan<any> = {
  */
 export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartBubbleSeriesResolvedProps<TData>, NovaChartBubbleSeriesApi<TData>, NovaChartBubbleSeriesProps<TData>, E> {
-  private layoutPlan: NovaChartBubbleLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
-  private readonly api: NovaChartBubbleSeriesApi<TData>
-  private readonly runtimeBinding: ChartSeriesRuntimeBinding<TData>
+  private _layoutPlan: NovaChartBubbleLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
+  private readonly _api: NovaChartBubbleSeriesApi<TData>
+  private readonly _runtimeBinding: ChartSeriesRuntimeBinding<TData>
 
   constructor(
     app: NovaApp<E>,
@@ -70,15 +70,15 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ zIndex: 15 })
-    this.api = {
-      getLayoutPlan: () => this.layoutPlan,
-      getDiagnostics: () => this.layoutPlan.diagnostics,
-      hitTest: input => this.hitTest(input),
-      refresh: () => this.refresh(),
+    this._api = {
+      getLayoutPlan: () => this._layoutPlan,
+      getDiagnostics: () => this._layoutPlan.diagnostics,
+      hitTest: input => this._hitTestSeries(input),
+      refresh: () => this._refresh(),
       setVirtualization: patch => this.setVirtualization(patch),
     }
-    this.runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
-      hitTest: input => this.hitTest(input),
+    this._runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
+      hitTest: input => this._hitTestSeries(input),
     })
   }
 
@@ -90,20 +90,20 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
   }
 
   override getApi(): NovaChartBubbleSeriesApi<TData> {
-    return this.api
+    return this._api
   }
 
   update(): void {
-    this.computeLayout()
+    this._computeLayout()
   }
 
   render(): void {
     const schemaStart = now()
-    const runtime = this.runtimeBinding.runtime()
+    const runtime = this._runtimeBinding.runtime()
     const schema: NovaSchema = [] as unknown as NovaSchema
-    for (const point of this.layoutPlan.points) {
-      const context = this.createPointStyleContext(point, runtime)
-      const style = this.resolveBubbleStyle(point, context, runtime)
+    for (const point of this._layoutPlan.points) {
+      const context = this._createPointStyleContext(point, runtime)
+      const style = this._resolveBubbleStyle(point, context, runtime)
       renderWithSlot(
         schema,
         this.props.renderers?.bubble,
@@ -125,7 +125,7 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
       )
     }
 
-    this.publishSchemaDiagnostics(schemaStart)
+    this._publishSchemaDiagnostics(schemaStart)
     if (schema.length > 0) {
       this.renderer.schema(schema)
     }
@@ -136,45 +136,45 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
       ...this.props.virtualization,
       ...options,
     }
-    this.refresh()
+    this._refresh()
   }
 
   protected override onMount(): void {
     super.onMount()
-    this.runtimeBinding.syncInteractive()
+    this._runtimeBinding.syncInteractive()
   }
 
   protected override onUnmount(): void {
-    this.runtimeBinding.cleanup()
+    this._runtimeBinding.cleanup()
     super.onUnmount()
   }
 
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartBubbleSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
     if (changedKeys.includes('chartRef')) {
-      this.runtimeBinding.syncInteractive()
+      this._runtimeBinding.syncInteractive()
     }
-    this.refresh()
+    this._refresh()
   }
 
-  private hitTest(input: NovaChartHitTestInput) {
-    return hitTestBubbleLayoutPlan(this.componentId, this.layoutPlan, {
+  private _hitTestSeries(input: NovaChartHitTestInput) {
+    return hitTestBubbleLayoutPlan(this.componentId, this._layoutPlan, {
       ...input,
       maxDistancePx: input.maxDistancePx ?? this.props.hitRadiusPx,
     })
   }
 
-  private refresh(): void {
-    this.computeLayout()
+  private _refresh(): void {
+    this._computeLayout()
     this.dirty({ update: true, render: true })
   }
 
-  private computeLayout(): void {
-    const runtime = this.runtimeBinding.runtime()
+  private _computeLayout(): void {
+    const runtime = this._runtimeBinding.runtime()
     const xScale = runtime?.getScale(this.props.xScaleId)
     const yScale = runtime?.getScale(this.props.yScaleId)
     if (!runtime || !xScale || !yScale) {
-      this.layoutPlan = EMPTY_LAYOUT_PLAN
+      this._layoutPlan = EMPTY_LAYOUT_PLAN
       return
     }
 
@@ -186,7 +186,7 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
       width: this.width,
       height: this.height,
     }
-    this.runtimeBinding.publishContributions(runtime, [
+    this._runtimeBinding.publishContributions(runtime, [
       {
         id: `${this.componentId}:x-domain`,
         scaleId: this.props.xScaleId,
@@ -198,9 +198,9 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
         domain: resolveBubbleYDomain(input),
       },
     ])
-    this.layoutPlan = createBubbleSeriesLayout(input)
-    this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
-    this.runtimeBinding.publishMetadata(runtime, this.layoutPlan.series.map(item => ({
+    this._layoutPlan = createBubbleSeriesLayout(input)
+    this._runtimeBinding.publishDiagnostics(runtime, this._layoutPlan.diagnostics)
+    this._runtimeBinding.publishMetadata(runtime, this._layoutPlan.series.map(item => ({
       ...item,
       id: item.id === '__default' ? this.componentId : item.id,
       label: item.id === '__default' ? 'Bubble' : item.label,
@@ -211,7 +211,7 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
         y: this.props.yScaleId,
       },
     })))
-    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'bubble', this.layoutPlan.points.map(point => ({
+    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'bubble', this._layoutPlan.points.map(point => ({
       key: point.key,
       x: point.x,
       y: point.y,
@@ -226,23 +226,23 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
     })))
   }
 
-  private publishSchemaDiagnostics(schemaStart: number): void {
+  private _publishSchemaDiagnostics(schemaStart: number): void {
     const schemaMs = now() - schemaStart
-    this.layoutPlan = {
-      ...this.layoutPlan,
+    this._layoutPlan = {
+      ...this._layoutPlan,
       diagnostics: {
-        ...this.layoutPlan.diagnostics,
+        ...this._layoutPlan.diagnostics,
         schemaMs,
-        totalMs: this.layoutPlan.diagnostics.domainMs + this.layoutPlan.diagnostics.layoutMs + schemaMs,
+        totalMs: this._layoutPlan.diagnostics.domainMs + this._layoutPlan.diagnostics.layoutMs + schemaMs,
       },
     }
-    const runtime = this.runtimeBinding.runtime()
+    const runtime = this._runtimeBinding.runtime()
     if (runtime) {
-      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+      this._runtimeBinding.publishDiagnostics(runtime, this._layoutPlan.diagnostics)
     }
   }
 
-  private isPointHighlighted(
+  private _isPointHighlighted(
     key: string,
     hovered: NovaChartDatumRef<TData> | null | undefined,
   ): boolean {
@@ -251,7 +251,7 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
       && hovered.key === key
   }
 
-  private createPointStyleContext(
+  private _createPointStyleContext(
     point: NovaChartBubbleLayoutPoint<TData>,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartStyleContext<TData, NovaChartBubbleLayoutPoint<TData>> {
@@ -291,12 +291,12 @@ export class ChartBubbleSeries<TData = Record<string, unknown>, E extends EventL
     }
   }
 
-  private resolveBubbleStyle(
+  private _resolveBubbleStyle(
     point: NovaChartBubbleLayoutPoint<TData>,
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartResolvedMarkStyle {
-    const highlighted = this.isPointHighlighted(point.key, runtime?.getInteractionState().hovered)
+    const highlighted = this._isPointHighlighted(point.key, runtime?.getInteractionState().hovered)
     const stateStyle = {
       ...(this.props.states?.[context.state] ?? {}),
       ...(highlighted

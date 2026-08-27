@@ -37,8 +37,8 @@ import {
  */
 export class ChartComposedChart<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartComposedChartResolvedProps<TData>, NovaChartComposedChartApi<TData>, NovaChartComposedChartProps<TData>, E> {
-  private readonly managedChildren: Array<NovaNode<E>> = []
-  private readonly api: NovaChartComposedChartApi<TData>
+  private readonly _managedChildren: Array<NovaNode<E>> = []
+  private readonly _api: NovaChartComposedChartApi<TData>
 
   constructor(
     app: NovaApp<E>,
@@ -48,17 +48,17 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     descriptor: ChartComposedChartDescriptor<TData> = CHART_COMPOSED_CHART_NODE_DESCRIPTOR as ChartComposedChartDescriptor<TData>,
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
-    this.api = {
-      setData: data => this.setData(data),
+    this._api = {
+      setData: data => this._setData(data),
       getData: () => this.props.data,
-      refresh: () => this.refresh(),
-      exportChart: exportOptions => this.rootApi()?.exportChart(exportOptions) ?? this.nova.exportImage({
+      refresh: () => this._refresh(),
+      exportChart: exportOptions => this._rootApi()?.exportChart(exportOptions) ?? this.nova.exportImage({
         ...exportOptions,
         includeSemanticSnapshot: exportOptions?.includeSemanticSnapshot ?? true,
       }),
-      getSemanticSnapshot: snapshotOptions => this.rootApi()?.getSemanticSnapshot(snapshotOptions) ?? this.nova.semantics.snapshot(snapshotOptions),
+      getSemanticSnapshot: snapshotOptions => this._rootApi()?.getSemanticSnapshot(snapshotOptions) ?? this.nova.semantics.snapshot(snapshotOptions),
     }
-    this.reconcile()
+    this._reconcile()
   }
 
   override setProps(patch: Partial<NovaChartComposedChartResolvedProps<TData>>): this {
@@ -69,19 +69,19 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
   }
 
   override getApi(): NovaChartComposedChartApi<TData> {
-    return this.api
+    return this._api
   }
 
   override applyLayoutRect(rect: NovaUiLayoutRect): boolean {
     const changed = super.applyLayoutRect(rect)
     if (changed) {
-      this.applyChildrenRect()
+      this._applyChildrenRect()
     }
     return changed
   }
 
   update(): void {
-    this.applyChildrenRect()
+    this._applyChildrenRect()
   }
 
   render(): void {
@@ -91,26 +91,26 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     }
   }
 
-  private setData(data: Array<TData>): void {
+  private _setData(data: Array<TData>): void {
     this.setProps({ data: [...data] } as Partial<NovaChartComposedChartResolvedProps<TData>>)
-    this.reconcile()
+    this._reconcile()
     this.dirty({ update: true, render: true })
   }
 
-  private refresh(): void {
-    this.reconcile()
-    this.dirtyChildren()
+  private _refresh(): void {
+    this._reconcile()
+    this._dirtyChildren()
     this.dirty({ update: true, render: true })
   }
 
-  private reconcile(): void {
-    const reconciled = reconcileNovaTemplateChildren(this, this.managedChildren, [this.createRootSchema()])
-    this.managedChildren.length = 0
-    this.managedChildren.push(...reconciled.nodes)
-    this.applyChildrenRect()
+  private _reconcile(): void {
+    const reconciled = reconcileNovaTemplateChildren(this, this._managedChildren, [this._createRootSchema()])
+    this._managedChildren.length = 0
+    this._managedChildren.push(...reconciled.nodes)
+    this._applyChildrenRect()
   }
 
-  private createRootSchema(): NovaTemplateChildSchema {
+  private _createRootSchema(): NovaTemplateChildSchema {
     return {
       type: NovaCharts.Root,
       id: `${this.componentId}:root`,
@@ -164,17 +164,17 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
             alignItems: 'stretch',
           },
           children: [
-            this.createMainRow(),
-            ...this.createXAxisRow(),
-            ...this.createViewportRow(),
+            this._createMainRow(),
+            ...this._createXAxisRow(),
+            ...this._createViewportRow(),
           ],
         },
       ],
     }
   }
 
-  private createMainRow(): NovaTemplateChildSchema {
-    const yAxisWidth = this.isYAxisVisible() ? this.props.yAxis.width : 0
+  private _createMainRow(): NovaTemplateChildSchema {
+    const yAxisWidth = this._isYAxisVisible() ? this.props.yAxis.width : 0
     const legendWidth = this.props.legend ? 140 : 0
     return {
       type: NovaUIKit.Flex,
@@ -186,17 +186,17 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
       },
       layout: { width: '100%', flexBasis: 0, flexGrow: 1, minHeight: 1 },
       children: [
-        ...this.createYAxis(yAxisWidth),
-        this.createPlot(),
-        ...this.createLegend(legendWidth),
+        ...this._createYAxis(yAxisWidth),
+        this._createPlot(),
+        ...this._createLegend(legendWidth),
       ],
     }
   }
 
-  private createPlot(): NovaTemplateChildSchema {
-    const gridProps = this.resolveObjectOption<NovaChartGridProps>(this.props.grid)
-    const interactionProps = this.resolveObjectOption<NovaChartInteractionProps>(this.props.interaction)
-    const tooltipProps = this.resolveObjectOption<NovaChartTooltipProps>(this.props.tooltip)
+  private _createPlot(): NovaTemplateChildSchema {
+    const gridProps = this._resolveObjectOption<NovaChartGridProps>(this.props.grid)
+    const interactionProps = this._resolveObjectOption<NovaChartInteractionProps>(this.props.interaction)
+    const tooltipProps = this._resolveObjectOption<NovaChartTooltipProps>(this.props.tooltip)
 
     return {
       type: NovaCharts.Plot,
@@ -219,7 +219,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
               },
             }]
           : []),
-        ...this.props.series.map((series, index) => this.createSeriesSchema(series, index)),
+        ...this.props.series.map((series, index) => this._createSeriesSchema(series, index)),
         ...this.props.children,
         ...(this.props.interaction
           ? [{
@@ -232,7 +232,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
               },
             }]
           : []),
-        ...this.createViewportController(),
+        ...this._createViewportController(),
         ...(this.props.tooltip
           ? [{
               type: NovaCharts.Tooltip,
@@ -247,11 +247,11 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     }
   }
 
-  private createViewportController(): Array<NovaTemplateChildSchema> {
+  private _createViewportController(): Array<NovaTemplateChildSchema> {
     if (!this.props.viewport) {
       return []
     }
-    const viewportProps = this.resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
+    const viewportProps = this._resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
     if (!viewportProps?.controller) {
       return []
     }
@@ -267,7 +267,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     }]
   }
 
-  private createSeriesSchema(series: NovaChartComposedSeriesConfig<TData>, index: number): NovaTemplateChildSchema {
+  private _createSeriesSchema(series: NovaChartComposedSeriesConfig<TData>, index: number): NovaTemplateChildSchema {
     const id = `${this.componentId}:series:${series.id ?? index}`
     const props = { ...(series as Record<string, unknown>) }
     delete props.type
@@ -286,11 +286,11 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     }
   }
 
-  private createYAxis(width: number): Array<NovaTemplateChildSchema> {
-    if (!this.isYAxisVisible()) {
+  private _createYAxis(width: number): Array<NovaTemplateChildSchema> {
+    if (!this._isYAxisVisible()) {
       return []
     }
-    const axisProps = this.resolveAxisObjectOption('y')
+    const axisProps = this._resolveAxisObjectOption('y')
     return [{
       type: NovaCharts.Axis,
       id: `${this.componentId}:y-axis`,
@@ -306,13 +306,13 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     }]
   }
 
-  private createXAxisRow(): Array<NovaTemplateChildSchema> {
-    if (!this.isXAxisVisible()) {
+  private _createXAxisRow(): Array<NovaTemplateChildSchema> {
+    if (!this._isXAxisVisible()) {
       return []
     }
-    const yAxisWidth = this.isYAxisVisible() ? this.props.yAxis.width : 0
+    const yAxisWidth = this._isYAxisVisible() ? this.props.yAxis.width : 0
     const legendWidth = this.props.legend ? 140 : 0
-    const axisProps = this.resolveAxisObjectOption('x')
+    const axisProps = this._resolveAxisObjectOption('x')
     return [{
       type: NovaUIKit.Flex,
       id: `${this.componentId}:x-axis-row`,
@@ -322,7 +322,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
       },
       layout: { width: '100%', height: this.props.xAxis.height, flexShrink: 0 },
       children: [
-        this.createSpacer(`${this.componentId}:x-axis-spacer`, yAxisWidth, this.props.xAxis.height),
+        this._createSpacer(`${this.componentId}:x-axis-spacer`, yAxisWidth, this.props.xAxis.height),
         {
           type: NovaCharts.Axis,
           id: `${this.componentId}:x-axis`,
@@ -336,19 +336,19 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
           },
           layout: { flexBasis: 0, flexGrow: 1, minWidth: 1, height: this.props.xAxis.height },
         },
-        ...(legendWidth > 0 ? [this.createSpacer(`${this.componentId}:legend-axis-spacer`, legendWidth, this.props.xAxis.height)] : []),
+        ...(legendWidth > 0 ? [this._createSpacer(`${this.componentId}:legend-axis-spacer`, legendWidth, this.props.xAxis.height)] : []),
       ],
     }]
   }
 
-  private createViewportRow(): Array<NovaTemplateChildSchema> {
+  private _createViewportRow(): Array<NovaTemplateChildSchema> {
     if (!this.props.viewport) {
       return []
     }
-    const yAxisWidth = this.isYAxisVisible() ? this.props.yAxis.width : 0
+    const yAxisWidth = this._isYAxisVisible() ? this.props.yAxis.width : 0
     const legendWidth = this.props.legend ? 140 : 0
     const height = 16
-    const viewportProps = this.resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
+    const viewportProps = this._resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
     return [{
       type: NovaUIKit.Flex,
       id: `${this.componentId}:viewport-row`,
@@ -358,7 +358,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
       },
       layout: { width: '100%', height, flexShrink: 0 },
       children: [
-        this.createSpacer(`${this.componentId}:viewport-spacer`, yAxisWidth, height),
+        this._createSpacer(`${this.componentId}:viewport-spacer`, yAxisWidth, height),
         {
           type: NovaCharts.Viewport,
           id: `${this.componentId}:viewport`,
@@ -369,16 +369,16 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
           },
           layout: { flexBasis: 0, flexGrow: 1, minWidth: 1, height },
         },
-        ...(legendWidth > 0 ? [this.createSpacer(`${this.componentId}:legend-viewport-spacer`, legendWidth, height)] : []),
+        ...(legendWidth > 0 ? [this._createSpacer(`${this.componentId}:legend-viewport-spacer`, legendWidth, height)] : []),
       ],
     }]
   }
 
-  private createLegend(width: number): Array<NovaTemplateChildSchema> {
+  private _createLegend(width: number): Array<NovaTemplateChildSchema> {
     if (!this.props.legend) {
       return []
     }
-    const legendProps = this.resolveObjectOption<NovaChartLegendProps>(this.props.legend)
+    const legendProps = this._resolveObjectOption<NovaChartLegendProps>(this.props.legend)
     return [{
       type: NovaCharts.Legend,
       id: `${this.componentId}:legend`,
@@ -387,7 +387,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     }]
   }
 
-  private createSpacer(id: string, width: number, height: number): NovaTemplateChildSchema {
+  private _createSpacer(id: string, width: number, height: number): NovaTemplateChildSchema {
     return {
       type: NovaUIKit.Surface,
       id,
@@ -399,7 +399,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     }
   }
 
-  private isXAxisVisible(): boolean {
+  private _isXAxisVisible(): boolean {
     if (this.props.axes === false) {
       return false
     }
@@ -409,7 +409,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     return this.props.xAxis.visible
   }
 
-  private isYAxisVisible(): boolean {
+  private _isYAxisVisible(): boolean {
     if (this.props.axes === false) {
       return false
     }
@@ -419,7 +419,7 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     return this.props.yAxis.visible
   }
 
-  private resolveAxisObjectOption(axis: 'x' | 'y'): NovaChartAxisProps | null {
+  private _resolveAxisObjectOption(axis: 'x' | 'y'): NovaChartAxisProps | null {
     if (typeof this.props.axes !== 'object' || this.props.axes === null) {
       return null
     }
@@ -427,35 +427,35 @@ export class ChartComposedChart<TData = Record<string, unknown>, E extends Event
     return typeof option === 'object' && option !== null ? option : null
   }
 
-  private resolveObjectOption<TOption>(value: boolean | TOption): TOption | null {
+  private _resolveObjectOption<TOption>(value: boolean | TOption): TOption | null {
     return typeof value === 'object' && value !== null ? value : null
   }
 
-  private applyChildrenRect(): void {
+  private _applyChildrenRect(): void {
     const rect = {
       x: 0,
       y: 0,
       width: this.width,
       height: this.height,
     }
-    for (const child of this.managedChildren) {
+    for (const child of this._managedChildren) {
       applyChildRect(child, rect)
     }
   }
 
-  private dirtyChildren(): void {
-    for (const child of this.managedChildren) {
+  private _dirtyChildren(): void {
+    for (const child of this._managedChildren) {
       dirtySubtree(child)
     }
   }
 
-  private rootApi(): NovaChartRootApi<TData> | null {
+  private _rootApi(): NovaChartRootApi<TData> | null {
     return this.nova.components.api<NovaChartRootApi<TData>>(`${this.componentId}:root`) ?? null
   }
 
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartComposedChartResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
-    this.reconcile()
+    this._reconcile()
     this.dirty({ update: true, render: true })
   }
 }

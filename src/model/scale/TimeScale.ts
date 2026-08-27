@@ -43,8 +43,8 @@ const AUTO_TIME_STEPS: Array<{ unit: ChartTimeUnit, step: number }> = [
 export class TimeScale extends LinearScale {
   override readonly type = 'time'
 
-  private readonly timezone: string
-  private readonly locale: string
+  private readonly _timezone: string
+  private readonly _locale: string
 
   /**
    * Создает временную шкалу с IANA timezone для форматирования и календарных шагов.
@@ -64,8 +64,8 @@ export class TimeScale extends LinearScale {
       range: options.range ?? DEFAULT_RANGE,
       clamp: options.clamp,
     })
-    this.timezone = options.timezone ?? 'UTC'
-    this.locale = options.locale ?? 'ru-RU'
+    this._timezone = options.timezone ?? 'UTC'
+    this._locale = options.locale ?? 'ru-RU'
   }
 
   /**
@@ -80,14 +80,14 @@ export class TimeScale extends LinearScale {
    */
   override ticks(options: ChartTimeTickOptions = {}): Array<ChartScaleTick<number>> {
     if (options.values?.length) {
-      return this.createExplicitTicks(options.values, options)
+      return this._createExplicitTicks(options.values, options)
     }
 
     const [domainStart, domainEnd] = this.getDomain()
-    const unitConfig = this.resolveTickUnit(options)
-    const timezone = options.timezone ?? this.timezone
-    const formatter = this.createFormatter(options, unitConfig.unit)
-    const majorFormatter = this.createMajorFormatter(options, unitConfig.unit)
+    const unitConfig = this._resolveTickUnit(options)
+    const timezone = options.timezone ?? this._timezone
+    const formatter = this._createFormatter(options, unitConfig.unit)
+    const majorFormatter = this._createMajorFormatter(options, unitConfig.unit)
     const ticks: Array<ChartScaleTick<number>> = []
     const start = floorZonedTime(Math.min(domainStart, domainEnd), unitConfig.unit, timezone, unitConfig.step)
     const end = Math.max(domainStart, domainEnd)
@@ -96,7 +96,7 @@ export class TimeScale extends LinearScale {
 
     while (value <= end && guard < 10_000) {
       if (value >= Math.min(domainStart, domainEnd)) {
-        const major = this.isMajorTick(value, unitConfig.unit, options.majorUnit, timezone)
+        const major = this._isMajorTick(value, unitConfig.unit, options.majorUnit, timezone)
         ticks.push({
           value,
           position: this.toPx(value),
@@ -114,11 +114,11 @@ export class TimeScale extends LinearScale {
   /**
    * Строит ticks из явно переданного списка values/labels.
    */
-  private createExplicitTicks(
+  private _createExplicitTicks(
     values: ReadonlyArray<ChartScaleExplicitTickInput>,
     options: ChartTimeTickOptions,
   ): Array<ChartScaleTick<number>> {
-    const formatter = this.createFormatter(options, options.unit && options.unit !== 'auto' ? options.unit : 'day')
+    const formatter = this._createFormatter(options, options.unit && options.unit !== 'auto' ? options.unit : 'day')
 
     return values.flatMap((item) => {
       const value = typeof item === 'object' ? item.value : item
@@ -140,7 +140,7 @@ export class TimeScale extends LinearScale {
   /**
    * Выбирает единицу и шаг tick для текущего масштаба.
    */
-  private resolveTickUnit(options: ChartTimeTickOptions): { unit: ChartTimeUnit, step: number } {
+  private _resolveTickUnit(options: ChartTimeTickOptions): { unit: ChartTimeUnit, step: number } {
     if (options.unit && options.unit !== 'auto') {
       return {
         unit: options.unit,
@@ -170,15 +170,15 @@ export class TimeScale extends LinearScale {
   /**
    * Создает formatter обычного tick label.
    */
-  private createFormatter(options: ChartTimeTickOptions, unit: ChartTimeUnit): (value: number) => string {
+  private _createFormatter(options: ChartTimeTickOptions, unit: ChartTimeUnit): (value: number) => string {
     if (typeof options.format === 'function') {
       return options.format
     }
 
     const format = options.format ?? defaultTimeFormat(unit)
-    const formatter = new Intl.DateTimeFormat(options.locale ?? this.locale, {
+    const formatter = new Intl.DateTimeFormat(options.locale ?? this._locale, {
       ...format,
-      timeZone: options.timezone ?? this.timezone,
+      timeZone: options.timezone ?? this._timezone,
     })
 
     return value => formatter.format(new Date(value))
@@ -187,15 +187,15 @@ export class TimeScale extends LinearScale {
   /**
    * Создает formatter major tick label.
    */
-  private createMajorFormatter(options: ChartTimeTickOptions, unit: ChartTimeUnit): (value: number) => string {
+  private _createMajorFormatter(options: ChartTimeTickOptions, unit: ChartTimeUnit): (value: number) => string {
     if (typeof options.majorFormat === 'function') {
       return options.majorFormat
     }
 
     const format = options.majorFormat ?? defaultMajorTimeFormat(unit)
-    const formatter = new Intl.DateTimeFormat(options.locale ?? this.locale, {
+    const formatter = new Intl.DateTimeFormat(options.locale ?? this._locale, {
       ...format,
-      timeZone: options.timezone ?? this.timezone,
+      timeZone: options.timezone ?? this._timezone,
     })
 
     return value => formatter.format(new Date(value))
@@ -204,7 +204,7 @@ export class TimeScale extends LinearScale {
   /**
    * Определяет, является ли tick крупной границей периода.
    */
-  private isMajorTick(
+  private _isMajorTick(
     value: number,
     unit: ChartTimeUnit,
     explicitMajorUnit: ChartTimeUnit | undefined,

@@ -4,34 +4,34 @@ import type { ChartScale, ChartScaleDomain, ChartScaleRange, ChartScaleValue } f
  * Хранит именованные шкалы chart runtime и дает компонентам доступ по scale id.
  */
 export class ChartScaleRegistry {
-  private readonly scales = new Map<string, ChartScale>()
+  private readonly _scales = new Map<string, ChartScale>()
 
   /**
    * Регистрирует шкалу или заменяет существующую с тем же id.
    */
   register(scale: ChartScale): void {
-    this.scales.set(scale.id, scale)
+    this._scales.set(scale.id, scale)
   }
 
   /**
    * Удаляет шкалу по id.
    */
   unregister(id: string): void {
-    this.scales.delete(id)
+    this._scales.delete(id)
   }
 
   /**
    * Проверяет наличие шкалы.
    */
   has(id: string): boolean {
-    return this.scales.has(id)
+    return this._scales.has(id)
   }
 
   /**
    * Возвращает шкалу или undefined.
    */
   get<TValue extends ChartScaleValue = ChartScaleValue>(id: string): ChartScale<TValue> | undefined {
-    return this.scales.get(id) as ChartScale<TValue> | undefined
+    return this._scales.get(id) as ChartScale<TValue> | undefined
   }
 
   /**
@@ -49,7 +49,7 @@ export class ChartScaleRegistry {
    * Возвращает все шкалы в порядке регистрации.
    */
   list(): Array<ChartScale> {
-    return Array.from(this.scales.values())
+    return Array.from(this._scales.values())
   }
 
   /**
@@ -70,6 +70,6 @@ export class ChartScaleRegistry {
    * Очищает registry.
    */
   clear(): void {
-    this.scales.clear()
+    this._scales.clear()
   }
 }

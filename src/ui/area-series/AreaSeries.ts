@@ -63,9 +63,9 @@ const EMPTY_LAYOUT_PLAN: NovaChartAreaLayoutPlan<any> = {
  */
 export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartAreaSeriesResolvedProps<TData>, NovaChartAreaSeriesApi<TData>, NovaChartAreaSeriesProps<TData>, E> {
-  private layoutPlan: NovaChartAreaLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
-  private readonly api: NovaChartAreaSeriesApi<TData>
-  private readonly runtimeBinding: ChartSeriesRuntimeBinding<TData>
+  private _layoutPlan: NovaChartAreaLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
+  private readonly _api: NovaChartAreaSeriesApi<TData>
+  private readonly _runtimeBinding: ChartSeriesRuntimeBinding<TData>
 
   constructor(
     app: NovaApp<E>,
@@ -76,15 +76,15 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ zIndex: 8 })
-    this.api = {
-      getLayoutPlan: () => this.layoutPlan,
-      getDiagnostics: () => this.layoutPlan.diagnostics,
-      hitTest: input => this.hitTest(input),
-      refresh: () => this.refresh(),
+    this._api = {
+      getLayoutPlan: () => this._layoutPlan,
+      getDiagnostics: () => this._layoutPlan.diagnostics,
+      hitTest: input => this._hitTestSeries(input),
+      refresh: () => this._refresh(),
       setVirtualization: patch => this.setVirtualization(patch),
     }
-    this.runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
-      hitTest: input => this.hitTest(input),
+    this._runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
+      hitTest: input => this._hitTestSeries(input),
     })
   }
 
@@ -96,20 +96,20 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
   }
 
   override getApi(): NovaChartAreaSeriesApi<TData> {
-    return this.api
+    return this._api
   }
 
   update(): void {
-    this.computeLayout()
+    this._computeLayout()
   }
 
   render(): void {
     const schemaStart = now()
-    const runtime = this.runtimeBinding.runtime()
+    const runtime = this._runtimeBinding.runtime()
     const schema: NovaSchema = [] as unknown as NovaSchema
-    for (const area of this.layoutPlan.areas) {
-      const context = this.createAreaStyleContext(area, runtime)
-      const style = this.resolveAreaStyle(area, context, runtime)
+    for (const area of this._layoutPlan.areas) {
+      const context = this._createAreaStyleContext(area, runtime)
+      const style = this._resolveAreaStyle(area, context, runtime)
       renderWithSlot(
         schema,
         this.props.renderers?.areaFill,
@@ -118,7 +118,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
           type: 'polygon',
           points: area.points,
           styles: {
-            background: style.background ?? style.fill ?? this.resolveAreaFill(area.color),
+            background: style.background ?? style.fill ?? this._resolveAreaFill(area.color),
             stroke: style.stroke ?? style.strokeColor ?? area.strokeColor,
             lineWidth: style.lineWidth ?? 0,
             opacity: style.opacity ?? this.props.opacity,
@@ -127,9 +127,9 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
       )
     }
 
-    for (const segment of this.layoutPlan.segments) {
-      const context = this.createOutlineStyleContext(segment, runtime)
-      const style = this.resolveOutlineStyle(segment, context, runtime)
+    for (const segment of this._layoutPlan.segments) {
+      const context = this._createOutlineStyleContext(segment, runtime)
+      const style = this._resolveOutlineStyle(segment, context, runtime)
       renderWithSlot(
         schema,
         this.props.renderers?.areaOutline,
@@ -150,13 +150,13 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
     }
 
     if (this.props.markers.visible) {
-      for (const point of this.layoutPlan.points) {
+      for (const point of this._layoutPlan.points) {
         const context = toPointContext(point)
-        const styleContext = this.createMarkerStyleContext(point, runtime)
+        const styleContext = this._createMarkerStyleContext(point, runtime)
         const radius = Math.max(0, resolveNumberOption(this.props.markers.radius, context, 3))
         const fill = resolveStringOption(this.props.markers.fill, context) ?? point.color
         const strokeColor = resolveStringOption(this.props.markers.strokeColor, context) ?? '#ffffff'
-        const style = this.resolveMarkerStyle(styleContext, runtime, {
+        const style = this._resolveMarkerStyle(styleContext, runtime, {
           radius,
           fill,
           strokeColor,
@@ -183,7 +183,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
       }
     }
 
-    this.publishSchemaDiagnostics(schemaStart)
+    this._publishSchemaDiagnostics(schemaStart)
     if (schema.length > 0) {
       this.renderer.schema(schema)
     }
@@ -194,45 +194,45 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
       ...this.props.virtualization,
       ...options,
     }
-    this.refresh()
+    this._refresh()
   }
 
   protected override onMount(): void {
     super.onMount()
-    this.runtimeBinding.syncInteractive()
+    this._runtimeBinding.syncInteractive()
   }
 
   protected override onUnmount(): void {
-    this.runtimeBinding.cleanup()
+    this._runtimeBinding.cleanup()
     super.onUnmount()
   }
 
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartAreaSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
     if (changedKeys.includes('chartRef')) {
-      this.runtimeBinding.syncInteractive()
+      this._runtimeBinding.syncInteractive()
     }
-    this.refresh()
+    this._refresh()
   }
 
-  private hitTest(input: NovaChartHitTestInput) {
-    return hitTestAreaLayoutPlan(this.componentId, this.layoutPlan, {
+  private _hitTestSeries(input: NovaChartHitTestInput) {
+    return hitTestAreaLayoutPlan(this.componentId, this._layoutPlan, {
       ...input,
       maxDistancePx: input.maxDistancePx ?? this.props.hitRadiusPx,
     })
   }
 
-  private refresh(): void {
-    this.computeLayout()
+  private _refresh(): void {
+    this._computeLayout()
     this.dirty({ update: true, render: true })
   }
 
-  private computeLayout(): void {
-    const runtime = this.runtimeBinding.runtime()
+  private _computeLayout(): void {
+    const runtime = this._runtimeBinding.runtime()
     const xScale = runtime?.getScale(this.props.xScaleId)
     const yScale = runtime?.getScale(this.props.yScaleId)
     if (!runtime || !xScale || !yScale) {
-      this.layoutPlan = {
+      this._layoutPlan = {
         ...EMPTY_LAYOUT_PLAN,
         diagnostics: {
           ...EMPTY_DIAGNOSTICS,
@@ -250,7 +250,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
       width: this.width,
       height: this.height,
     }
-    this.runtimeBinding.publishContributions(runtime, [
+    this._runtimeBinding.publishContributions(runtime, [
       {
         id: `${this.componentId}:x-domain`,
         scaleId: this.props.xScaleId,
@@ -262,9 +262,9 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
         domain: resolveAreaYDomain(input),
       },
     ])
-    this.layoutPlan = createAreaSeriesLayout(input)
-    this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
-    this.runtimeBinding.publishMetadata(runtime, this.layoutPlan.series.map(item => ({
+    this._layoutPlan = createAreaSeriesLayout(input)
+    this._runtimeBinding.publishDiagnostics(runtime, this._layoutPlan.diagnostics)
+    this._runtimeBinding.publishMetadata(runtime, this._layoutPlan.series.map(item => ({
       ...item,
       id: item.id === '__default' ? this.componentId : item.id,
       label: item.id === '__default' ? 'Area' : item.label,
@@ -275,7 +275,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
         y: this.props.yScaleId,
       },
     })))
-    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'area', this.layoutPlan.points.map(point => ({
+    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'area', this._layoutPlan.points.map(point => ({
       key: point.key,
       x: point.x,
       y: point.y,
@@ -289,30 +289,30 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
     })))
   }
 
-  private resolveAreaFill(seriesColor: string): string {
+  private _resolveAreaFill(seriesColor: string): string {
     if (typeof this.props.colors.fill === 'string') {
       return this.props.colors.fill
     }
     return this.props.fill === '#bfdbfe' ? seriesColor : this.props.fill
   }
 
-  private publishSchemaDiagnostics(schemaStart: number): void {
+  private _publishSchemaDiagnostics(schemaStart: number): void {
     const schemaMs = now() - schemaStart
-    this.layoutPlan = {
-      ...this.layoutPlan,
+    this._layoutPlan = {
+      ...this._layoutPlan,
       diagnostics: {
-        ...this.layoutPlan.diagnostics,
+        ...this._layoutPlan.diagnostics,
         schemaMs,
-        totalMs: this.layoutPlan.diagnostics.domainMs + this.layoutPlan.diagnostics.layoutMs + schemaMs,
+        totalMs: this._layoutPlan.diagnostics.domainMs + this._layoutPlan.diagnostics.layoutMs + schemaMs,
       },
     }
-    const runtime = this.runtimeBinding.runtime()
+    const runtime = this._runtimeBinding.runtime()
     if (runtime) {
-      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+      this._runtimeBinding.publishDiagnostics(runtime, this._layoutPlan.diagnostics)
     }
   }
 
-  private createAreaStyleContext(
+  private _createAreaStyleContext(
     area: NovaChartAreaLayoutArea,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartStyleContext<TData, NovaChartAreaLayoutArea> {
@@ -334,7 +334,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
     }
   }
 
-  private createOutlineStyleContext(
+  private _createOutlineStyleContext(
     segment: NovaChartLineLayoutSegment,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartStyleContext<TData, NovaChartLineLayoutSegment> {
@@ -356,7 +356,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
     }
   }
 
-  private createMarkerStyleContext(
+  private _createMarkerStyleContext(
     point: NovaChartAreaLayoutPoint<TData>,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartStyleContext<TData, NovaChartAreaLayoutPoint<TData>> {
@@ -396,15 +396,15 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
     }
   }
 
-  private resolveAreaStyle(
+  private _resolveAreaStyle(
     area: NovaChartAreaLayoutArea,
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartResolvedMarkStyle {
     return runtime?.customization.resolveMarkStyle(context, {
       legacy: {
-        background: this.resolveAreaFill(area.color),
-        fill: this.resolveAreaFill(area.color),
+        background: this._resolveAreaFill(area.color),
+        fill: this._resolveAreaFill(area.color),
         stroke: area.strokeColor,
         strokeColor: area.strokeColor,
         lineWidth: 0,
@@ -415,13 +415,13 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
       state: this.props.states?.[context.state],
       datum: this.props.style?.datum?.(context),
     }) ?? {
-      background: this.resolveAreaFill(area.color),
+      background: this._resolveAreaFill(area.color),
       stroke: area.strokeColor,
       opacity: this.props.opacity,
     }
   }
 
-  private resolveOutlineStyle(
+  private _resolveOutlineStyle(
     segment: NovaChartLineLayoutSegment,
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
@@ -445,7 +445,7 @@ export class ChartAreaSeries<TData = Record<string, unknown>, E extends EventLis
     }
   }
 
-  private resolveMarkerStyle(
+  private _resolveMarkerStyle(
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
     legacy: { radius: number, fill: string, strokeColor: string },

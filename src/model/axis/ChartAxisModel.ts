@@ -16,23 +16,23 @@ export class ChartAxisModel {
   /**
    * Создает модель оси поверх registry шкал.
    */
-  constructor(private readonly scales: ChartScaleRegistry) {}
+  constructor(private readonly _scales: ChartScaleRegistry) {}
 
   /**
    * Строит геометрию baseline, ticks и labels внутри rect компонента оси.
    */
   createRenderPlan(options: ChartAxisOptions): ChartAxisRenderPlan {
-    const scale = this.scales.require(options.scaleId)
-    scale.setRange(this.resolveScaleRange(options))
+    const scale = this._scales.require(options.scaleId)
+    scale.setRange(this._resolveScaleRange(options))
 
     const sourceTicks = scale.ticks(options.ticks) as Array<ChartScaleTick>
-    const ticks = sourceTicks.map(tick => this.createRenderTick(tick, options))
+    const ticks = sourceTicks.map(tick => this._createRenderTick(tick, options))
 
     return {
       scaleId: options.scaleId,
       orientation: options.orientation,
       rect: options.rect,
-      baseline: this.createBaseline(options),
+      baseline: this._createBaseline(options),
       ticks,
       sourceTicks,
     }
@@ -41,7 +41,7 @@ export class ChartAxisModel {
   /**
    * Возвращает range шкалы по ориентации и rect оси.
    */
-  private resolveScaleRange(options: ChartAxisOptions): readonly [number, number] {
+  private _resolveScaleRange(options: ChartAxisOptions): readonly [number, number] {
     if (options.orientation === 'horizontal') {
       return [options.rect.x, options.rect.x + options.rect.width]
     }
@@ -51,7 +51,7 @@ export class ChartAxisModel {
   /**
    * Строит baseline оси.
    */
-  private createBaseline(options: ChartAxisOptions): ChartAxisRenderPlan['baseline'] {
+  private _createBaseline(options: ChartAxisOptions): ChartAxisRenderPlan['baseline'] {
     if (options.orientation === 'horizontal') {
       const y = options.tickSide === 'start' ? options.rect.y : options.rect.y + options.rect.height
       return {
@@ -74,7 +74,7 @@ export class ChartAxisModel {
   /**
    * Строит tick и позицию label.
    */
-  private createRenderTick(tick: ChartScaleTick, options: ChartAxisOptions): ChartAxisRenderTick {
+  private _createRenderTick(tick: ChartScaleTick, options: ChartAxisOptions): ChartAxisRenderTick {
     const tickSize = options.tickSize ?? DEFAULT_TICK_SIZE
     const labelPadding = options.labelPadding ?? DEFAULT_LABEL_PADDING
     const side = options.tickSide ?? 'end'

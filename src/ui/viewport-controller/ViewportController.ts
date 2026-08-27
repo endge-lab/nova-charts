@@ -31,8 +31,8 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     NovaChartViewportControllerProps,
     E
   > {
-  private panning = false
-  private readonly api: NovaChartViewportControllerApi
+  private _panning = false
+  private readonly _api: NovaChartViewportControllerApi
 
   constructor(
     app: NovaApp<E>,
@@ -47,10 +47,10 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
       zIndex: 41,
       cursor: props.pointerPan.enabled ? { hover: props.pointerPan.cursor } : { hover: 'default' },
     })
-    this.api = {
+    this._api = {
       refresh: () => this.dirty({ update: true, render: true }),
     }
-    this.setupEvents()
+    this._setupEvents()
   }
 
   override setProps(patch: Partial<NovaChartViewportControllerProps>): this {
@@ -61,7 +61,7 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
   }
 
   override getApi(): NovaChartViewportControllerApi {
-    return this.api
+    return this._api
   }
 
   render(): void {}
@@ -74,20 +74,20 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     })
   }
 
-  private setupEvents(): void {
-    this.on('wheel', event => this.handleWheel(event))
-    this.on('mousedown', event => this.handleMouseDown(event))
-    this.on('dragmove', (event, dx, dy) => this.handleDragMove(event, dx, dy))
-    this.on('dragend', event => this.handleDragEnd(event))
-    this.on('dragcancel', event => this.handleDragEnd(event))
-    this.on('mousemove', event => this.forwardHover(event))
-    this.on('mouseleave', () => this.clearHover())
-    this.on('canvasleave', () => this.clearHover())
-    this.on('keydown', event => this.handleKeydown(event))
+  private _setupEvents(): void {
+    this.on('wheel', event => this._handleWheel(event))
+    this.on('mousedown', event => this._handleMouseDown(event))
+    this.on('dragmove', (event, dx, dy) => this._handleDragMove(event, dx, dy))
+    this.on('dragend', event => this._handleDragEnd(event))
+    this.on('dragcancel', event => this._handleDragEnd(event))
+    this.on('mousemove', event => this._forwardHover(event))
+    this.on('mouseleave', () => this._clearHover())
+    this.on('canvasleave', () => this._clearHover())
+    this.on('keydown', event => this._handleKeydown(event))
   }
 
-  private handleWheel(event: WheelEvent): void {
-    const viewport = this.viewport()
+  private _handleWheel(event: WheelEvent): void {
+    const viewport = this._viewport()
     if (!this.props.enabled || !viewport) {
       return
     }
@@ -95,23 +95,23 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     const state = viewport.getViewportState()
     const intent = resolveChartViewportWheelIntent(event, {
       viewport: state,
-      orientation: this.resolveOrientation(),
+      orientation: this._resolveOrientation(),
       scaleId: this.props.scaleId,
     }, this.props)
     if (!intent) {
-      this.allowWheelDefault(event, true)
+      this._allowWheelDefault(event, true)
       return
     }
 
     const delta = chartViewportDeltaToSteps(intent, this.props)
     if (delta === 0) {
-      this.allowWheelDefault(event, true)
+      this._allowWheelDefault(event, true)
       return
     }
 
     const consumed = viewport.canScroll(delta)
     const shouldPassThrough = !consumed && this.props.wheel.edgeBehavior === 'pass-through'
-    this.allowWheelDefault(event, shouldPassThrough || !shouldPreventChartViewportWheelDefault(consumed, this.props))
+    this._allowWheelDefault(event, shouldPassThrough || !shouldPreventChartViewportWheelDefault(consumed, this.props))
     if (consumed || this.props.wheel.edgeBehavior === 'clamp') {
       viewport.scrollBy(delta, event)
     }
@@ -124,7 +124,7 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     }, event)
   }
 
-  private handleMouseDown(event: MouseEvent): void {
+  private _handleMouseDown(event: MouseEvent): void {
     if (!this.props.enabled) {
       return
     }
@@ -132,20 +132,20 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     if (!this.props.pointerPan.enabled || !matchesButton(event, this.props.pointerPan.button)) {
       return
     }
-    this.panning = true
+    this._panning = true
     event.stopPropagation()
   }
 
-  private handleDragMove(event: MouseEvent, dx: number, dy: number): void {
-    if (!this.panning) {
+  private _handleDragMove(event: MouseEvent, dx: number, dy: number): void {
+    if (!this._panning) {
       return
     }
-    const viewport = this.viewport()
+    const viewport = this._viewport()
     if (!viewport) {
       return
     }
 
-    const horizontal = this.resolveOrientation() === 'horizontal'
+    const horizontal = this._resolveOrientation() === 'horizontal'
     const raw = horizontal ? -dx : -dy
     const delta = Math.trunc(raw / 48 * this.props.pointerPan.speed)
     if (delta === 0) {
@@ -166,24 +166,24 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     event.stopPropagation()
   }
 
-  private handleDragEnd(event: MouseEvent): void {
-    if (!this.panning) {
+  private _handleDragEnd(event: MouseEvent): void {
+    if (!this._panning) {
       return
     }
-    this.panning = false
+    this._panning = false
     event.stopPropagation()
   }
 
-  private handleKeydown(event: KeyboardEvent): void {
+  private _handleKeydown(event: KeyboardEvent): void {
     if (!this.props.enabled || !this.props.keyboard.enabled) {
       return
     }
-    const viewport = this.viewport()
+    const viewport = this._viewport()
     if (!viewport) {
       return
     }
 
-    const horizontal = this.resolveOrientation() === 'horizontal'
+    const horizontal = this._resolveOrientation() === 'horizontal'
     const keys = this.props.keyboard.keys
     let delta = 0
     if (event.key === keys.home) {
@@ -227,7 +227,7 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     event.stopPropagation()
   }
 
-  private forwardHover(event: MouseEvent): void {
+  private _forwardHover(event: MouseEvent): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     if (!runtime) {
       return
@@ -258,19 +258,19 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     })
   }
 
-  private clearHover(): void {
+  private _clearHover(): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     runtime?.setInteractionState({ pointer: null, hovered: null, tooltipVisible: false })
   }
 
-  private viewport(): NovaChartViewportApi | null {
+  private _viewport(): NovaChartViewportApi | null {
     if (!this.props.viewportRef) {
       return null
     }
     return this.nova.components.api<NovaChartViewportApi>(this.props.viewportRef) ?? null
   }
 
-  private resolveOrientation(): 'horizontal' | 'vertical' {
+  private _resolveOrientation(): 'horizontal' | 'vertical' {
     const axis = this.props.wheel.axis
     if (axis === 'horizontal' || axis === 'vertical') {
       return axis
@@ -278,7 +278,7 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     return this.props.scaleId === 'y' ? 'vertical' : 'horizontal'
   }
 
-  private allowWheelDefault(event: WheelEvent, allow: boolean): void {
+  private _allowWheelDefault(event: WheelEvent, allow: boolean): void {
     ;(event as unknown as Record<string, unknown>).__novaAllowDefault = allow
   }
 }

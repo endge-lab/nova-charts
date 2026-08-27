@@ -13,10 +13,10 @@ interface FieldCache {
  * Индексирует данные chart runtime и держит быстрые производные структуры.
  */
 export class ChartDataStore<TData = Record<string, unknown>> {
-  private rows: Array<TData>
-  private keyField?: NovaChartFieldAccessor<TData, NovaChartRowKey>
-  private readonly keyIndex = new Map<NovaChartRowKey, number>()
-  private readonly fieldCache = new Map<string, FieldCache>()
+  private _rows: Array<TData>
+  private _keyField?: NovaChartFieldAccessor<TData, NovaChartRowKey>
+  private readonly _keyIndex = new Map<NovaChartRowKey, number>()
+  private readonly _fieldCache = new Map<string, FieldCache>()
   private _revision = 0
 
   /**
@@ -26,9 +26,9 @@ export class ChartDataStore<TData = Record<string, unknown>> {
     data?: Array<TData>
     keyField?: NovaChartFieldAccessor<TData, NovaChartRowKey>
   } = {}) {
-    this.rows = options.data ? [...options.data] : []
-    this.keyField = options.keyField
-    this.rebuildKeyIndex()
+    this._rows = options.data ? [...options.data] : []
+    this._keyField = options.keyField
+    this._rebuildKeyIndex()
   }
 
   /**
@@ -42,24 +42,24 @@ export class ChartDataStore<TData = Record<string, unknown>> {
    * Возвращает row Count для ChartDataStore.
    */
   get rowCount(): number {
-    return this.rows.length
+    return this._rows.length
   }
 
   /**
    * Возвращает значение состояния ChartDataStore.
    */
   getData(): ReadonlyArray<TData> {
-    return this.rows
+    return this._rows
   }
 
   /**
    * Обновляет значение состояния ChartDataStore.
    */
-  setData(data: Array<TData>, keyField = this.keyField): void {
-    this.rows = [...data]
-    this.keyField = keyField
-    this.invalidate()
-    this.rebuildKeyIndex()
+  setData(data: Array<TData>, keyField = this._keyField): void {
+    this._rows = [...data]
+    this._keyField = keyField
+    this._invalidate()
+    this._rebuildKeyIndex()
   }
 
   /**
@@ -72,11 +72,11 @@ export class ChartDataStore<TData = Record<string, unknown>> {
 
     const additions: Array<TData> = []
     for (const patch of rows) {
-      const key = this.readPatchKey(patch)
-      const index = key === undefined ? -1 : this.keyIndex.get(key) ?? -1
+      const key = this._readPatchKey(patch)
+      const index = key === undefined ? -1 : this._keyIndex.get(key) ?? -1
       if (index >= 0) {
-        this.rows[index] = {
-          ...(this.rows[index] as Record<string, unknown>),
+        this._rows[index] = {
+          ...(this._rows[index] as Record<string, unknown>),
           ...patch,
         } as TData
         continue
@@ -86,10 +86,10 @@ export class ChartDataStore<TData = Record<string, unknown>> {
     }
 
     if (additions.length > 0) {
-      this.rows.push(...additions)
+      this._rows.push(...additions)
     }
-    this.invalidate()
-    this.rebuildKeyIndex()
+    this._invalidate()
+    this._rebuildKeyIndex()
   }
 
   /**
@@ -101,16 +101,16 @@ export class ChartDataStore<TData = Record<string, unknown>> {
     }
 
     const removed = new Set<NovaChartRowKey>(keys)
-    this.rows = this.rows.filter((row, index) => !removed.has(this.getRowKey(row, index)))
-    this.invalidate()
-    this.rebuildKeyIndex()
+    this._rows = this._rows.filter((row, index) => !removed.has(this.getRowKey(row, index)))
+    this._invalidate()
+    this._rebuildKeyIndex()
   }
 
   /**
    * Возвращает значение состояния ChartDataStore.
    */
   getRowKey(row: TData, index: number): NovaChartRowKey {
-    const key = this.keyField ? this.readField(row, index, this.keyField) : undefined
+    const key = this._keyField ? this.readField(row, index, this._keyField) : undefined
     if (typeof key === 'string' || typeof key === 'number') {
       return key
     }
@@ -138,7 +138,7 @@ export class ChartDataStore<TData = Record<string, unknown>> {
    * Выполняет действие numericExtent в рамках ответственности ChartDataStore.
    */
   numericExtent(field: NovaChartFieldAccessor<TData>): readonly [number, number] {
-    const cache = this.getFieldCache(field)
+    const cache = this._getFieldCache(field)
     if (cache.numericExtent) {
       return cache.numericExtent
     }
@@ -146,7 +146,7 @@ export class ChartDataStore<TData = Record<string, unknown>> {
     let min = Number.POSITIVE_INFINITY
     let max = Number.NEGATIVE_INFINITY
 
-    this.rows.forEach((row, index) => {
+    this._rows.forEach((row, index) => {
       const value = Number(this.readField(row, index, field))
       if (!Number.isFinite(value)) {
         return
@@ -167,14 +167,14 @@ export class ChartDataStore<TData = Record<string, unknown>> {
    * Выполняет действие categoryDomain в рамках ответственности ChartDataStore.
    */
   categoryDomain(field: NovaChartFieldAccessor<TData>): ReadonlyArray<string> {
-    const cache = this.getFieldCache(field)
+    const cache = this._getFieldCache(field)
     if (cache.categoryDomain) {
       return cache.categoryDomain
     }
 
     const seen = new Set<string>()
     const domain: Array<string> = []
-    this.rows.forEach((row, index) => {
+    this._rows.forEach((row, index) => {
       const value = String(this.readField(row, index, field) ?? '')
       if (seen.has(value)) {
         return
@@ -191,13 +191,13 @@ export class ChartDataStore<TData = Record<string, unknown>> {
    * Выполняет действие categoryIndices в рамках ответственности ChartDataStore.
    */
   categoryIndices(field: NovaChartFieldAccessor<TData>): Map<string, Array<number>> {
-    const cache = this.getFieldCache(field)
+    const cache = this._getFieldCache(field)
     if (cache.categoryIndices) {
       return cache.categoryIndices
     }
 
     const indices = new Map<string, Array<number>>()
-    this.rows.forEach((row, index) => {
+    this._rows.forEach((row, index) => {
       const value = String(this.readField(row, index, field) ?? '')
       let bucket = indices.get(value)
       if (!bucket) {
@@ -242,46 +242,46 @@ export class ChartDataStore<TData = Record<string, unknown>> {
   /**
    * Выполняет внутренний шаг readPatchKey для ChartDataStore.
    */
-  private readPatchKey(patch: Partial<TData> & Record<string, unknown>): NovaChartRowKey | undefined {
-    if (!this.keyField) {
+  private _readPatchKey(patch: Partial<TData> & Record<string, unknown>): NovaChartRowKey | undefined {
+    if (!this._keyField) {
       return undefined
     }
-    if (typeof this.keyField === 'function') {
-      const key = this.keyField(patch as TData, -1)
+    if (typeof this._keyField === 'function') {
+      const key = this._keyField(patch as TData, -1)
       return typeof key === 'string' || typeof key === 'number' ? key : undefined
     }
 
-    const key = patch[String(this.keyField)]
+    const key = patch[String(this._keyField)]
     return typeof key === 'string' || typeof key === 'number' ? key : undefined
   }
 
   /**
    * Выполняет внутренний шаг rebuildKeyIndex для ChartDataStore.
    */
-  private rebuildKeyIndex(): void {
-    this.keyIndex.clear()
-    this.rows.forEach((row, index) => {
-      this.keyIndex.set(this.getRowKey(row, index), index)
+  private _rebuildKeyIndex(): void {
+    this._keyIndex.clear()
+    this._rows.forEach((row, index) => {
+      this._keyIndex.set(this.getRowKey(row, index), index)
     })
   }
 
   /**
    * Помечает runtime-состояние как требующее обновления ChartDataStore.
    */
-  private invalidate(): void {
+  private _invalidate(): void {
     this._revision += 1
-    this.fieldCache.clear()
+    this._fieldCache.clear()
   }
 
   /**
    * Возвращает значение состояния ChartDataStore.
    */
-  private getFieldCache(field: NovaChartFieldAccessor<TData>): FieldCache {
+  private _getFieldCache(field: NovaChartFieldAccessor<TData>): FieldCache {
     const key = fieldCacheKey(field)
-    let cache = this.fieldCache.get(key)
+    let cache = this._fieldCache.get(key)
     if (!cache) {
       cache = {}
-      this.fieldCache.set(key, cache)
+      this._fieldCache.set(key, cache)
     }
     return cache
   }

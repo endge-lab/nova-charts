@@ -19,7 +19,7 @@ import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
  */
 export class ChartInteraction<E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartInteractionResolvedProps, NovaChartInteractionApi, NovaChartInteractionProps, E> {
-  private readonly api: NovaChartInteractionApi
+  private readonly _api: NovaChartInteractionApi
 
   /**
    * Создает экземпляр ChartInteraction и подготавливает базовое состояние.
@@ -37,10 +37,10 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
       zIndex: 40,
       cursor: props.cursor ?? { hover: 'pointer' },
     })
-    this.api = {
+    this._api = {
       refresh: () => this.dirty({ update: true, render: true }),
     }
-    this.setupEvents()
+    this._setupEvents()
   }
 
   /**
@@ -54,7 +54,7 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
    * Возвращает значение состояния ChartInteraction.
    */
   override getApi(): NovaChartInteractionApi {
-    return this.api
+    return this._api
   }
 
   /**
@@ -76,16 +76,16 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
   /**
    * Обновляет значение состояния ChartInteraction.
    */
-  private setupEvents(): void {
-    this.on('mousemove', event => this.handlePointerMove(event))
-    this.on('mouseleave', () => this.clearHover())
-    this.on('canvasleave', () => this.clearHover())
+  private _setupEvents(): void {
+    this.on('mousemove', event => this._handlePointerMove(event))
+    this.on('mouseleave', () => this._clearHover())
+    this.on('canvasleave', () => this._clearHover())
   }
 
   /**
    * Обрабатывает runtime-событие ChartInteraction.
    */
-  private handlePointerMove(event: MouseEvent): void {
+  private _handlePointerMove(event: MouseEvent): void {
     if (!this.props.enabled || !this.props.hover) {
       return
     }
@@ -97,7 +97,7 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
 
     const canvasPoint = this.nova.events.getCanvasMousePosition(event)
     const [plotX, plotY] = this.toLocal(canvasPoint.x, canvasPoint.y)
-    const hovered = this.findHoveredDatum(plotX, plotY)
+    const hovered = this._findHoveredDatum(plotX, plotY)
 
     runtime.setInteractionState({
       pointer: {
@@ -114,7 +114,7 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
   /**
    * Очищает накопленное состояние ChartInteraction.
    */
-  private clearHover(): void {
+  private _clearHover(): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     runtime?.setInteractionState({
       pointer: null,
@@ -126,7 +126,7 @@ export class ChartInteraction<E extends EventList = Record<string, any>>
   /**
    * Находит сущность по runtime-критериям ChartInteraction.
    */
-  private findHoveredDatum(x: number, y: number): NovaChartHitTestResult<Record<string, unknown>> | null {
+  private _findHoveredDatum(x: number, y: number): NovaChartHitTestResult<Record<string, unknown>> | null {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     if (!runtime) {
       return null

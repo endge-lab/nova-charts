@@ -16,7 +16,7 @@ import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
  */
 export class ChartLegend<E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartLegendResolvedProps, NovaChartLegendApi, NovaChartLegendProps, E> {
-  private readonly api: NovaChartLegendApi
+  private readonly _api: NovaChartLegendApi
 
   /**
    * Создает экземпляр ChartLegend и подготавливает базовое состояние.
@@ -30,8 +30,8 @@ export class ChartLegend<E extends EventList = Record<string, any>>
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ interactive: false, zIndex: 20 })
-    this.api = {
-      getSeries: () => this.resolveSeries(),
+    this._api = {
+      getSeries: () => this._resolveSeries(),
       refresh: () => this.dirty({ update: true, render: true }),
     }
   }
@@ -47,14 +47,14 @@ export class ChartLegend<E extends EventList = Record<string, any>>
    * Возвращает значение состояния ChartLegend.
    */
   override getApi(): NovaChartLegendApi {
-    return this.api
+    return this._api
   }
 
   /**
    * Выполняет отрисовку ChartLegend.
    */
   render(): void {
-    const series = this.resolveSeries()
+    const series = this._resolveSeries()
     if (series.length === 0) {
       return
     }
@@ -221,7 +221,7 @@ export class ChartLegend<E extends EventList = Record<string, any>>
   /**
    * Возвращает series metadata с учетом local props.
    */
-  private resolveSeries(): Array<NovaChartSeriesMetadata> {
+  private _resolveSeries(): Array<NovaChartSeriesMetadata> {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     if (!runtime) {
       return []

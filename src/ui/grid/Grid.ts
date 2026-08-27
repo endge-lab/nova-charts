@@ -17,8 +17,8 @@ import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
  */
 export class ChartGrid<E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartGridResolvedProps, NovaChartGridApi, NovaChartGridProps, E> {
-  private lineCount = 0
-  private readonly api: NovaChartGridApi
+  private _lineCount = 0
+  private readonly _api: NovaChartGridApi
 
   /**
    * Создает экземпляр ChartGrid и подготавливает базовое состояние.
@@ -32,9 +32,9 @@ export class ChartGrid<E extends EventList = Record<string, any>>
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ zIndex: 0 })
-    this.api = {
+    this._api = {
       refresh: () => this.dirty({ update: true, render: true }),
-      getLineCount: () => this.lineCount,
+      getLineCount: () => this._lineCount,
     }
   }
 
@@ -49,7 +49,7 @@ export class ChartGrid<E extends EventList = Record<string, any>>
    * Возвращает значение состояния ChartGrid.
    */
   override getApi(): NovaChartGridApi {
-    return this.api
+    return this._api
   }
 
   /**
@@ -108,7 +108,7 @@ export class ChartGrid<E extends EventList = Record<string, any>>
       }
     }
 
-    this.lineCount = schema.length
+    this._lineCount = schema.length
     if (schema.length > 0) {
       this.renderer.schema(schema)
     }
@@ -122,7 +122,7 @@ export class ChartGrid<E extends EventList = Record<string, any>>
       data: {
         xScaleId: this.props.xScaleId,
         yScaleId: this.props.yScaleId,
-        lineCount: this.lineCount,
+        lineCount: this._lineCount,
       },
       source: {
         type: 'synthetic',

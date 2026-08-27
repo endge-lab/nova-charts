@@ -40,8 +40,8 @@ const VALUE_SCALE_ID = 'value'
  */
 export class ChartBarChart<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartBarChartResolvedProps<TData>, NovaChartBarChartApi<TData>, NovaChartBarChartProps<TData>, E> {
-  private readonly managedChildren: Array<NovaNode<E>> = []
-  private readonly api: NovaChartBarChartApi<TData>
+  private readonly _managedChildren: Array<NovaNode<E>> = []
+  private readonly _api: NovaChartBarChartApi<TData>
 
   /**
    * Создает экземпляр ChartBarChart и подготавливает внутренний DSL tree.
@@ -54,17 +54,17 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
     descriptor: ChartBarChartDescriptor<TData> = CHART_BAR_CHART_NODE_DESCRIPTOR as ChartBarChartDescriptor<TData>,
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
-    this.api = {
-      setData: data => this.setData(data),
+    this._api = {
+      setData: data => this._setData(data),
       getData: () => this.props.data,
-      refresh: () => this.refresh(),
-      exportChart: exportOptions => this.rootApi()?.exportChart(exportOptions) ?? this.nova.exportImage({
+      refresh: () => this._refresh(),
+      exportChart: exportOptions => this._rootApi()?.exportChart(exportOptions) ?? this.nova.exportImage({
         ...exportOptions,
         includeSemanticSnapshot: exportOptions?.includeSemanticSnapshot ?? true,
       }),
-      getSemanticSnapshot: snapshotOptions => this.rootApi()?.getSemanticSnapshot(snapshotOptions) ?? this.nova.semantics.snapshot(snapshotOptions),
+      getSemanticSnapshot: snapshotOptions => this._rootApi()?.getSemanticSnapshot(snapshotOptions) ?? this.nova.semantics.snapshot(snapshotOptions),
     }
-    this.reconcile()
+    this._reconcile()
   }
 
   /**
@@ -81,7 +81,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
    * Возвращает значение состояния ChartBarChart.
    */
   override getApi(): NovaChartBarChartApi<TData> {
-    return this.api
+    return this._api
   }
 
   /**
@@ -90,7 +90,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   override applyLayoutRect(rect: NovaUiLayoutRect): boolean {
     const changed = super.applyLayoutRect(rect)
     if (changed) {
-      this.applyChildrenRect()
+      this._applyChildrenRect()
     }
     return changed
   }
@@ -99,7 +99,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
    * Обновляет runtime-состояние ChartBarChart.
    */
   update(): void {
-    this.applyChildrenRect()
+    this._applyChildrenRect()
   }
 
   /**
@@ -115,38 +115,38 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Обновляет данные wrapper chart.
    */
-  private setData(data: Array<TData>): void {
+  private _setData(data: Array<TData>): void {
     this.setProps({ data: [...data] } as Partial<NovaChartBarChartResolvedProps<TData>>)
-    this.reconcile()
+    this._reconcile()
     this.dirty({ update: true, render: true })
   }
 
   /**
    * Пересобирает внутренний DSL tree.
    */
-  private refresh(): void {
-    this.reconcile()
-    this.dirtyChildren()
+  private _refresh(): void {
+    this._reconcile()
+    this._dirtyChildren()
     this.dirty({ update: true, render: true })
   }
 
   /**
    * Согласует внутренние Nova children.
    */
-  private reconcile(): void {
-    const children = this.createRootSchema()
-    const reconciled = reconcileNovaTemplateChildren(this, this.managedChildren, [children])
-    this.managedChildren.length = 0
-    this.managedChildren.push(...reconciled.nodes)
-    this.applyChildrenRect()
+  private _reconcile(): void {
+    const children = this._createRootSchema()
+    const reconciled = reconcileNovaTemplateChildren(this, this._managedChildren, [children])
+    this._managedChildren.length = 0
+    this._managedChildren.push(...reconciled.nodes)
+    this._applyChildrenRect()
   }
 
   /**
    * Создает корневой schema high-level chart.
    */
-  private createRootSchema(): NovaTemplateChildSchema {
-    const categoryDomain = this.resolveCategoryDomain()
-    const valueDomain = this.resolveValueDomain()
+  private _createRootSchema(): NovaTemplateChildSchema {
+    const categoryDomain = this._resolveCategoryDomain()
+    const valueDomain = this._resolveValueDomain()
     const vertical = this.props.orientation === 'vertical'
     const categoryScale = vertical ? CATEGORY_SCALE_ID : VALUE_SCALE_ID
     const valueScale = vertical ? VALUE_SCALE_ID : CATEGORY_SCALE_ID
@@ -200,8 +200,8 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
             alignItems: 'stretch',
           },
           children: vertical
-            ? this.createVerticalLayout(categoryScale, valueScale)
-            : this.createHorizontalLayout(categoryScale, valueScale),
+            ? this._createVerticalLayout(categoryScale, valueScale)
+            : this._createHorizontalLayout(categoryScale, valueScale),
         },
       ],
     }
@@ -210,7 +210,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает layout для vertical bars.
    */
-  private createVerticalLayout(categoryScaleId: string, valueScaleId: string): Array<NovaTemplateChildSchema> {
+  private _createVerticalLayout(categoryScaleId: string, valueScaleId: string): Array<NovaTemplateChildSchema> {
     const valueAxisWidth = this.props.axes.value.visible ? this.props.axes.value.width : 0
     const categoryAxisHeight = this.props.axes.category.visible ? this.props.axes.category.height : 0
     const viewportHeight = this.props.viewport ? 16 : 0
@@ -227,20 +227,20 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
         },
         layout: { width: '100%', flexBasis: 0, flexGrow: 1, minHeight: 1 },
         children: [
-          ...this.createValueAxis(valueScaleId, valueAxisWidth, 'vertical'),
-          this.createPlot(categoryScaleId, valueScaleId),
-          ...this.createLegend(legendWidth),
+          ...this._createValueAxis(valueScaleId, valueAxisWidth, 'vertical'),
+          this._createPlot(categoryScaleId, valueScaleId),
+          ...this._createLegend(legendWidth),
         ],
       },
-      ...this.createCategoryAxisRow(categoryScaleId, valueAxisWidth, categoryAxisHeight, legendWidth),
-      ...this.createViewportRow(categoryScaleId, valueAxisWidth, viewportHeight, legendWidth, 'horizontal'),
+      ...this._createCategoryAxisRow(categoryScaleId, valueAxisWidth, categoryAxisHeight, legendWidth),
+      ...this._createViewportRow(categoryScaleId, valueAxisWidth, viewportHeight, legendWidth, 'horizontal'),
     ]
   }
 
   /**
    * Создает layout для horizontal bars.
    */
-  private createHorizontalLayout(categoryScaleId: string, valueScaleId: string): Array<NovaTemplateChildSchema> {
+  private _createHorizontalLayout(categoryScaleId: string, valueScaleId: string): Array<NovaTemplateChildSchema> {
     const categoryAxisWidth = this.props.axes.category.visible ? this.props.axes.category.width : 0
     const valueAxisHeight = this.props.axes.value.visible ? this.props.axes.value.height : 0
     const viewportWidth = this.props.viewport ? 16 : 0
@@ -257,23 +257,23 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
         },
         layout: { width: '100%', flexBasis: 0, flexGrow: 1, minHeight: 1 },
         children: [
-          ...this.createCategoryAxis(categoryScaleId, categoryAxisWidth),
-          this.createPlot(valueScaleId, categoryScaleId),
-          ...this.createViewportColumn(categoryScaleId, viewportWidth),
-          ...this.createLegend(legendWidth),
+          ...this._createCategoryAxis(categoryScaleId, categoryAxisWidth),
+          this._createPlot(valueScaleId, categoryScaleId),
+          ...this._createViewportColumn(categoryScaleId, viewportWidth),
+          ...this._createLegend(legendWidth),
         ],
       },
-      ...this.createValueAxisRow(valueScaleId, categoryAxisWidth, valueAxisHeight, viewportWidth, legendWidth),
+      ...this._createValueAxisRow(valueScaleId, categoryAxisWidth, valueAxisHeight, viewportWidth, legendWidth),
     ]
   }
 
   /**
    * Создает Plot с Grid, BarSeries, Interaction и Tooltip.
    */
-  private createPlot(xScaleId: string, yScaleId: string): NovaTemplateChildSchema {
-    const gridProps = this.resolveObjectOption<NovaChartGridProps>(this.props.grid)
-    const interactionProps = this.resolveObjectOption<NovaChartInteractionProps>(this.props.interaction)
-    const tooltipProps = this.resolveObjectOption<NovaChartTooltipProps>(this.props.tooltip)
+  private _createPlot(xScaleId: string, yScaleId: string): NovaTemplateChildSchema {
+    const gridProps = this._resolveObjectOption<NovaChartGridProps>(this.props.grid)
+    const interactionProps = this._resolveObjectOption<NovaChartInteractionProps>(this.props.interaction)
+    const tooltipProps = this._resolveObjectOption<NovaChartTooltipProps>(this.props.tooltip)
     return {
       type: NovaCharts.Plot,
       id: `${this.componentId}:plot`,
@@ -325,7 +325,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
               },
             }]
           : []),
-        ...this.createViewportController(xScaleId),
+        ...this._createViewportController(xScaleId),
         ...(this.props.tooltip
           ? [{
               type: NovaCharts.Tooltip,
@@ -340,11 +340,11 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
     }
   }
 
-  private createViewportController(scaleId: string): Array<NovaTemplateChildSchema> {
+  private _createViewportController(scaleId: string): Array<NovaTemplateChildSchema> {
     if (!this.props.viewport) {
       return []
     }
-    const viewportProps = this.resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
+    const viewportProps = this._resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
     if (!viewportProps?.controller) {
       return []
     }
@@ -363,7 +363,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает vertical value axis.
    */
-  private createValueAxis(
+  private _createValueAxis(
     scaleId: string,
     width: number,
     orientation: 'vertical' | 'horizontal',
@@ -390,7 +390,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает vertical category axis.
    */
-  private createCategoryAxis(scaleId: string, width: number): Array<NovaTemplateChildSchema> {
+  private _createCategoryAxis(scaleId: string, width: number): Array<NovaTemplateChildSchema> {
     if (!this.props.axes.category.visible) {
       return []
     }
@@ -411,7 +411,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает bottom category axis row.
    */
-  private createCategoryAxisRow(
+  private _createCategoryAxisRow(
     scaleId: string,
     spacerWidth: number,
     height: number,
@@ -429,7 +429,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
       },
       layout: { width: '100%', height, flexShrink: 0 },
       children: [
-        this.createSpacer(`${this.componentId}:category-axis-spacer`, spacerWidth, height),
+        this._createSpacer(`${this.componentId}:category-axis-spacer`, spacerWidth, height),
         {
           type: NovaCharts.Axis,
           id: `${this.componentId}:category-axis`,
@@ -442,7 +442,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
           },
           layout: { flexBasis: 0, flexGrow: 1, minWidth: 1, height },
         },
-        ...(legendWidth > 0 ? [this.createSpacer(`${this.componentId}:legend-axis-spacer`, legendWidth, height)] : []),
+        ...(legendWidth > 0 ? [this._createSpacer(`${this.componentId}:legend-axis-spacer`, legendWidth, height)] : []),
       ],
     }]
   }
@@ -450,7 +450,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает bottom value axis row.
    */
-  private createValueAxisRow(
+  private _createValueAxisRow(
     scaleId: string,
     spacerWidth: number,
     height: number,
@@ -469,7 +469,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
       },
       layout: { width: '100%', height, flexShrink: 0 },
       children: [
-        this.createSpacer(`${this.componentId}:value-axis-spacer`, spacerWidth, height),
+        this._createSpacer(`${this.componentId}:value-axis-spacer`, spacerWidth, height),
         {
           type: NovaCharts.Axis,
           id: `${this.componentId}:value-axis`,
@@ -482,8 +482,8 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
           },
           layout: { flexBasis: 0, flexGrow: 1, minWidth: 1, height },
         },
-        ...(viewportWidth > 0 ? [this.createSpacer(`${this.componentId}:viewport-axis-spacer`, viewportWidth, height)] : []),
-        ...(legendWidth > 0 ? [this.createSpacer(`${this.componentId}:legend-axis-spacer`, legendWidth, height)] : []),
+        ...(viewportWidth > 0 ? [this._createSpacer(`${this.componentId}:viewport-axis-spacer`, viewportWidth, height)] : []),
+        ...(legendWidth > 0 ? [this._createSpacer(`${this.componentId}:legend-axis-spacer`, legendWidth, height)] : []),
       ],
     }]
   }
@@ -491,7 +491,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает horizontal viewport row.
    */
-  private createViewportRow(
+  private _createViewportRow(
     scaleId: string,
     spacerWidth: number,
     height: number,
@@ -501,7 +501,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
     if (!this.props.viewport) {
       return []
     }
-    const viewportProps = this.resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
+    const viewportProps = this._resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
     return [{
       type: NovaUIKit.Flex,
       id: `${this.componentId}:viewport-row`,
@@ -511,7 +511,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
       },
       layout: { width: '100%', height, flexShrink: 0 },
       children: [
-        this.createSpacer(`${this.componentId}:viewport-spacer`, spacerWidth, height),
+        this._createSpacer(`${this.componentId}:viewport-spacer`, spacerWidth, height),
         {
           type: NovaCharts.Viewport,
           id: `${this.componentId}:viewport`,
@@ -522,7 +522,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
           },
           layout: { flexBasis: 0, flexGrow: 1, minWidth: 1, height },
         },
-        ...(legendWidth > 0 ? [this.createSpacer(`${this.componentId}:legend-viewport-spacer`, legendWidth, height)] : []),
+        ...(legendWidth > 0 ? [this._createSpacer(`${this.componentId}:legend-viewport-spacer`, legendWidth, height)] : []),
       ],
     }]
   }
@@ -530,11 +530,11 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает vertical viewport column.
    */
-  private createViewportColumn(scaleId: string, width: number): Array<NovaTemplateChildSchema> {
+  private _createViewportColumn(scaleId: string, width: number): Array<NovaTemplateChildSchema> {
     if (!this.props.viewport) {
       return []
     }
-    const viewportProps = this.resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
+    const viewportProps = this._resolveObjectOption<Omit<NovaChartViewportProps, 'scaleId'>>(this.props.viewport)
     return [{
       type: NovaCharts.Viewport,
       id: `${this.componentId}:viewport`,
@@ -550,11 +550,11 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает Legend.
    */
-  private createLegend(width: number): Array<NovaTemplateChildSchema> {
+  private _createLegend(width: number): Array<NovaTemplateChildSchema> {
     if (!this.props.legend) {
       return []
     }
-    const legendProps = this.resolveObjectOption<NovaChartLegendProps>(this.props.legend)
+    const legendProps = this._resolveObjectOption<NovaChartLegendProps>(this.props.legend)
     return [{
       type: NovaCharts.Legend,
       id: `${this.componentId}:legend`,
@@ -568,7 +568,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Создает прозрачный layout spacer.
    */
-  private createSpacer(id: string, width: number, height: number): NovaTemplateChildSchema {
+  private _createSpacer(id: string, width: number, height: number): NovaTemplateChildSchema {
     return {
       type: NovaUIKit.Surface,
       id,
@@ -583,14 +583,14 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Возвращает object props для boolean | object опций.
    */
-  private resolveObjectOption<TOption>(value: boolean | TOption): TOption | null {
+  private _resolveObjectOption<TOption>(value: boolean | TOption): TOption | null {
     return typeof value === 'object' && value !== null ? value : null
   }
 
   /**
    * Возвращает полный category domain.
    */
-  private resolveCategoryDomain(): ChartScaleDomain {
+  private _resolveCategoryDomain(): ChartScaleDomain {
     const seen = new Set<string>()
     const domain: Array<string> = []
     this.props.data.forEach((row, index) => {
@@ -607,7 +607,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Возвращает value-domain с учетом stacked mode.
    */
-  private resolveValueDomain(): ChartScaleDomain {
+  private _resolveValueDomain(): ChartScaleDomain {
     if (this.props.data.length === 0) {
       return [0, 1]
     }
@@ -654,14 +654,14 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Применяет layout rect к внутреннему root.
    */
-  private applyChildrenRect(): void {
+  private _applyChildrenRect(): void {
     const rect = {
       x: 0,
       y: 0,
       width: this.width,
       height: this.height,
     }
-    for (const child of this.managedChildren) {
+    for (const child of this._managedChildren) {
       applyChildRect(child, rect)
     }
   }
@@ -669,13 +669,13 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
   /**
    * Dirty для внутреннего subtree.
    */
-  private dirtyChildren(): void {
-    for (const child of this.managedChildren) {
+  private _dirtyChildren(): void {
+    for (const child of this._managedChildren) {
       dirtySubtree(child)
     }
   }
 
-  private rootApi(): NovaChartRootApi<TData> | null {
+  private _rootApi(): NovaChartRootApi<TData> | null {
     return this.nova.components.api<NovaChartRootApi<TData>>(`${this.componentId}:root`) ?? null
   }
 
@@ -684,7 +684,7 @@ export class ChartBarChart<TData = Record<string, unknown>, E extends EventList 
    */
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartBarChartResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
-    this.reconcile()
+    this._reconcile()
     this.dirty({ update: true, render: true })
   }
 }

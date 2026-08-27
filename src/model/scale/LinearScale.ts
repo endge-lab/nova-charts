@@ -17,9 +17,9 @@ const DEFAULT_RANGE: ChartScaleRange = [0, 1]
 export class LinearScale implements ChartScale<number> {
   readonly type: ChartContinuousScaleType = 'linear'
 
-  private domain: ChartNumericDomain
-  private range: ChartScaleRange
-  private readonly clampValues: boolean
+  private _domain: ChartNumericDomain
+  private _range: ChartScaleRange
+  private readonly _clampValues: boolean
 
   /**
    * Создает числовую шкалу с доменом данных и пиксельным диапазоном.
@@ -32,23 +32,23 @@ export class LinearScale implements ChartScale<number> {
       clamp?: boolean
     },
   ) {
-    this.domain = options.domain
-    this.range = options.range ?? DEFAULT_RANGE
-    this.clampValues = options.clamp ?? false
+    this._domain = options.domain
+    this._range = options.range ?? DEFAULT_RANGE
+    this._clampValues = options.clamp ?? false
   }
 
   /**
    * Возвращает текущий домен данных.
    */
   getDomain(): ChartNumericDomain {
-    return this.domain
+    return this._domain
   }
 
   /**
    * Возвращает текущий пиксельный диапазон.
    */
   getRange(): ChartScaleRange {
-    return this.range
+    return this._range
   }
 
   /**
@@ -58,29 +58,29 @@ export class LinearScale implements ChartScale<number> {
     if (!isNumericDomain(domain)) {
       throw new Error(`[NovaCharts] Linear scale "${this.id}" expects numeric domain`)
     }
-    this.domain = domain
+    this._domain = domain
   }
 
   /**
    * Заменяет пиксельный диапазон.
    */
   setRange(range: ChartScaleRange): void {
-    this.range = range
+    this._range = range
   }
 
   /**
    * Переводит значение данных в пиксель.
    */
   toPx(value: number): number {
-    const [domainStart, domainEnd] = this.domain
-    const [rangeStart, rangeEnd] = this.range
+    const [domainStart, domainEnd] = this._domain
+    const [rangeStart, rangeEnd] = this._range
     const domainSpan = domainEnd - domainStart
     if (domainSpan === 0) {
       return rangeStart
     }
 
     const normalized = (value - domainStart) / domainSpan
-    const ratio = this.clampValues ? clamp(normalized, 0, 1) : normalized
+    const ratio = this._clampValues ? clamp(normalized, 0, 1) : normalized
     return rangeStart + ratio * (rangeEnd - rangeStart)
   }
 
@@ -88,15 +88,15 @@ export class LinearScale implements ChartScale<number> {
    * Переводит пиксель обратно в значение данных.
    */
   fromPx(px: number): number {
-    const [domainStart, domainEnd] = this.domain
-    const [rangeStart, rangeEnd] = this.range
+    const [domainStart, domainEnd] = this._domain
+    const [rangeStart, rangeEnd] = this._range
     const rangeSpan = rangeEnd - rangeStart
     if (rangeSpan === 0) {
       return domainStart
     }
 
     const normalized = (px - rangeStart) / rangeSpan
-    const ratio = this.clampValues ? clamp(normalized, 0, 1) : normalized
+    const ratio = this._clampValues ? clamp(normalized, 0, 1) : normalized
     return domainStart + ratio * (domainEnd - domainStart)
   }
 
@@ -108,8 +108,8 @@ export class LinearScale implements ChartScale<number> {
       return createExplicitNumericTicks(this, options.values, options)
     }
 
-    const [domainStart, domainEnd] = this.domain
-    const [rangeStart, rangeEnd] = this.range
+    const [domainStart, domainEnd] = this._domain
+    const [rangeStart, rangeEnd] = this._range
     const rangeSize = Math.abs(rangeEnd - rangeStart)
     const minStepPx = options.minStepPx ?? 48
     const maxByPixels = Math.max(1, Math.floor(rangeSize / minStepPx))

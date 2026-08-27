@@ -83,7 +83,7 @@ class TestMixedSeries extends NovaUiComponentNode<
   TestMixedSeriesProps,
   TestEvents
 > {
-  private readonly api = {
+  private readonly _api = {
     refresh: () => this.dirty({ update: true, render: true }),
   }
 
@@ -100,7 +100,7 @@ class TestMixedSeries extends NovaUiComponentNode<
   }
 
   override getApi(): { refresh: () => void } {
-    return this.api
+    return this._api
   }
 
   update(): void {
@@ -133,7 +133,7 @@ class TestMixedSeries extends NovaUiComponentNode<
     runtime.registerInteractiveSeries({
       id: this.componentId,
       api: {
-        hitTest: input => this.hitTest(input),
+        hitTest: input => this._hitTestSeries(input),
       },
       dirty: () => this.dirty({ render: true }),
     })
@@ -149,7 +149,7 @@ class TestMixedSeries extends NovaUiComponentNode<
     super.onUnmount()
   }
 
-  private hitTest(input: NovaChartHitTestInput): NovaChartDatumRef<Record<string, unknown>> | null {
+  private _hitTestSeries(input: NovaChartHitTestInput): NovaChartDatumRef<Record<string, unknown>> | null {
     const hit = this.props.hit
     if (!hit) {
       return null

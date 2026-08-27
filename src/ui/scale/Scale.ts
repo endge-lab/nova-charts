@@ -20,9 +20,9 @@ import { requireNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
  */
 export class ChartScaleNode<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartScaleResolvedProps<TData>, NovaChartScaleApi, NovaChartScaleProps<TData>, E> {
-  private scale: ChartScale | null = null
-  private readonly api: NovaChartScaleApi
-  private mountedInRuntime = false
+  private _scale: ChartScale | null = null
+  private readonly _api: NovaChartScaleApi
+  private _mountedInRuntime = false
 
   /**
    * Создает экземпляр ChartScaleNode и подготавливает базовое состояние.
@@ -35,10 +35,10 @@ export class ChartScaleNode<TData = Record<string, unknown>, E extends EventList
     descriptor: ChartScaleDescriptor<TData> = CHART_SCALE_NODE_DESCRIPTOR as ChartScaleDescriptor<TData>,
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
-    this.api = {
-      getScaleId: () => this.scaleId,
-      getScale: () => this.scale,
-      refresh: () => this.refresh(),
+    this._api = {
+      getScaleId: () => this._scaleId,
+      getScale: () => this._scale,
+      refresh: () => this._refresh(),
     }
   }
 
@@ -53,7 +53,7 @@ export class ChartScaleNode<TData = Record<string, unknown>, E extends EventList
    * Возвращает значение состояния ChartScaleNode.
    */
   override getApi(): NovaChartScaleApi {
-    return this.api
+    return this._api
   }
 
   /**
@@ -66,18 +66,18 @@ export class ChartScaleNode<TData = Record<string, unknown>, E extends EventList
    */
   protected override onMount(): void {
     super.onMount()
-    this.register()
+    this._register()
   }
 
   /**
    * Обрабатывает входящее событие ChartScaleNode.
    */
   protected override onUnmount(): void {
-    if (this.mountedInRuntime) {
+    if (this._mountedInRuntime) {
       const runtime = this.injectOptional(NovaChartRuntimeToken)
-      runtime?.unregisterScale(this.scaleId)
+      runtime?.unregisterScale(this._scaleId)
     }
-    this.mountedInRuntime = false
+    this._mountedInRuntime = false
     super.onUnmount()
   }
 
@@ -87,46 +87,46 @@ export class ChartScaleNode<TData = Record<string, unknown>, E extends EventList
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartScaleResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
     if (changedKeys.some(key => key !== 'x' && key !== 'y' && key !== 'width' && key !== 'height')) {
-      this.refresh()
+      this._refresh()
     }
   }
 
   /**
    * Возвращает scale Id для ChartScaleNode.
    */
-  private get scaleId(): string {
+  private get _scaleId(): string {
     return this.props.scaleId ?? this.componentId
   }
 
   /**
    * Регистрирует сущность в runtime-слое ChartScaleNode.
    */
-  private register(): void {
+  private _register(): void {
     const runtime = requireNovaChartRuntime<TData>(this)
-    this.scale = resolveChartScale(this.scaleId, this.props, runtime.dataStore)
+    this._scale = resolveChartScale(this._scaleId, this.props, runtime.dataStore)
     runtime.registerScale({
-      id: this.scaleId,
+      id: this._scaleId,
       props: this.props,
-      scale: this.scale,
+      scale: this._scale,
     })
-    this.mountedInRuntime = true
+    this._mountedInRuntime = true
   }
 
   /**
    * Синхронизирует актуальное состояние ChartScaleNode.
    */
-  private refresh(): void {
+  private _refresh(): void {
     const runtime = requireNovaChartRuntime<TData>(this)
-    if (!this.scale) {
-      this.register()
+    if (!this._scale) {
+      this._register()
       return
     }
-    this.scale = resolveChartScale(this.scaleId, this.props, runtime.dataStore)
+    this._scale = resolveChartScale(this._scaleId, this.props, runtime.dataStore)
     runtime.registerScale({
-      id: this.scaleId,
+      id: this._scaleId,
       props: this.props,
-      scale: this.scale,
+      scale: this._scale,
     })
-    runtime.refreshScale(this.scaleId)
+    runtime.refreshScale(this._scaleId)
   }
 }

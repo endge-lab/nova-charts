@@ -18,7 +18,7 @@ import { resolveNovaChartRuntime } from '@/ui/shared/chart-runtime-resolver'
  */
 export class ChartAxis<E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartAxisResolvedProps, NovaChartAxisApi, NovaChartAxisProps, E> {
-  private readonly api: NovaChartAxisApi
+  private readonly _api: NovaChartAxisApi
 
   /**
    * Создает экземпляр ChartAxis и подготавливает базовое состояние.
@@ -32,9 +32,9 @@ export class ChartAxis<E extends EventList = Record<string, any>>
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ zIndex: 20 })
-    this.api = {
+    this._api = {
       refresh: () => this.dirty({ update: true, render: true }),
-      getTickCount: () => this.readTicks().length,
+      getTickCount: () => this._readTicks().length,
     }
   }
 
@@ -49,28 +49,28 @@ export class ChartAxis<E extends EventList = Record<string, any>>
    * Возвращает значение состояния ChartAxis.
    */
   override getApi(): NovaChartAxisApi {
-    return this.api
+    return this._api
   }
 
   /**
    * Выполняет отрисовку ChartAxis.
    */
   render(): void {
-    const ticks = this.readTicks()
+    const ticks = this._readTicks()
     const runtime = resolveNovaChartRuntime(this, this.props.chartRef)
-    const lineStyle = this.resolvePartStyle('axisTick', {
+    const lineStyle = this._resolvePartStyle('axisTick', {
       color: this.props.lineColor,
       stroke: this.props.lineColor,
       width: 1,
       strokeWidth: 1,
     }, runtime)
-    const tickStyle = this.resolvePartStyle('axisTick', {
+    const tickStyle = this._resolvePartStyle('axisTick', {
       color: this.props.tickColor,
       stroke: this.props.tickColor,
       width: 1,
       strokeWidth: 1,
     }, runtime)
-    const labelStyle = this.resolvePartStyle('axisLabel', {
+    const labelStyle = this._resolvePartStyle('axisLabel', {
       color: this.props.labelColor,
       fontFamily: this.props.fontFamily,
       fontSize: this.props.fontSize,
@@ -82,7 +82,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
     if (this.props.orientation === 'horizontal') {
       const baselineY = this.props.tickSide === 'start' ? this.height - 1 : 0.5
       const tickDirection = this.props.tickSide === 'start' ? -1 : 1
-      const labelRotation = this.resolveHorizontalLabelRotation(ticks)
+      const labelRotation = this._resolveHorizontalLabelRotation(ticks)
       const labelY = this.props.labelSide === 'start'
         ? Math.max(0, baselineY - this.props.tickSize - this.props.labelPadding - 14)
         : baselineY + this.props.tickSize + this.props.labelPadding
@@ -117,7 +117,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
 
       if (labelRotation !== 0) {
         for (const tick of ticks) {
-          this.renderRotatedLabel(tick.label, tick.position, labelY, labelRotation)
+          this._renderRotatedLabel(tick.label, tick.position, labelY, labelRotation)
         }
       }
       else {
@@ -125,7 +125,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
           this.renderer.text(label)
         }
       }
-      this.publishSemantics(runtime, ticks.length)
+      this._publishSemantics(runtime, ticks.length)
       return
     }
     else {
@@ -182,7 +182,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
     for (const label of labels) {
       this.renderer.text(label)
     }
-    this.publishSemantics(runtime, ticks.length)
+    this._publishSemantics(runtime, ticks.length)
   }
 
   protected override onUnmount(): void {
@@ -201,16 +201,16 @@ export class ChartAxis<E extends EventList = Record<string, any>>
   /**
    * Выполняет внутренний шаг readTicks для ChartAxis.
    */
-  private readTicks() {
+  private _readTicks() {
     const runtime = resolveNovaChartRuntime(this, this.props.chartRef)
     const scale = runtime?.getScale(this.props.scaleId)
     if (scale) {
-      this.ensureRenderableScaleRange(scale)
+      this._ensureRenderableScaleRange(scale)
     }
     return scale?.ticks(this.props.ticks as ChartScaleTickOptions | undefined) ?? []
   }
 
-  private publishSemantics(runtime: ReturnType<typeof resolveNovaChartRuntime> | null | undefined, tickCount: number): void {
+  private _publishSemantics(runtime: ReturnType<typeof resolveNovaChartRuntime> | null | undefined, tickCount: number): void {
     runtime?.publishSemanticRegions(`${this.componentId}:axis`, [{
       id: `${runtime.id}:${this.componentId}:axis`,
       role: 'axis',
@@ -234,7 +234,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
   /**
    * Выполняет внутренний шаг ensureRenderableScaleRange для ChartAxis.
    */
-  private ensureRenderableScaleRange(scale: ChartScale<ChartScaleValue>): void {
+  private _ensureRenderableScaleRange(scale: ChartScale<ChartScaleValue>): void {
     const current = scale.getRange()
     if (current[0] !== 0 || current[1] !== 1) {
       return
@@ -253,7 +253,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
   /**
    * Нормализует и возвращает итоговое значение ChartAxis.
    */
-  private resolveHorizontalLabelRotation(ticks: Array<{ label: string, position: number }>): number {
+  private _resolveHorizontalLabelRotation(ticks: Array<{ label: string, position: number }>): number {
     if (this.props.labelRotation !== 'auto') {
       return degreesToRadians(this.props.labelRotation)
     }
@@ -282,7 +282,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
   /**
    * Выполняет отрисовку ChartAxis.
    */
-  private renderRotatedLabel(text: string, x: number, y: number, angle: number): void {
+  private _renderRotatedLabel(text: string, x: number, y: number, angle: number): void {
     const transform = mat3.clone(this.matrix)
     mat3.translate(transform, transform, [x, y])
     mat3.rotate(transform, transform, angle)
@@ -293,7 +293,7 @@ export class ChartAxis<E extends EventList = Record<string, any>>
     this.renderer.restore()
   }
 
-  private resolvePartStyle(
+  private _resolvePartStyle(
     part: 'axisTick' | 'axisLabel',
     legacy: NovaChartResolvedMarkStyle,
     runtime: ReturnType<typeof resolveNovaChartRuntime>,

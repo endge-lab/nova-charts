@@ -18,7 +18,9 @@ import type {
 import { resolveNovaChartPreset } from '@/model/customization/chart-presets'
 import { NovaChartStyleSheet } from '@/model/customization/chart-style-sheet'
 
-export interface NovaChartCustomizationRuntime<TData = Record<string, unknown>> {
+export interface NovaChartCustomizationRuntime<
+  TData = Record<string, unknown>,
+> {
   readonly tokens: NovaChartSemanticTokens
   readonly visualPreset: NovaChartPreset<TData>
   readonly plugins: Array<NovaChartPlugin<TData>>
@@ -30,17 +32,25 @@ export interface NovaChartCustomizationRuntime<TData = Record<string, unknown>> 
     layer: 'underlay' | 'overlay',
     context: NovaChartPluginRenderContext<TData>,
   ) => NovaSchema
-  decorateTooltip: (context: NovaChartTooltipContext<TData>, content: unknown) => unknown
+  decorateTooltip: (
+    context: NovaChartTooltipContext<TData>,
+    content: unknown,
+  ) => unknown
   decorateLegend: <TSeries>(series: Array<TSeries>) => Array<TSeries>
-  notifyInteraction: (state: Parameters<NonNullable<NovaChartPlugin<TData>['onInteractionState']>>[0]) => void
+  notifyInteraction: (
+    state: Parameters<
+      NonNullable<NovaChartPlugin<TData>['onInteractionState']>
+    >[0],
+  ) => void
   dispose: () => void
 }
 
-export class NovaChartCustomizationController<TData = Record<string, unknown>>
-implements NovaChartCustomizationRuntime<TData> {
-  private cleanupPlugins: Array<() => void> = []
-  private styleSheet = new NovaChartStyleSheet()
-  private bridge: NovaChartRuntimeBridge<TData>
+export class NovaChartCustomizationController<
+  TData = Record<string, unknown>,
+> implements NovaChartCustomizationRuntime<TData> {
+  private _cleanupPlugins: Array<() => void> = []
+  private _styleSheet = new NovaChartStyleSheet()
+  private _bridge: NovaChartRuntimeBridge<TData>
   visualPreset: NovaChartPreset<TData> = resolveNovaChartPreset()
   tokens: NovaChartSemanticTokens = { ...(this.visualPreset.tokens ?? {}) }
   plugins: Array<NovaChartPlugin<TData>> = []
@@ -49,22 +59,30 @@ implements NovaChartCustomizationRuntime<TData> {
     props: NovaChartCustomizationProps<TData>,
     bridge: NovaChartRuntimeBridge<TData>,
   ) {
-    this.bridge = bridge
+    this._bridge = bridge
     this.configure(props, bridge)
   }
 
-  configure(props: NovaChartCustomizationProps<TData>, bridge: NovaChartRuntimeBridge<TData>): void {
+  configure(
+    props: NovaChartCustomizationProps<TData>,
+    bridge: NovaChartRuntimeBridge<TData>,
+  ): void {
     this.dispose()
-    this.bridge = bridge
+    this._bridge = bridge
     this.visualPreset = resolveNovaChartPreset<TData>(props.visualPreset)
     this.tokens = { ...(this.visualPreset.tokens ?? {}) }
-    this.styleSheet = new NovaChartStyleSheet(props.styleSheet)
-    this.plugins = [...(props.plugins ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    this._styleSheet = new NovaChartStyleSheet(props.styleSheet)
+    this.plugins = [...(props.plugins ?? [])].sort(
+      (a, b) => (a.order ?? 0) - (b.order ?? 0),
+    )
 
     for (const plugin of this.plugins) {
-      const cleanup = plugin.setup?.({ runtime: this.bridge, tokens: this.tokens })
+      const cleanup = plugin.setup?.({
+        runtime: this._bridge,
+        tokens: this.tokens,
+      })
       if (typeof cleanup === 'function') {
-        this.cleanupPlugins.push(cleanup)
+        this._cleanupPlugins.push(cleanup)
       }
     }
   }
@@ -74,10 +92,13 @@ implements NovaChartCustomizationRuntime<TData> {
     layers: NovaChartStyleLayers<TData> = {},
   ): NovaChartResolvedMarkStyle {
     const style: NovaChartResolvedMarkStyle = {}
-    const presetPartStyle = this.resolvePresetPartStyle(context)
+    const presetPartStyle = this._resolvePresetPartStyle(context)
     mergeResolvedStyle(style, resolveStyleObject(layers.defaults, context))
     mergeResolvedStyle(style, presetPartStyle)
-    mergeResolvedStyle(style, this.styleSheet.resolve({ ...context, tokens: this.tokens }))
+    mergeResolvedStyle(
+      style,
+      this._styleSheet.resolve({ ...context, tokens: this.tokens }),
+    )
     mergeResolvedStyle(style, resolveStyleObject(layers.legacy, context))
     mergeResolvedStyle(style, resolveStyleObject(layers.part, context))
     mergeResolvedStyle(style, resolveSeriesStyle(layers.series, context))
@@ -85,7 +106,10 @@ implements NovaChartCustomizationRuntime<TData> {
     mergeResolvedStyle(style, resolveStyleObject(layers.datum, context))
 
     for (const plugin of this.plugins) {
-      const pluginStyle = plugin.resolveMarkStyle?.({ ...context, tokens: this.tokens }, { ...style })
+      const pluginStyle = plugin.resolveMarkStyle?.(
+        { ...context, tokens: this.tokens },
+        { ...style },
+      )
       mergeResolvedStyle(style, resolveStyleObject(pluginStyle, context))
     }
 
@@ -98,15 +122,19 @@ implements NovaChartCustomizationRuntime<TData> {
   ): NovaSchema {
     const schema: NovaSchema = [] as unknown as NovaSchema
     for (const plugin of this.plugins) {
-      const output = layer === 'underlay'
-        ? plugin.renderUnderlay?.({ ...context, tokens: this.tokens })
-        : plugin.renderOverlay?.({ ...context, tokens: this.tokens })
+      const output
+        = layer === 'underlay'
+          ? plugin.renderUnderlay?.({ ...context, tokens: this.tokens })
+          : plugin.renderOverlay?.({ ...context, tokens: this.tokens })
       appendSchema(schema, output)
     }
     return schema
   }
 
-  decorateTooltip(context: NovaChartTooltipContext<TData>, content: unknown): unknown {
+  decorateTooltip(
+    context: NovaChartTooltipContext<TData>,
+    content: unknown,
+  ): unknown {
     let next = content
     for (const plugin of this.plugins) {
       next = plugin.decorateTooltip?.(context, next as any) ?? next
@@ -117,25 +145,32 @@ implements NovaChartCustomizationRuntime<TData> {
   decorateLegend<TSeries>(series: Array<TSeries>): Array<TSeries> {
     let next = series
     for (const plugin of this.plugins) {
-      const decorated = plugin.decorateLegend?.(next as any) as Array<TSeries> | undefined
+      const decorated = plugin.decorateLegend?.(next as any) as
+        Array<TSeries> | undefined
       next = decorated ?? next
     }
     return next
   }
 
-  notifyInteraction(state: Parameters<NonNullable<NovaChartPlugin<TData>['onInteractionState']>>[0]): void {
+  notifyInteraction(
+    state: Parameters<
+      NonNullable<NovaChartPlugin<TData>['onInteractionState']>
+    >[0],
+  ): void {
     for (const plugin of this.plugins) {
       plugin.onInteractionState?.(state)
     }
   }
 
   dispose(): void {
-    for (const cleanup of this.cleanupPlugins.splice(0)) {
+    for (const cleanup of this._cleanupPlugins.splice(0)) {
       cleanup()
     }
   }
 
-  private resolvePresetPartStyle(context: NovaChartStyleContext<TData>): NovaChartResolvedMarkStyle {
+  private _resolvePresetPartStyle(
+    context: NovaChartStyleContext<TData>,
+  ): NovaChartResolvedMarkStyle {
     const styles = this.visualPreset.styles ?? {}
     return resolveStyleObject(
       styles[`${context.componentName}::${context.part}`]
@@ -165,16 +200,28 @@ export function resolveVisualState(
   if (context.disabled) {
     return 'disabled'
   }
-  if (context.attrs?.focused === true || context.attrs?.['data-state'] === 'focused') {
+  if (
+    context.attrs?.focused === true
+    || context.attrs?.['data-state'] === 'focused'
+  ) {
     return 'focused'
   }
-  if (context.attrs?.selected === true || context.attrs?.['data-state'] === 'selected') {
+  if (
+    context.attrs?.selected === true
+    || context.attrs?.['data-state'] === 'selected'
+  ) {
     return 'selected'
   }
-  if (context.attrs?.muted === true || context.attrs?.['data-state'] === 'muted') {
+  if (
+    context.attrs?.muted === true
+    || context.attrs?.['data-state'] === 'muted'
+  ) {
     return 'muted'
   }
-  if (context.hovered?.seriesId === componentId && (!key || context.hovered.key === key)) {
+  if (
+    context.hovered?.seriesId === componentId
+    && (!key || context.hovered.key === key)
+  ) {
     return 'hovered'
   }
   return 'normal'
@@ -190,12 +237,16 @@ export function appendSchema(
   if (Array.isArray(input)) {
     target.push(...input)
   }
-  else { target.push(input) }
+  else {
+    target.push(input)
+  }
 }
 
 export function renderWithSlot(
   target: NovaSchema,
-  renderer: ((context: any) => NovaSchemaItem | NovaSchema | null | undefined) | undefined,
+  renderer:
+    | ((context: any) => NovaSchemaItem | NovaSchema | null | undefined)
+    | undefined,
   context: Record<string, unknown>,
   fallback: NovaSchemaItem,
 ): void {
@@ -223,7 +274,9 @@ export function createRuntimeBridge<TData>(
   }
 }
 
-export function normalizePresetName(name?: NovaChartVisualPresetName): NovaChartVisualPresetName {
+export function normalizePresetName(
+  name?: NovaChartVisualPresetName,
+): NovaChartVisualPresetName {
   return name ?? 'dashboard'
 }
 
@@ -249,7 +302,11 @@ function resolveStyleObject<TData>(
   for (const [key, value] of Object.entries(style as Record<string, unknown>)) {
     if (key === 'datum' || value === undefined) {
       continue
-    }(resolved as Record<string, unknown>)[key] = resolveStyleValue(value as NovaChartStyleValue<TData>, context)
+    }
+    (resolved as Record<string, unknown>)[key] = resolveStyleValue(
+      value as NovaChartStyleValue<TData>,
+      context,
+    )
   }
   return resolved
 }
@@ -259,12 +316,17 @@ function resolveStyleValue<TData>(
   context: NovaChartStyleContext<TData>,
 ): unknown {
   if (typeof value === 'function') {
-    return (value as (context: NovaChartStyleContext<TData>) => unknown)(context)
+    return (value as (context: NovaChartStyleContext<TData>) => unknown)(
+      context,
+    )
   }
   return value
 }
 
-function mergeResolvedStyle(target: NovaChartResolvedMarkStyle, source: NovaChartResolvedMarkStyle | null | undefined): void {
+function mergeResolvedStyle(
+  target: NovaChartResolvedMarkStyle,
+  source: NovaChartResolvedMarkStyle | null | undefined,
+): void {
   if (!source) {
     return
   }

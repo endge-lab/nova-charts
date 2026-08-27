@@ -59,9 +59,9 @@ const EMPTY_LAYOUT_PLAN: NovaChartLineLayoutPlan<any> = {
  */
 export class ChartLineSeries<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartLineSeriesResolvedProps<TData>, NovaChartLineSeriesApi<TData>, NovaChartLineSeriesProps<TData>, E> {
-  private layoutPlan: NovaChartLineLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
-  private readonly api: NovaChartLineSeriesApi<TData>
-  private readonly runtimeBinding: ChartSeriesRuntimeBinding<TData>
+  private _layoutPlan: NovaChartLineLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
+  private readonly _api: NovaChartLineSeriesApi<TData>
+  private readonly _runtimeBinding: ChartSeriesRuntimeBinding<TData>
 
   /**
    * Создает экземпляр ChartLineSeries.
@@ -75,15 +75,15 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ zIndex: 12 })
-    this.api = {
-      getLayoutPlan: () => this.layoutPlan,
-      getDiagnostics: () => this.layoutPlan.diagnostics,
-      hitTest: input => this.hitTest(input),
-      refresh: () => this.refresh(),
+    this._api = {
+      getLayoutPlan: () => this._layoutPlan,
+      getDiagnostics: () => this._layoutPlan.diagnostics,
+      hitTest: input => this._hitTestSeries(input),
+      refresh: () => this._refresh(),
       setVirtualization: patch => this.setVirtualization(patch),
     }
-    this.runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
-      hitTest: input => this.hitTest(input),
+    this._runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
+      hitTest: input => this._hitTestSeries(input),
     })
   }
 
@@ -101,14 +101,14 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
    * Возвращает public API LineSeries.
    */
   override getApi(): NovaChartLineSeriesApi<TData> {
-    return this.api
+    return this._api
   }
 
   /**
    * Обновляет runtime-состояние LineSeries.
    */
   update(): void {
-    this.computeLayout()
+    this._computeLayout()
   }
 
   /**
@@ -116,11 +116,11 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
    */
   render(): void {
     const schemaStart = now()
-    const runtime = this.runtimeBinding.runtime()
+    const runtime = this._runtimeBinding.runtime()
     const schema: NovaSchema = [] as unknown as NovaSchema
-    for (const segment of this.layoutPlan.segments) {
-      const context = this.createSegmentStyleContext(segment, runtime)
-      const style = this.resolveLineStyle(context, runtime, segment.color)
+    for (const segment of this._layoutPlan.segments) {
+      const context = this._createSegmentStyleContext(segment, runtime)
+      const style = this._resolveLineStyle(context, runtime, segment.color)
       renderWithSlot(
         schema,
         this.props.renderers?.lineSegment,
@@ -142,7 +142,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
     }
 
     if (this.props.markers.visible) {
-      for (const point of this.layoutPlan.points) {
+      for (const point of this._layoutPlan.points) {
         const context: NovaChartLinePointContext<TData> = {
           row: point.row,
           rowIndex: point.rowIndex,
@@ -161,8 +161,8 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
         const radius = typeof this.props.markers.radius === 'function'
           ? this.props.markers.radius(context)
           : this.props.markers.radius ?? 3
-        const styleContext = this.createPointStyleContext(point, runtime)
-        const style = this.resolveMarkerStyle(styleContext, runtime, {
+        const styleContext = this._createPointStyleContext(point, runtime)
+        const style = this._resolveMarkerStyle(styleContext, runtime, {
           fill,
           strokeColor,
           radius,
@@ -190,16 +190,16 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
     }
 
     const schemaMs = now() - schemaStart
-    this.layoutPlan = {
-      ...this.layoutPlan,
+    this._layoutPlan = {
+      ...this._layoutPlan,
       diagnostics: {
-        ...this.layoutPlan.diagnostics,
+        ...this._layoutPlan.diagnostics,
         schemaMs,
-        totalMs: this.layoutPlan.diagnostics.domainMs + this.layoutPlan.diagnostics.layoutMs + schemaMs,
+        totalMs: this._layoutPlan.diagnostics.domainMs + this._layoutPlan.diagnostics.layoutMs + schemaMs,
       },
     }
     if (runtime) {
-      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+      this._runtimeBinding.publishDiagnostics(runtime, this._layoutPlan.diagnostics)
     }
     if (schema.length > 0) {
       this.renderer.schema(schema)
@@ -214,7 +214,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
       ...this.props.virtualization,
       ...options,
     }
-    this.refresh()
+    this._refresh()
   }
 
   /**
@@ -222,14 +222,14 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
    */
   protected override onMount(): void {
     super.onMount()
-    this.runtimeBinding.syncInteractive()
+    this._runtimeBinding.syncInteractive()
   }
 
   /**
    * Чистит runtime регистрации.
    */
   protected override onUnmount(): void {
-    this.runtimeBinding.cleanup()
+    this._runtimeBinding.cleanup()
     super.onUnmount()
   }
 
@@ -239,29 +239,29 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartLineSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
     if (changedKeys.includes('chartRef')) {
-      this.runtimeBinding.syncInteractive()
+      this._runtimeBinding.syncInteractive()
     }
-    this.refresh()
+    this._refresh()
   }
 
-  private hitTest(input: NovaChartHitTestInput) {
-    return hitTestLineLayoutPlan(this.componentId, this.layoutPlan, {
+  private _hitTestSeries(input: NovaChartHitTestInput) {
+    return hitTestLineLayoutPlan(this.componentId, this._layoutPlan, {
       ...input,
       maxDistancePx: input.maxDistancePx ?? this.props.hitRadiusPx,
     })
   }
 
-  private refresh(): void {
-    this.computeLayout()
+  private _refresh(): void {
+    this._computeLayout()
     this.dirty({ update: true, render: true })
   }
 
-  private computeLayout(): void {
-    const runtime = this.runtimeBinding.runtime()
+  private _computeLayout(): void {
+    const runtime = this._runtimeBinding.runtime()
     const xScale = runtime?.getScale(this.props.xScaleId)
     const yScale = runtime?.getScale(this.props.yScaleId)
     if (!runtime || !xScale || !yScale) {
-      this.layoutPlan = EMPTY_LAYOUT_PLAN
+      this._layoutPlan = EMPTY_LAYOUT_PLAN
       return
     }
 
@@ -273,7 +273,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
       width: this.width,
       height: this.height,
     }
-    this.runtimeBinding.publishContributions(runtime, [
+    this._runtimeBinding.publishContributions(runtime, [
       {
         id: `${this.componentId}:x-domain`,
         scaleId: this.props.xScaleId,
@@ -285,9 +285,9 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
         domain: resolveLineYDomain(input),
       },
     ])
-    this.layoutPlan = createLineSeriesLayout(input)
-    this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
-    this.runtimeBinding.publishMetadata(runtime, this.layoutPlan.series.map(item => ({
+    this._layoutPlan = createLineSeriesLayout(input)
+    this._runtimeBinding.publishDiagnostics(runtime, this._layoutPlan.diagnostics)
+    this._runtimeBinding.publishMetadata(runtime, this._layoutPlan.series.map(item => ({
       ...item,
       id: item.id === '__default' ? this.componentId : item.id,
       label: item.id === '__default' ? 'Line' : item.label,
@@ -298,7 +298,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
         y: this.props.yScaleId,
       },
     })))
-    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'line', this.layoutPlan.points.map(point => ({
+    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'line', this._layoutPlan.points.map(point => ({
       key: point.key,
       x: point.x,
       y: point.y,
@@ -312,7 +312,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
     })))
   }
 
-  private createSegmentStyleContext(
+  private _createSegmentStyleContext(
     segment: NovaChartLineLayoutSegment,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartStyleContext<TData, NovaChartLineLayoutSegment> {
@@ -334,7 +334,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
     }
   }
 
-  private createPointStyleContext(
+  private _createPointStyleContext(
     point: NovaChartLineLayoutPoint<TData>,
     runtime: NovaChartRuntime<TData> | null,
   ): NovaChartStyleContext<TData, NovaChartLineLayoutPoint<TData>> {
@@ -374,7 +374,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
     }
   }
 
-  private resolveLineStyle(
+  private _resolveLineStyle(
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
     color: string,
@@ -401,7 +401,7 @@ export class ChartLineSeries<TData = Record<string, unknown>, E extends EventLis
     }
   }
 
-  private resolveMarkerStyle(
+  private _resolveMarkerStyle(
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null,
     legacy: { fill: string, strokeColor: string, radius: number },

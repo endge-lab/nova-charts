@@ -28,20 +28,20 @@ import { CHART_VIEWPORT_NODE_DESCRIPTOR } from '@/ui/viewport/viewport.config'
  */
 export class ChartViewport<E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartViewportResolvedProps, NovaChartViewportApi, NovaChartViewportProps, E> {
-  private geometry: NovaScrollbarGeometry | null = null
-  private dragging = false
-  private hovered = false
-  private dragStartValue = 0
-  private dragStartPoint = 0
-  private value = 0
-  private state: NovaChartViewportState = {
+  private _geometry: NovaScrollbarGeometry | null = null
+  private _dragging = false
+  private _hovered = false
+  private _dragStartValue = 0
+  private _dragStartPoint = 0
+  private _value = 0
+  private _state: NovaChartViewportState = {
     value: 0,
     max: 0,
     viewportSize: 0,
     contentSize: 0,
   }
 
-  private readonly api: NovaChartViewportApi
+  private readonly _api: NovaChartViewportApi
 
   /**
    * Создает экземпляр ChartViewport и подготавливает базовое состояние.
@@ -54,18 +54,18 @@ export class ChartViewport<E extends EventList = Record<string, any>>
     descriptor: ChartViewportDescriptor = CHART_VIEWPORT_NODE_DESCRIPTOR,
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
-    this.value = props.value
+    this._value = props.value
     this.options({ interactive: props.enabled, zIndex: 45, cursor: { hover: 'default' } })
-    this.api = {
-      scrollTo: (value, event) => this.scrollTo(value, event),
-      scrollBy: (delta, event) => this.scrollTo(this.value + delta, event),
-      scrollToIndex: (index, event) => this.scrollTo(index, event),
-      scrollToDomain: (domain, event) => this.scrollToDomain(domain, event),
-      canScroll: delta => this.canScroll(delta),
-      getViewportState: () => ({ ...this.state }),
+    this._api = {
+      scrollTo: (value, event) => this._scrollTo(value, event),
+      scrollBy: (delta, event) => this._scrollTo(this._value + delta, event),
+      scrollToIndex: (index, event) => this._scrollTo(index, event),
+      scrollToDomain: (domain, event) => this._scrollToDomain(domain, event),
+      canScroll: delta => this._canScroll(delta),
+      getViewportState: () => ({ ...this._state }),
       refresh: () => this.dirty({ update: true, render: true }),
     }
-    this.setupEvents()
+    this._setupEvents()
   }
 
   /**
@@ -82,7 +82,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
    * Возвращает значение состояния ChartViewport.
    */
   override getApi(): NovaChartViewportApi {
-    return this.api
+    return this._api
   }
 
   /**
@@ -92,7 +92,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
     if (!this.props.enabled) {
       return
     }
-    this.syncViewport()
+    this._syncViewport()
   }
 
   /**
@@ -102,15 +102,15 @@ export class ChartViewport<E extends EventList = Record<string, any>>
     if (!this.props.enabled) {
       return
     }
-    this.syncViewport()
-    if (!this.geometry || this.state.max <= 0) {
+    this._syncViewport()
+    if (!this._geometry || this._state.max <= 0) {
       return
     }
 
-    const schema: NovaSchema = createNovaScrollbarSchema(this.geometry, {
+    const schema: NovaSchema = createNovaScrollbarSchema(this._geometry, {
       alpha: this.props.opacity,
-      hoveredAxis: this.hovered ? this.props.orientation : null,
-      draggingAxis: this.dragging ? this.props.orientation : null,
+      hoveredAxis: this._hovered ? this.props.orientation : null,
+      draggingAxis: this._dragging ? this.props.orientation : null,
     })
     if (schema.length > 0) {
       this.renderer.schema(schema)
@@ -128,7 +128,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
       },
       data: {
         scaleId: this.props.scaleId,
-        ...this.state,
+        ...this._state,
       },
       source: {
         type: 'synthetic',
@@ -151,7 +151,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
     this.applyCommonPropsChanged(changedKeys)
     this.options({ interactive: this.props.enabled })
     if (changedKeys.includes('value')) {
-      this.value = this.props.value
+      this._value = this.props.value
     }
     this.dirty({ update: true, render: true })
   }
@@ -159,41 +159,41 @@ export class ChartViewport<E extends EventList = Record<string, any>>
   /**
    * Применяет новое scroll-значение.
    */
-  private scrollTo(value: number, event?: Event): void {
-    const next = clamp(value, 0, this.state.max)
-    if (next === this.value && next === this.state.value) {
+  private _scrollTo(value: number, event?: Event): void {
+    const next = clamp(value, 0, this._state.max)
+    if (next === this._value && next === this._state.value) {
       return
     }
-    this.value = next
-    this.syncViewport(event)
+    this._value = next
+    this._syncViewport(event)
     this.dirty({ update: true, render: true })
   }
 
-  private scrollToDomain(domain: string | Array<string>, event?: Event): void {
+  private _scrollToDomain(domain: string | Array<string>, event?: Event): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     const sourceDomain = normalizeBandDomain(runtime?.getScaleSourceDomain(this.props.scaleId) ?? [])
     const values = Array.isArray(domain) ? domain : [domain]
     const firstIndex = sourceDomain.findIndex(value => values.includes(value))
     if (firstIndex >= 0) {
-      this.scrollTo(firstIndex, event)
+      this._scrollTo(firstIndex, event)
     }
   }
 
-  private canScroll(delta = 0): boolean {
-    if (this.state.max <= 0) {
+  private _canScroll(delta = 0): boolean {
+    if (this._state.max <= 0) {
       return false
     }
     if (delta === 0) {
-      return this.state.max > 0
+      return this._state.max > 0
     }
-    const next = clamp(this.value + delta, 0, this.state.max)
-    return next !== this.value
+    const next = clamp(this._value + delta, 0, this._state.max)
+    return next !== this._value
   }
 
   /**
    * Синхронизирует visible domain шкалы с controlled scrollbar.
    */
-  private syncViewport(event?: Event): void {
+  private _syncViewport(event?: Event): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     const scale = runtime?.getScale(this.props.scaleId)
     if (!runtime || !scale) {
@@ -205,11 +205,11 @@ export class ChartViewport<E extends EventList = Record<string, any>>
       return
     }
 
-    const viewportSize = Math.min(sourceDomain.length, this.resolveVisibleCount(sourceDomain.length))
+    const viewportSize = Math.min(sourceDomain.length, this._resolveVisibleCount(sourceDomain.length))
     const max = Math.max(0, sourceDomain.length - viewportSize)
-    const nextValue = Math.round(clamp(this.value, 0, max))
-    this.value = nextValue
-    this.state = {
+    const nextValue = Math.round(clamp(this._value, 0, max))
+    this._value = nextValue
+    this._state = {
       value: nextValue,
       max,
       viewportSize,
@@ -223,21 +223,21 @@ export class ChartViewport<E extends EventList = Record<string, any>>
       runtime.setScaleDomain(this.props.scaleId, visibleDomain as ChartScaleDomain)
     }
 
-    this.geometry = createNovaScrollbarGeometry({
+    this._geometry = createNovaScrollbarGeometry({
       axis: this.props.orientation,
-      track: this.resolveTrack(),
+      track: this._resolveTrack(),
       value: nextValue,
       viewportSize,
       contentSize: sourceDomain.length,
-      options: this.resolveScrollbarOptions(runtime),
+      options: this._resolveScrollbarOptions(runtime),
     })
-    this.props.onChange?.({ ...this.state }, event)
+    this.props.onChange?.({ ...this._state }, event)
   }
 
   /**
    * Возвращает видимый размер viewport в категориях.
    */
-  private resolveVisibleCount(contentSize: number): number {
+  private _resolveVisibleCount(contentSize: number): number {
     if (this.props.visibleCount !== undefined) {
       return Math.min(contentSize, Math.max(1, this.props.visibleCount))
     }
@@ -249,7 +249,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
   /**
    * Возвращает track в локальных координатах node.
    */
-  private resolveTrack() {
+  private _resolveTrack() {
     const horizontal = this.props.orientation === 'horizontal'
     const cross = Math.max(4, horizontal ? this.height : this.width)
     const length = Math.max(1, horizontal ? this.width : this.height)
@@ -262,7 +262,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
   /**
    * Применяет Nova Charts part styles к UIKit scrollbar geometry без собственного renderer слоя.
    */
-  private resolveScrollbarOptions(runtime: NovaChartRuntime<Record<string, unknown>>): NovaScrollbarVisualOptions {
+  private _resolveScrollbarOptions(runtime: NovaChartRuntime<Record<string, unknown>>): NovaScrollbarVisualOptions {
     const trackStyle = runtime.customization.resolveMarkStyle({
       componentId: this.componentId,
       componentName: 'Viewport',
@@ -272,7 +272,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
       className: this.props.className,
       attrs: this.props.attrs as Record<string, unknown> | undefined,
     })
-    const thumbState = this.dragging ? 'selected' : this.hovered ? 'hovered' : 'normal'
+    const thumbState = this._dragging ? 'selected' : this._hovered ? 'hovered' : 'normal'
     const thumbStyle = runtime.customization.resolveMarkStyle({
       componentId: this.componentId,
       componentName: 'Viewport',
@@ -297,19 +297,19 @@ export class ChartViewport<E extends EventList = Record<string, any>>
   /**
    * Подключает pointer/wheel handlers.
    */
-  private setupEvents(): void {
+  private _setupEvents(): void {
     this.on('mouseenter', () => {
-      this.hovered = true
+      this._hovered = true
       this.dirty({ render: true })
     })
     this.on('mouseleave', () => {
-      this.hovered = false
-      if (!this.dragging) {
+      this._hovered = false
+      if (!this._dragging) {
         this.dirty({ render: true })
       }
     })
     this.on('wheel', (event) => {
-      if (!this.props.enabled || this.state.max <= 0) {
+      if (!this.props.enabled || this._state.max <= 0) {
         return
       }
       if (this.props.controller && this.props.controller.wheel.enabled) {
@@ -318,57 +318,57 @@ export class ChartViewport<E extends EventList = Record<string, any>>
       const delta = this.props.orientation === 'horizontal'
         ? Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY
         : event.deltaY
-      this.scrollTo(this.value + Math.sign(delta || 0) * this.props.wheelStep, event)
+      this._scrollTo(this._value + Math.sign(delta || 0) * this.props.wheelStep, event)
       return false
     })
     this.on('mousedown', (event) => {
-      if (!this.props.enabled || !this.geometry) {
+      if (!this.props.enabled || !this._geometry) {
         return
       }
       if (this.props.controller && !this.props.controller.scrollbar.drag && !this.props.controller.scrollbar.clickTrack) {
         return
       }
-      const point = this.localPoint(event)
-      if (!hitNovaScrollbarRect(point.x, point.y, this.geometry.track)) {
+      const point = this._localPoint(event)
+      if (!hitNovaScrollbarRect(point.x, point.y, this._geometry.track)) {
         return
       }
-      const hitThumb = hitNovaScrollbarRect(point.x, point.y, this.geometry.thumb)
+      const hitThumb = hitNovaScrollbarRect(point.x, point.y, this._geometry.thumb)
       if (!hitThumb && this.props.controller && !this.props.controller.scrollbar.clickTrack) {
         return
       }
-      this.dragging = true
-      this.dragStartValue = this.value
-      this.dragStartPoint = this.props.orientation === 'horizontal' ? point.x : point.y
+      this._dragging = true
+      this._dragStartValue = this._value
+      this._dragStartPoint = this.props.orientation === 'horizontal' ? point.x : point.y
       if (!hitThumb) {
         const nextValue = this.props.controller && this.props.controller.scrollbar.clickTrack === 'page'
-          ? this.value + (this.valueFromPoint(point.x, point.y) > this.value ? this.state.viewportSize : -this.state.viewportSize)
-          : this.valueFromPoint(point.x, point.y)
-        this.scrollTo(nextValue, event)
-        this.dragStartValue = this.value
-        this.dragStartPoint = this.props.orientation === 'horizontal' ? point.x : point.y
+          ? this._value + (this._valueFromPoint(point.x, point.y) > this._value ? this._state.viewportSize : -this._state.viewportSize)
+          : this._valueFromPoint(point.x, point.y)
+        this._scrollTo(nextValue, event)
+        this._dragStartValue = this._value
+        this._dragStartPoint = this.props.orientation === 'horizontal' ? point.x : point.y
       }
       this.dirty({ render: true })
       return false
     })
     this.on('dragmove', (event) => {
-      if (!this.dragging || !this.geometry) {
+      if (!this._dragging || !this._geometry) {
         return
       }
       if (this.props.controller && !this.props.controller.scrollbar.drag) {
         return
       }
-      const point = this.localPoint(event)
+      const point = this._localPoint(event)
       const current = this.props.orientation === 'horizontal' ? point.x : point.y
-      this.scrollTo(mapNovaScrollbarDragValue(this.geometry, this.dragStartValue, current - this.dragStartPoint), event)
+      this._scrollTo(mapNovaScrollbarDragValue(this._geometry, this._dragStartValue, current - this._dragStartPoint), event)
       return false
     })
     this.on('dragend', (event) => {
-      if (!this.dragging) {
+      if (!this._dragging) {
         return
       }
-      this.dragging = false
+      this._dragging = false
       this.dirty({ render: true })
-      this.props.onChange?.({ ...this.state }, event)
+      this.props.onChange?.({ ...this._state }, event)
       return false
     })
   }
@@ -376,7 +376,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
   /**
    * Читает локальную позицию события.
    */
-  private localPoint(event: MouseEvent): { x: number, y: number } {
+  private _localPoint(event: MouseEvent): { x: number, y: number } {
     const canvasPoint = this.nova.events.getCanvasMousePosition(event)
     const [x, y] = this.toLocal(canvasPoint.x, canvasPoint.y)
     return { x, y }
@@ -385,18 +385,18 @@ export class ChartViewport<E extends EventList = Record<string, any>>
   /**
    * Конвертирует click по track в scroll value.
    */
-  private valueFromPoint(x: number, y: number): number {
-    if (!this.geometry) {
-      return this.value
+  private _valueFromPoint(x: number, y: number): number {
+    if (!this._geometry) {
+      return this._value
     }
     const horizontal = this.props.orientation === 'horizontal'
     const raw = horizontal
-      ? x - this.geometry.thumb.width / 2 - this.geometry.track.x
-      : y - this.geometry.thumb.height / 2 - this.geometry.track.y
+      ? x - this._geometry.thumb.width / 2 - this._geometry.track.x
+      : y - this._geometry.thumb.height / 2 - this._geometry.track.y
     const travel = Math.max(1, horizontal
-      ? this.geometry.track.width - this.geometry.thumb.width
-      : this.geometry.track.height - this.geometry.thumb.height)
-    return clamp(raw / travel, 0, 1) * this.geometry.max
+      ? this._geometry.track.width - this._geometry.thumb.width
+      : this._geometry.track.height - this._geometry.thumb.height)
+    return clamp(raw / travel, 0, 1) * this._geometry.max
   }
 }
 

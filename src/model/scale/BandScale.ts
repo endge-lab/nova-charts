@@ -17,11 +17,11 @@ const DEFAULT_RANGE: ChartScaleRange = [0, 1]
 export class BandScale implements ChartScale<string> {
   readonly type = 'band'
 
-  private domain: ChartBandDomain
-  private range: ChartScaleRange
-  private indexByValue = new Map<string, number>()
-  private readonly paddingInner: number
-  private readonly paddingOuter: number
+  private _domain: ChartBandDomain
+  private _range: ChartScaleRange
+  private _indexByValue = new Map<string, number>()
+  private readonly _paddingInner: number
+  private readonly _paddingOuter: number
 
   /**
    * Создает категориальную шкалу с band geometry.
@@ -35,25 +35,25 @@ export class BandScale implements ChartScale<string> {
       paddingOuter?: number
     },
   ) {
-    this.domain = options.domain
-    this.range = options.range ?? DEFAULT_RANGE
-    this.paddingInner = options.paddingInner ?? 0
-    this.paddingOuter = options.paddingOuter ?? 0
-    this.rebuildIndex()
+    this._domain = options.domain
+    this._range = options.range ?? DEFAULT_RANGE
+    this._paddingInner = options.paddingInner ?? 0
+    this._paddingOuter = options.paddingOuter ?? 0
+    this._rebuildIndex()
   }
 
   /**
    * Возвращает текущий список категорий.
    */
   getDomain(): ChartBandDomain {
-    return this.domain
+    return this._domain
   }
 
   /**
    * Возвращает текущий пиксельный диапазон.
    */
   getRange(): ChartScaleRange {
-    return this.range
+    return this._range
   }
 
   /**
@@ -63,50 +63,50 @@ export class BandScale implements ChartScale<string> {
     if (!domain.every(value => typeof value === 'string')) {
       throw new Error(`[NovaCharts] Band scale "${this.id}" expects string domain`)
     }
-    this.domain = domain
-    this.rebuildIndex()
+    this._domain = domain
+    this._rebuildIndex()
   }
 
   /**
    * Заменяет пиксельный диапазон.
    */
   setRange(range: ChartScaleRange): void {
-    this.range = range
+    this._range = range
   }
 
   /**
    * Возвращает левую или верхнюю координату полосы категории.
    */
   toPx(value: string): number {
-    const index = this.indexByValue.get(value) ?? -1
+    const index = this._indexByValue.get(value) ?? -1
     if (index === -1) {
       return Number.NaN
     }
-    return this.bandStart(index)
+    return this._bandStart(index)
   }
 
   /**
    * Возвращает категорию, которая находится под пикселем.
    */
   fromPx(px: number): string {
-    if (this.domain.length === 0) {
+    if (this._domain.length === 0) {
       return ''
     }
-    const step = this.step()
+    const step = this._step()
     if (step === 0) {
-      return this.domain[0] ?? ''
+      return this._domain[0] ?? ''
     }
 
-    const [rangeStart] = this.range
-    const index = Math.floor((px - rangeStart - step * this.paddingOuter) / step)
-    return this.domain[Math.max(0, Math.min(this.domain.length - 1, index))] ?? ''
+    const [rangeStart] = this._range
+    const index = Math.floor((px - rangeStart - step * this._paddingOuter) / step)
+    return this._domain[Math.max(0, Math.min(this._domain.length - 1, index))] ?? ''
   }
 
   /**
    * Возвращает ширину или высоту одной полосы.
    */
   bandwidth(): number {
-    return Math.abs(this.step() * (1 - this.paddingInner))
+    return Math.abs(this._step() * (1 - this._paddingInner))
   }
 
   /**
@@ -126,17 +126,17 @@ export class BandScale implements ChartScale<string> {
 
     const maxCount = options.maxCount ?? Number.POSITIVE_INFINITY
     const minStepPx = options.minStepPx ?? 0
-    const stepPx = Math.abs(this.step())
+    const stepPx = Math.abs(this._step())
     const pixelSample = minStepPx > 0 && stepPx > 0 ? Math.ceil(minStepPx / stepPx) : 1
     const countSample = Number.isFinite(maxCount) && maxCount > 0
-      ? Math.ceil(this.domain.length / maxCount)
+      ? Math.ceil(this._domain.length / maxCount)
       : 1
     const categorySample = Math.max(1, Math.trunc(options.categoryStep ?? 1))
     const sampleStep = Math.max(1, pixelSample, countSample, categorySample)
 
     const ticks: Array<ChartScaleTick<string>> = []
-    for (let index = 0; index < this.domain.length; index += sampleStep) {
-      const value = this.domain[index]
+    for (let index = 0; index < this._domain.length; index += sampleStep) {
+      const value = this._domain[index]
       if (value === undefined) {
         continue
       }
@@ -154,77 +154,77 @@ export class BandScale implements ChartScale<string> {
    * Возвращает полный шаг между соседними категориями.
    */
   stepSize(): number {
-    return Math.abs(this.step())
+    return Math.abs(this._step())
   }
 
   /**
    * Возвращает индекс категории за O(1).
    */
   indexOf(value: string): number {
-    return this.indexByValue.get(value) ?? -1
+    return this._indexByValue.get(value) ?? -1
   }
 
   /**
    * Возвращает категорию по индексу.
    */
   valueAt(index: number): string | undefined {
-    return this.domain[index]
+    return this._domain[index]
   }
 
   /**
    * Возвращает индексный диапазон категорий, пересекающих pixel window.
    */
   visibleIndexRange(startPx: number, endPx: number): ChartBandVisibleRange {
-    if (this.domain.length === 0) {
+    if (this._domain.length === 0) {
       return { startIndex: 0, endIndex: -1 }
     }
 
-    const [rangeStart] = this.range
-    const step = this.step()
+    const [rangeStart] = this._range
+    const step = this._step()
     if (step === 0) {
-      return { startIndex: 0, endIndex: this.domain.length - 1 }
+      return { startIndex: 0, endIndex: this._domain.length - 1 }
     }
 
     const minPx = Math.min(startPx, endPx)
     const maxPx = Math.max(startPx, endPx)
-    const rawStart = Math.floor((minPx - rangeStart - step * this.paddingOuter) / step) - 1
-    const rawEnd = Math.ceil((maxPx - rangeStart - step * this.paddingOuter) / step) + 1
+    const rawStart = Math.floor((minPx - rangeStart - step * this._paddingOuter) / step) - 1
+    const rawEnd = Math.ceil((maxPx - rangeStart - step * this._paddingOuter) / step) + 1
 
     return {
-      startIndex: Math.max(0, Math.min(this.domain.length - 1, rawStart)),
-      endIndex: Math.max(0, Math.min(this.domain.length - 1, rawEnd)),
+      startIndex: Math.max(0, Math.min(this._domain.length - 1, rawStart)),
+      endIndex: Math.max(0, Math.min(this._domain.length - 1, rawEnd)),
     }
   }
 
   /**
    * Возвращает полный шаг между соседними категориями.
    */
-  private step(): number {
-    if (this.domain.length === 0) {
+  private _step(): number {
+    if (this._domain.length === 0) {
       return 0
     }
-    const [rangeStart, rangeEnd] = this.range
+    const [rangeStart, rangeEnd] = this._range
     const size = rangeEnd - rangeStart
-    const denominator = Math.max(1, this.domain.length - this.paddingInner + this.paddingOuter * 2)
+    const denominator = Math.max(1, this._domain.length - this._paddingInner + this._paddingOuter * 2)
     return size / denominator
   }
 
   /**
    * Возвращает старт полосы по индексу категории.
    */
-  private bandStart(index: number): number {
-    const [rangeStart] = this.range
-    const step = this.step()
-    return rangeStart + step * this.paddingOuter + step * index
+  private _bandStart(index: number): number {
+    const [rangeStart] = this._range
+    const step = this._step()
+    return rangeStart + step * this._paddingOuter + step * index
   }
 
   /**
    * Пересобирает индекс категорий для больших domain.
    */
-  private rebuildIndex(): void {
-    this.indexByValue = new Map()
-    this.domain.forEach((value, index) => {
-      this.indexByValue.set(value, index)
+  private _rebuildIndex(): void {
+    this._indexByValue = new Map()
+    this._domain.forEach((value, index) => {
+      this._indexByValue.set(value, index)
     })
   }
 }

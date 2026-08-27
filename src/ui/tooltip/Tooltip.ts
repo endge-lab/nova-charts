@@ -22,9 +22,9 @@ import { CHART_TOOLTIP_NODE_DESCRIPTOR } from '@/ui/tooltip/tooltip.config'
  */
 export class ChartTooltip<E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartTooltipResolvedProps, NovaChartTooltipApi, NovaChartTooltipProps, E> {
-  private interactionState: NovaChartInteractionState | null = null
-  private unsubscribeInteraction: (() => void) | null = null
-  private readonly api: NovaChartTooltipApi
+  private _interactionState: NovaChartInteractionState | null = null
+  private _unsubscribeInteraction: (() => void) | null = null
+  private readonly _api: NovaChartTooltipApi
 
   /**
    * Создает экземпляр ChartTooltip и подготавливает базовое состояние.
@@ -38,7 +38,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ interactive: false, zIndex: 50 })
-    this.api = {
+    this._api = {
       refresh: () => this.dirty({ render: true }),
     }
   }
@@ -54,7 +54,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
    * Возвращает значение состояния ChartTooltip.
    */
   override getApi(): NovaChartTooltipApi {
-    return this.api
+    return this._api
   }
 
   /**
@@ -62,13 +62,13 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
    */
   render(): void {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
-    const context = this.createContext()
+    const context = this._createContext()
     if (!context) {
       runtime?.clearSemanticRegions(`${this.componentId}:tooltip`)
       return
     }
 
-    const content = this.resolveContent(context)
+    const content = this._resolveContent(context)
     if (!content) {
       runtime?.clearSemanticRegions(`${this.componentId}:tooltip`)
       return
@@ -92,7 +92,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
         borderRadius: this.props.border?.radius ?? 7,
       },
     })
-    const origin = this.resolveAnchor()
+    const origin = this._resolveAnchor()
     const anchorBounds = context.datum.bounds ?? {
       x: context.datum.point?.x ?? origin.x,
       y: context.datum.point?.y ?? origin.y,
@@ -118,7 +118,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
       animation: this.props.animation,
     } as TooltipProps)
 
-    this.applyCollision(schema)
+    this._applyCollision(schema)
     if (schema.length > 0) {
       this.renderer.schema(schema)
     }
@@ -152,15 +152,15 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
    */
   protected override onMount(): void {
     super.onMount()
-    this.subscribeRuntime()
+    this._subscribeRuntime()
   }
 
   /**
    * Обрабатывает входящее событие ChartTooltip.
    */
   protected override onUnmount(): void {
-    this.unsubscribeInteraction?.()
-    this.unsubscribeInteraction = null
+    this._unsubscribeInteraction?.()
+    this._unsubscribeInteraction = null
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     runtime?.clearSemanticRegions(`${this.componentId}:tooltip`)
     super.onUnmount()
@@ -172,7 +172,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartTooltipResolvedProps>): void {
     this.applyCommonPropsChanged(changedKeys)
     if (changedKeys.includes('chartRef')) {
-      this.subscribeRuntime()
+      this._subscribeRuntime()
     }
     this.dirty({ render: true })
   }
@@ -180,17 +180,17 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   /**
    * Подписывает обработчик на изменения ChartTooltip.
    */
-  private subscribeRuntime(): void {
-    this.unsubscribeInteraction?.()
-    this.unsubscribeInteraction = null
+  private _subscribeRuntime(): void {
+    this._unsubscribeInteraction?.()
+    this._unsubscribeInteraction = null
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     if (!runtime) {
       return
     }
 
-    this.interactionState = runtime.getInteractionState()
-    this.unsubscribeInteraction = runtime.subscribeInteraction((state) => {
-      this.interactionState = state
+    this._interactionState = runtime.getInteractionState()
+    this._unsubscribeInteraction = runtime.subscribeInteraction((state) => {
+      this._interactionState = state
       this.dirty({ render: true })
     })
   }
@@ -198,23 +198,23 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   /**
    * Создает formatter context для пользовательского content.
    */
-  private createContext(): NovaChartTooltipContext | null {
-    if (!this.props.enabled || !this.interactionState?.tooltipVisible || !this.interactionState.hovered) {
+  private _createContext(): NovaChartTooltipContext | null {
+    if (!this.props.enabled || !this._interactionState?.tooltipVisible || !this._interactionState.hovered) {
       return null
     }
-    const datum = this.interactionState.hovered
+    const datum = this._interactionState.hovered
     const fallbackLabel = datum.mode === 'bucket'
       ? `Bucket ${datum.label ?? datum.key}`
       : datum.label ?? datum.category ?? datum.key
     const formattedValue = this.props.valueFormatter?.({
-      state: this.interactionState,
+      state: this._interactionState,
       datum,
       label: fallbackLabel,
       value: datum.rawValue ?? datum.value,
       formattedValue: formatValue(datum.rawValue ?? datum.value),
     }) ?? formatValue(datum.rawValue ?? datum.value)
     const label = this.props.labelFormatter?.({
-      state: this.interactionState,
+      state: this._interactionState,
       datum,
       label: fallbackLabel,
       value: datum.rawValue ?? datum.value,
@@ -222,7 +222,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
     }) ?? fallbackLabel
 
     return {
-      state: this.interactionState,
+      state: this._interactionState,
       datum,
       label,
       value: datum.rawValue ?? datum.value,
@@ -233,7 +233,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   /**
    * Возвращает content для UIKit tooltip.
    */
-  private resolveContent(context: NovaChartTooltipContext): TooltipContent | null {
+  private _resolveContent(context: NovaChartTooltipContext): TooltipContent | null {
     const runtime = resolveNovaChartRuntime<Record<string, unknown>>(this, this.props.chartRef)
     const content = this.props.renderers?.tooltipContent?.(context)
       ?? this.props.contentFormatter?.(context)
@@ -246,9 +246,9 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   /**
    * Вычисляет anchor tooltip в координатах plot.
    */
-  private resolveAnchor(): { x: number, y: number } {
-    const hovered = this.interactionState?.hovered
-    const pointer = this.interactionState?.pointer
+  private _resolveAnchor(): { x: number, y: number } {
+    const hovered = this._interactionState?.hovered
+    const pointer = this._interactionState?.pointer
     if (this.props.followCursor && pointer) {
       return { x: pointer.plotX + this.props.offsetX, y: pointer.plotY + this.props.offsetY }
     }
@@ -261,7 +261,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
   /**
    * Применяет boundary shift к schema, созданной UIKit helper.
    */
-  private applyCollision(schema: NovaSchema): void {
+  private _applyCollision(schema: NovaSchema): void {
     if (schema.length === 0 || !this.props.collision.shift) {
       return
     }

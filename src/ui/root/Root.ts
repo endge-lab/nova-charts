@@ -49,28 +49,28 @@ import { CHART_ROOT_NODE_DESCRIPTOR } from '@/ui/root/root.config'
 export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartRootResolvedProps<TData>, NovaChartRootApi<TData>, NovaChartRootProps<TData>, E>
   implements NovaChartRuntimeHost<TData> {
-  private readonly dataStore: ChartDataStore<TData>
-  private readonly scales = new ChartScaleRegistry()
-  private readonly managedChildren: Array<NovaNode<E>> = []
-  private readonly scaleRegistrations = new Map<string, NovaChartScaleRegistration<TData>>()
-  private readonly scaleSourceDomains = new Map<string, ChartScaleDomain>()
-  private readonly scaleDomainContributions = new Map<string, NovaChartScaleDomainContribution>()
-  private readonly seriesDiagnostics = new Map<string, NovaChartSeriesDiagnostics>()
-  private readonly seriesMetadata = new Map<string, Array<NovaChartSeriesMetadata>>()
-  private readonly interactiveSeries = new Map<string, NovaChartInteractiveSeriesRegistration<TData>>()
-  private readonly listeners = new Set<NovaChartDataListener<TData>>()
-  private readonly interactionListeners = new Set<NovaChartInteractionListener<TData>>()
-  private readonly customization: NovaChartCustomizationController<TData>
-  private readonly api: NovaChartRootApi<TData>
-  private readonly runtime: NovaChartRuntime<TData>
-  private interactionState: NovaChartInteractionState<TData> = {
+  private readonly _dataStore: ChartDataStore<TData>
+  private readonly _scales = new ChartScaleRegistry()
+  private readonly _managedChildren: Array<NovaNode<E>> = []
+  private readonly _scaleRegistrations = new Map<string, NovaChartScaleRegistration<TData>>()
+  private readonly _scaleSourceDomains = new Map<string, ChartScaleDomain>()
+  private readonly _scaleDomainContributions = new Map<string, NovaChartScaleDomainContribution>()
+  private readonly _seriesDiagnostics = new Map<string, NovaChartSeriesDiagnostics>()
+  private readonly _seriesMetadata = new Map<string, Array<NovaChartSeriesMetadata>>()
+  private readonly _interactiveSeries = new Map<string, NovaChartInteractiveSeriesRegistration<TData>>()
+  private readonly _listeners = new Set<NovaChartDataListener<TData>>()
+  private readonly _interactionListeners = new Set<NovaChartInteractionListener<TData>>()
+  private readonly _customization: NovaChartCustomizationController<TData>
+  private readonly _api: NovaChartRootApi<TData>
+  private readonly _runtime: NovaChartRuntime<TData>
+  private _interactionState: NovaChartInteractionState<TData> = {
     pointer: null,
     hovered: null,
     tooltipVisible: false,
     revision: 0,
   }
 
-  private lastEvent = 'init'
+  private _lastEvent = 'init'
 
   /**
    * Создает экземпляр ChartRoot и подготавливает базовое состояние.
@@ -83,79 +83,79 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     descriptor: ChartRootDescriptor<TData> = CHART_ROOT_NODE_DESCRIPTOR as ChartRootDescriptor<TData>,
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
-    this.dataStore = new ChartDataStore<TData>({
+    this._dataStore = new ChartDataStore<TData>({
       data: props.data,
       keyField: props.keyField,
     })
-    this.customization = new NovaChartCustomizationController<TData>(props, {
+    this._customization = new NovaChartCustomizationController<TData>(props, {
       id: this.componentId,
-      getData: () => this.dataStore.getData(),
-      getScale: id => this.getScale(id),
-      getSeriesMetadata: () => this.getSeriesMetadata(),
-      getInteractionState: () => this.getInteractionState(),
+      getData: () => this._dataStore.getData(),
+      getScale: id => this._getScale(id),
+      getSeriesMetadata: () => this._getSeriesMetadata(),
+      getInteractionState: () => this._getInteractionState(),
     })
-    this.api = {
+    this._api = {
       setData: data => this.setData(data),
-      getData: () => this.dataStore.getData(),
+      getData: () => this._dataStore.getData(),
       updateRows: rows => this.updateRows(rows),
       removeRows: keys => this.removeRows(keys),
-      getScale: id => this.getScale(id),
-      requireScale: id => this.requireScale(id),
-      setScaleDomain: (id, domain) => this.setScaleDomain(id, domain),
-      setScaleRange: (id, range) => this.setScaleRange(id, range),
-      getScaleSourceDomain: id => this.getScaleSourceDomain(id),
-      setScaleDomainContribution: contribution => this.setScaleDomainContribution(contribution),
-      removeScaleDomainContribution: id => this.removeScaleDomainContribution(id),
-      getScaleDomainContributions: scaleId => this.getScaleDomainContributions(scaleId),
-      refresh: () => this.refresh('api.refresh'),
-      getDiagnostics: () => this.getDiagnostics(),
-      getInteractionState: () => this.getInteractionState(),
-      setInteractionState: patch => this.setInteractionState(patch),
+      getScale: id => this._getScale(id),
+      requireScale: id => this._requireScale(id),
+      setScaleDomain: (id, domain) => this._setScaleDomain(id, domain),
+      setScaleRange: (id, range) => this._setScaleRange(id, range),
+      getScaleSourceDomain: id => this._getScaleSourceDomain(id),
+      setScaleDomainContribution: contribution => this._setScaleDomainContribution(contribution),
+      removeScaleDomainContribution: id => this._removeScaleDomainContribution(id),
+      getScaleDomainContributions: scaleId => this._getScaleDomainContributions(scaleId),
+      refresh: () => this._refresh('api.refresh'),
+      getDiagnostics: () => this._getDiagnostics(),
+      getInteractionState: () => this._getInteractionState(),
+      setInteractionState: patch => this._setInteractionState(patch),
       setChildren: children => this.setChildren(children),
-      exportChart: exportOptions => this.exportChart(exportOptions),
-      getSemanticSnapshot: snapshotOptions => this.getSemanticSnapshot(snapshotOptions),
-      subscribe: listener => this.subscribe(listener),
-      subscribeInteraction: listener => this.subscribeInteraction(listener),
+      exportChart: exportOptions => this._exportChart(exportOptions),
+      getSemanticSnapshot: snapshotOptions => this._getSemanticSnapshot(snapshotOptions),
+      subscribe: listener => this._subscribe(listener),
+      subscribeInteraction: listener => this._subscribeInteraction(listener),
     }
-    this.runtime = {
+    this._runtime = {
       id: this.componentId,
       props: this.props,
-      dataStore: this.dataStore,
-      scales: this.scales,
-      customization: this.customization,
+      dataStore: this._dataStore,
+      scales: this._scales,
+      customization: this._customization,
       refScope: this.props.refScope,
-      registerScale: registration => this.registerScale(registration),
-      unregisterScale: id => this.unregisterScale(id),
-      refreshScale: id => this.refreshScale(id),
-      refreshScales: () => this.refreshScales(),
-      getScale: id => this.getScale(id),
-      requireScale: id => this.requireScale(id),
-      setScaleDomain: (id, domain) => this.setScaleDomain(id, domain),
-      setScaleRange: (id, range) => this.setScaleRange(id, range),
-      getScaleSourceDomain: id => this.getScaleSourceDomain(id),
-      setScaleDomainContribution: contribution => this.setScaleDomainContribution(contribution),
-      removeScaleDomainContribution: id => this.removeScaleDomainContribution(id),
-      getScaleDomainContributions: scaleId => this.getScaleDomainContributions(scaleId),
+      registerScale: registration => this._registerScale(registration),
+      unregisterScale: id => this._unregisterScale(id),
+      refreshScale: id => this._refreshScale(id),
+      refreshScales: () => this._refreshScales(),
+      getScale: id => this._getScale(id),
+      requireScale: id => this._requireScale(id),
+      setScaleDomain: (id, domain) => this._setScaleDomain(id, domain),
+      setScaleRange: (id, range) => this._setScaleRange(id, range),
+      getScaleSourceDomain: id => this._getScaleSourceDomain(id),
+      setScaleDomainContribution: contribution => this._setScaleDomainContribution(contribution),
+      removeScaleDomainContribution: id => this._removeScaleDomainContribution(id),
+      getScaleDomainContributions: scaleId => this._getScaleDomainContributions(scaleId),
       setChildren: children => this.setChildren(children),
-      refresh: event => this.refresh(event),
-      registerInteractiveSeries: registration => this.registerInteractiveSeries(registration),
-      unregisterInteractiveSeries: id => this.unregisterInteractiveSeries(id),
-      getInteractiveSeries: () => this.getInteractiveSeries(),
-      getInteractionState: () => this.getInteractionState(),
-      setInteractionState: patch => this.setInteractionState(patch),
-      subscribeInteraction: listener => this.subscribeInteraction(listener),
-      setSeriesDiagnostics: (id, diagnostics) => this.setSeriesDiagnostics(id, diagnostics),
-      removeSeriesDiagnostics: id => this.removeSeriesDiagnostics(id),
-      setSeriesMetadata: (id, metadata) => this.setSeriesMetadata(id, metadata),
-      removeSeriesMetadata: id => this.removeSeriesMetadata(id),
-      getSeriesMetadata: () => this.getSeriesMetadata(),
-      publishSemanticRegions: (sourceId, regions) => this.publishSemanticRegions(sourceId, regions),
-      clearSemanticRegions: sourceId => this.clearSemanticRegions(sourceId),
-      getDiagnostics: () => this.getDiagnostics(),
-      subscribe: listener => this.subscribe(listener),
-      getApi: () => this.api,
+      refresh: event => this._refresh(event),
+      registerInteractiveSeries: registration => this._registerInteractiveSeries(registration),
+      unregisterInteractiveSeries: id => this._unregisterInteractiveSeries(id),
+      getInteractiveSeries: () => this._getInteractiveSeries(),
+      getInteractionState: () => this._getInteractionState(),
+      setInteractionState: patch => this._setInteractionState(patch),
+      subscribeInteraction: listener => this._subscribeInteraction(listener),
+      setSeriesDiagnostics: (id, diagnostics) => this._setSeriesDiagnostics(id, diagnostics),
+      removeSeriesDiagnostics: id => this._removeSeriesDiagnostics(id),
+      setSeriesMetadata: (id, metadata) => this._setSeriesMetadata(id, metadata),
+      removeSeriesMetadata: id => this._removeSeriesMetadata(id),
+      getSeriesMetadata: () => this._getSeriesMetadata(),
+      publishSemanticRegions: (sourceId, regions) => this._publishSemanticRegions(sourceId, regions),
+      clearSemanticRegions: sourceId => this._clearSemanticRegions(sourceId),
+      getDiagnostics: () => this._getDiagnostics(),
+      subscribe: listener => this._subscribe(listener),
+      getApi: () => this._api,
     }
-    this.provide(NovaChartRuntimeToken, this.runtime as NovaChartRuntime<Record<string, unknown>>)
+    this.provide(NovaChartRuntimeToken, this._runtime as NovaChartRuntime<Record<string, unknown>>)
     this.setChildren(options.children ?? [])
   }
 
@@ -170,14 +170,14 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    * Возвращает значение состояния ChartRoot.
    */
   override getApi(): NovaChartRootApi<TData> {
-    return this.api
+    return this._api
   }
 
   /**
    * Возвращает значение состояния ChartRoot.
    */
   getNovaChartRuntime(): NovaChartRuntime<TData> {
-    return this.runtime
+    return this._runtime
   }
 
   /**
@@ -186,7 +186,7 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
   override applyLayoutRect(rect: NovaUiLayoutRect): boolean {
     const changed = super.applyLayoutRect(rect)
     if (changed) {
-      this.applyChildrenRect()
+      this._applyChildrenRect()
     }
     return changed
   }
@@ -195,7 +195,7 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
    * Обновляет runtime-состояние ChartRoot.
    */
   update(): void {
-    this.applyChildrenRect()
+    this._applyChildrenRect()
   }
 
   /**
@@ -209,140 +209,140 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     if (this.props.clip) {
       this.renderer.clip(0, 0, this.width, this.height)
     }
-    this.syncRootSemantics()
+    this._syncRootSemantics()
   }
 
   /**
    * Обновляет значение состояния ChartRoot.
    */
   setChildren(children: Array<NovaTemplateChildSchema>): void {
-    const reconciled = reconcileNovaTemplateChildren(this, this.managedChildren, children, this.props.refScope)
-    this.managedChildren.length = 0
-    this.managedChildren.push(...reconciled.nodes)
-    this.applyChildrenRect()
-    this.refresh('children')
+    const reconciled = reconcileNovaTemplateChildren(this, this._managedChildren, children, this.props.refScope)
+    this._managedChildren.length = 0
+    this._managedChildren.push(...reconciled.nodes)
+    this._applyChildrenRect()
+    this._refresh('children')
   }
 
   /**
    * Обновляет значение состояния ChartRoot.
    */
   setData(data: Array<TData>): void {
-    this.dataStore.setData(data, this.props.keyField)
-    this.refreshScales()
-    this.refresh('setData')
+    this._dataStore.setData(data, this.props.keyField)
+    this._refreshScales()
+    this._refresh('setData')
   }
 
   /**
    * Обновляет runtime-состояние ChartRoot.
    */
   updateRows(rows: Array<Partial<TData> & Record<string, unknown>>): void {
-    this.dataStore.updateRows(rows)
-    this.refreshScales()
-    this.refresh('updateRows')
+    this._dataStore.updateRows(rows)
+    this._refreshScales()
+    this._refresh('updateRows')
   }
 
   /**
    * Удаляет сущность из runtime-коллекции ChartRoot.
    */
   removeRows(keys: Array<string | number>): void {
-    this.dataStore.removeRows(keys)
-    this.refreshScales()
-    this.refresh('removeRows')
+    this._dataStore.removeRows(keys)
+    this._refreshScales()
+    this._refresh('removeRows')
   }
 
   /**
    * Регистрирует сущность в runtime-слое ChartRoot.
    */
-  private registerScale(registration: NovaChartScaleRegistration<TData>): void {
-    this.scaleRegistrations.set(registration.id, registration)
-    const sourceDomain = this.resolveScaleSourceDomain(registration)
+  private _registerScale(registration: NovaChartScaleRegistration<TData>): void {
+    this._scaleRegistrations.set(registration.id, registration)
+    const sourceDomain = this._resolveScaleSourceDomain(registration)
     registration.scale.setDomain(sourceDomain)
-    this.scaleSourceDomains.set(registration.id, [...sourceDomain] as ChartScaleDomain)
-    this.scales.register(registration.scale)
-    this.refresh('scale.register')
+    this._scaleSourceDomains.set(registration.id, [...sourceDomain] as ChartScaleDomain)
+    this._scales.register(registration.scale)
+    this._refresh('scale.register')
   }
 
   /**
    * Удаляет регистрацию сущности из runtime-слоя ChartRoot.
    */
-  private unregisterScale(id: string): void {
-    this.scaleRegistrations.delete(id)
-    this.scales.unregister(id)
-    this.scaleSourceDomains.delete(id)
-    for (const contribution of this.getScaleDomainContributions(id)) {
-      this.scaleDomainContributions.delete(contribution.id)
+  private _unregisterScale(id: string): void {
+    this._scaleRegistrations.delete(id)
+    this._scales.unregister(id)
+    this._scaleSourceDomains.delete(id)
+    for (const contribution of this._getScaleDomainContributions(id)) {
+      this._scaleDomainContributions.delete(contribution.id)
     }
-    this.refresh('scale.unregister')
+    this._refresh('scale.unregister')
   }
 
   /**
    * Синхронизирует актуальное состояние ChartRoot.
    */
-  private refreshScale(id: string): void {
-    const registration = this.scaleRegistrations.get(id)
+  private _refreshScale(id: string): void {
+    const registration = this._scaleRegistrations.get(id)
     if (!registration) {
       return
     }
-    const sourceDomain = this.resolveScaleSourceDomain(registration)
+    const sourceDomain = this._resolveScaleSourceDomain(registration)
     registration.scale.setDomain(sourceDomain)
-    this.scaleSourceDomains.set(id, [...sourceDomain] as ChartScaleDomain)
-    this.scales.register(registration.scale)
-    this.refresh('scale.refresh')
+    this._scaleSourceDomains.set(id, [...sourceDomain] as ChartScaleDomain)
+    this._scales.register(registration.scale)
+    this._refresh('scale.refresh')
   }
 
   /**
    * Синхронизирует актуальное состояние ChartRoot.
    */
-  private refreshScales(): void {
-    for (const id of this.scaleRegistrations.keys()) {
-      this.refreshScale(id)
+  private _refreshScales(): void {
+    for (const id of this._scaleRegistrations.keys()) {
+      this._refreshScale(id)
     }
   }
 
   /**
    * Возвращает значение состояния ChartRoot.
    */
-  private getScale<TValue extends ChartScaleValue = ChartScaleValue>(id: string): ChartScale<TValue> | undefined {
-    return this.scales.get<TValue>(id)
+  private _getScale<TValue extends ChartScaleValue = ChartScaleValue>(id: string): ChartScale<TValue> | undefined {
+    return this._scales.get<TValue>(id)
   }
 
   /**
    * Выполняет внутренний шаг requireScale для ChartRoot.
    */
-  private requireScale<TValue extends ChartScaleValue = ChartScaleValue>(id: string): ChartScale<TValue> {
-    return this.scales.require<TValue>(id)
+  private _requireScale<TValue extends ChartScaleValue = ChartScaleValue>(id: string): ChartScale<TValue> {
+    return this._scales.require<TValue>(id)
   }
 
   /**
    * Обновляет значение состояния ChartRoot.
    */
-  private setScaleDomain(id: string, domain: ChartScaleDomain): void {
-    this.scales.setDomain(id, domain)
-    this.refresh('scale.domain')
+  private _setScaleDomain(id: string, domain: ChartScaleDomain): void {
+    this._scales.setDomain(id, domain)
+    this._refresh('scale.domain')
   }
 
   /**
    * Обновляет значение состояния ChartRoot.
    */
-  private setScaleRange(id: string, range: ChartScaleRange): void {
-    this.scales.setRange(id, range)
-    this.refresh('scale.range')
+  private _setScaleRange(id: string, range: ChartScaleRange): void {
+    this._scales.setRange(id, range)
+    this._refresh('scale.range')
   }
 
   /**
    * Возвращает исходный домен шкалы до viewport-среза.
    */
-  private getScaleSourceDomain(id: string): ChartScaleDomain | undefined {
-    const domain = this.scaleSourceDomains.get(id)
+  private _getScaleSourceDomain(id: string): ChartScaleDomain | undefined {
+    const domain = this._scaleSourceDomains.get(id)
     return domain ? [...domain] as ChartScaleDomain : undefined
   }
 
   /**
    * Публикует вклад series в source domain общей шкалы.
    */
-  private setScaleDomainContribution(contribution: NovaChartScaleDomainContribution): void {
+  private _setScaleDomainContribution(contribution: NovaChartScaleDomainContribution): void {
     const next = cloneContribution(contribution)
-    const previous = this.scaleDomainContributions.get(next.id)
+    const previous = this._scaleDomainContributions.get(next.id)
     if (
       previous
       && previous.scaleId === next.scaleId
@@ -351,39 +351,39 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
       return
     }
 
-    this.scaleDomainContributions.set(next.id, next)
-    this.refreshScale(next.scaleId)
+    this._scaleDomainContributions.set(next.id, next)
+    this._refreshScale(next.scaleId)
   }
 
   /**
    * Удаляет вклад series из source domain шкалы.
    */
-  private removeScaleDomainContribution(id: string): void {
-    const previous = this.scaleDomainContributions.get(id)
+  private _removeScaleDomainContribution(id: string): void {
+    const previous = this._scaleDomainContributions.get(id)
     if (!previous) {
       return
     }
-    this.scaleDomainContributions.delete(id)
-    this.refreshScale(previous.scaleId)
+    this._scaleDomainContributions.delete(id)
+    this._refreshScale(previous.scaleId)
   }
 
   /**
    * Возвращает contributions для scale-first mixed charts.
    */
-  private getScaleDomainContributions(scaleId?: string): Array<NovaChartScaleDomainContribution> {
-    return Array.from(this.scaleDomainContributions.values())
+  private _getScaleDomainContributions(scaleId?: string): Array<NovaChartScaleDomainContribution> {
+    return Array.from(this._scaleDomainContributions.values())
       .filter(contribution => scaleId === undefined || contribution.scaleId === scaleId)
       .map(cloneContribution)
   }
 
-  private exportChart(options: NovaExportImageOptions = {}) {
+  private _exportChart(options: NovaExportImageOptions = {}) {
     return this.nova.exportImage({
       ...options,
       includeSemanticSnapshot: options.includeSemanticSnapshot ?? true,
     })
   }
 
-  private getSemanticSnapshot(options: NovaSemanticSnapshotOptions = {}) {
+  private _getSemanticSnapshot(options: NovaSemanticSnapshotOptions = {}) {
     return this.nova.semantics.snapshot({
       scope: this.componentId,
       ...options,
@@ -393,76 +393,76 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
   /**
    * Обновляет значение состояния ChartRoot.
    */
-  private setSeriesDiagnostics(id: string, diagnostics: NovaChartSeriesDiagnostics): void {
-    this.seriesDiagnostics.set(id, diagnostics)
+  private _setSeriesDiagnostics(id: string, diagnostics: NovaChartSeriesDiagnostics): void {
+    this._seriesDiagnostics.set(id, diagnostics)
   }
 
   /**
    * Удаляет diagnostics series из runtime.
    */
-  private removeSeriesDiagnostics(id: string): void {
-    this.seriesDiagnostics.delete(id)
+  private _removeSeriesDiagnostics(id: string): void {
+    this._seriesDiagnostics.delete(id)
   }
 
   /**
    * Обновляет metadata серий для legend и high-level chart shell.
    */
-  private setSeriesMetadata(id: string, metadata: Array<NovaChartSeriesMetadata>): void {
-    this.seriesMetadata.set(id, metadata.map(item => ({ ...item })))
-    this.syncRootSemantics()
+  private _setSeriesMetadata(id: string, metadata: Array<NovaChartSeriesMetadata>): void {
+    this._seriesMetadata.set(id, metadata.map(item => ({ ...item })))
+    this._syncRootSemantics()
   }
 
   /**
    * Удаляет metadata series из runtime.
    */
-  private removeSeriesMetadata(id: string): void {
-    this.seriesMetadata.delete(id)
-    this.syncRootSemantics()
+  private _removeSeriesMetadata(id: string): void {
+    this._seriesMetadata.delete(id)
+    this._syncRootSemantics()
   }
 
   /**
    * Возвращает metadata всех зарегистрированных серий.
    */
-  private getSeriesMetadata(): Array<NovaChartSeriesMetadata> {
-    return Array.from(this.seriesMetadata.values()).flat().map(item => ({ ...item }))
+  private _getSeriesMetadata(): Array<NovaChartSeriesMetadata> {
+    return Array.from(this._seriesMetadata.values()).flat().map(item => ({ ...item }))
   }
 
   /**
    * Регистрирует сущность в runtime-слое ChartRoot.
    */
-  private registerInteractiveSeries(registration: NovaChartInteractiveSeriesRegistration<TData>): void {
-    this.interactiveSeries.set(registration.id, registration)
+  private _registerInteractiveSeries(registration: NovaChartInteractiveSeriesRegistration<TData>): void {
+    this._interactiveSeries.set(registration.id, registration)
   }
 
   /**
    * Удаляет регистрацию сущности из runtime-слоя ChartRoot.
    */
-  private unregisterInteractiveSeries(id: string): void {
-    this.interactiveSeries.delete(id)
-    if (this.interactionState.hovered?.seriesId === id) {
-      this.setInteractionState({ hovered: null, tooltipVisible: false })
+  private _unregisterInteractiveSeries(id: string): void {
+    this._interactiveSeries.delete(id)
+    if (this._interactionState.hovered?.seriesId === id) {
+      this._setInteractionState({ hovered: null, tooltipVisible: false })
     }
   }
 
   /**
    * Возвращает значение состояния ChartRoot.
    */
-  private getInteractiveSeries(): Array<NovaChartInteractiveSeriesRegistration<TData>> {
-    return [...this.interactiveSeries.values()]
+  private _getInteractiveSeries(): Array<NovaChartInteractiveSeriesRegistration<TData>> {
+    return [...this._interactiveSeries.values()]
   }
 
   /**
    * Возвращает значение состояния ChartRoot.
    */
-  private getInteractionState(): NovaChartInteractionState<TData> {
+  private _getInteractionState(): NovaChartInteractionState<TData> {
     return {
-      ...this.interactionState,
-      pointer: this.interactionState.pointer ? { ...this.interactionState.pointer } : null,
-      hovered: this.interactionState.hovered
+      ...this._interactionState,
+      pointer: this._interactionState.pointer ? { ...this._interactionState.pointer } : null,
+      hovered: this._interactionState.hovered
         ? {
-            ...this.interactionState.hovered,
-            bounds: this.interactionState.hovered.bounds ? { ...this.interactionState.hovered.bounds } : undefined,
-            point: this.interactionState.hovered.point ? { ...this.interactionState.hovered.point } : undefined,
+            ...this._interactionState.hovered,
+            bounds: this._interactionState.hovered.bounds ? { ...this._interactionState.hovered.bounds } : undefined,
+            point: this._interactionState.hovered.point ? { ...this._interactionState.hovered.point } : undefined,
           }
         : null,
     }
@@ -471,48 +471,48 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
   /**
    * Обновляет значение состояния ChartRoot.
    */
-  private setInteractionState(patch: Partial<Omit<NovaChartInteractionState<TData>, 'revision'>>): void {
-    const previousKey = this.interactionState.hovered?.key
-    const previousSeriesId = this.interactionState.hovered?.seriesId
+  private _setInteractionState(patch: Partial<Omit<NovaChartInteractionState<TData>, 'revision'>>): void {
+    const previousKey = this._interactionState.hovered?.key
+    const previousSeriesId = this._interactionState.hovered?.seriesId
     const next = {
-      ...this.interactionState,
+      ...this._interactionState,
       ...patch,
-      revision: this.interactionState.revision + 1,
+      revision: this._interactionState.revision + 1,
     }
 
     const nextKey = next.hovered?.key
     const nextSeriesId = next.hovered?.seriesId
     const changed = previousKey !== nextKey
       || previousSeriesId !== nextSeriesId
-      || this.interactionState.pointer?.plotX !== next.pointer?.plotX
-      || this.interactionState.pointer?.plotY !== next.pointer?.plotY
-      || this.interactionState.tooltipVisible !== next.tooltipVisible
+      || this._interactionState.pointer?.plotX !== next.pointer?.plotX
+      || this._interactionState.pointer?.plotY !== next.pointer?.plotY
+      || this._interactionState.tooltipVisible !== next.tooltipVisible
 
     if (!changed) {
       return
     }
 
-    this.interactionState = next
+    this._interactionState = next
     const hoveredChanged = previousKey !== nextKey || previousSeriesId !== nextSeriesId
     if (hoveredChanged && previousSeriesId && previousSeriesId !== nextSeriesId) {
-      this.interactiveSeries.get(previousSeriesId)?.dirty()
+      this._interactiveSeries.get(previousSeriesId)?.dirty()
     }
     if (hoveredChanged && nextSeriesId) {
-      this.interactiveSeries.get(nextSeriesId)?.dirty()
+      this._interactiveSeries.get(nextSeriesId)?.dirty()
     }
     else if (hoveredChanged && previousSeriesId) {
-      this.interactiveSeries.get(previousSeriesId)?.dirty()
+      this._interactiveSeries.get(previousSeriesId)?.dirty()
     }
 
-    for (const listener of this.interactionListeners) {
-      listener(this.getInteractionState())
+    for (const listener of this._interactionListeners) {
+      listener(this._getInteractionState())
     }
-    this.customization.notifyInteraction(this.getInteractionState())
-    this.syncRootSemantics()
+    this._customization.notifyInteraction(this._getInteractionState())
+    this._syncRootSemantics()
   }
 
-  private publishSemanticRegions(sourceId: string, regions: Array<NovaSemanticRegisterOptions>): void {
-    const sourceKey = this.semanticSourceKey(sourceId)
+  private _publishSemanticRegions(sourceId: string, regions: Array<NovaSemanticRegisterOptions>): void {
+    const sourceKey = this._semanticSourceKey(sourceId)
     if (this.props.accessibility === false) {
       this.nova.semantics.clearSource(sourceKey)
       return
@@ -524,18 +524,18 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     })))
   }
 
-  private clearSemanticRegions(sourceId: string): void {
-    this.nova.semantics.clearSource(this.semanticSourceKey(sourceId))
+  private _clearSemanticRegions(sourceId: string): void {
+    this.nova.semantics.clearSource(this._semanticSourceKey(sourceId))
   }
 
-  private syncRootSemantics(): void {
+  private _syncRootSemantics(): void {
     const options = this.props.accessibility
     if (options === false) {
       this.nova.semantics.clearScope(this.componentId)
       return
     }
 
-    const data = this.dataStore.getData()
+    const data = this._dataStore.getData()
     const summary = typeof options.dataSummary === 'function'
       ? options.dataSummary(data)
       : options.dataSummary
@@ -550,9 +550,9 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
         focusable: options.keyboardNavigation,
         order: 0,
         data: {
-          rowCount: this.dataStore.rowCount,
-          scaleCount: this.scales.list().length,
-          seriesCount: this.getSeriesMetadata().length,
+          rowCount: this._dataStore.rowCount,
+          scaleCount: this._scales.list().length,
+          seriesCount: this._getSeriesMetadata().length,
           summary,
         },
         source: {
@@ -564,7 +564,7 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     ]
 
     let order = 20
-    for (const registration of this.scaleRegistrations.values()) {
+    for (const registration of this._scaleRegistrations.values()) {
       regions.push({
         id: `${this.componentId}:scale:${registration.id}`,
         role: 'axis',
@@ -575,8 +575,8 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
         data: {
           scaleId: registration.id,
           scaleType: registration.props.scaleType,
-          sourceDomain: this.getScaleSourceDomain(registration.id),
-          visibleDomain: this.getScale(registration.id)?.getDomain(),
+          sourceDomain: this._getScaleSourceDomain(registration.id),
+          visibleDomain: this._getScale(registration.id)?.getDomain(),
         },
         source: {
           type: 'synthetic',
@@ -587,7 +587,7 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
     }
 
     order = 100
-    for (const series of this.getSeriesMetadata()) {
+    for (const series of this._getSeriesMetadata()) {
       regions.push({
         id: `${this.componentId}:series:${series.sourceSeriesId ?? series.id}`,
         role: 'series',
@@ -612,7 +612,7 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
       })
     }
 
-    const hovered = this.interactionState.hovered
+    const hovered = this._interactionState.hovered
     if (options.includeVisibleMarks && hovered) {
       regions.push({
         id: `${this.componentId}:hovered:${hovered.seriesId}:${hovered.key}`,
@@ -634,58 +634,58 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
       })
     }
 
-    this.nova.semantics.syncSource(this.semanticSourceKey('root'), regions)
+    this.nova.semantics.syncSource(this._semanticSourceKey('root'), regions)
   }
 
-  private semanticSourceKey(sourceId: string): string {
+  private _semanticSourceKey(sourceId: string): string {
     return `${this.componentId}:semantic:${sourceId}`
   }
 
   /**
    * Подписывает обработчик на изменения ChartRoot.
    */
-  private subscribe(listener: NovaChartDataListener<TData>): () => void {
-    this.listeners.add(listener)
+  private _subscribe(listener: NovaChartDataListener<TData>): () => void {
+    this._listeners.add(listener)
     return () => {
-      this.listeners.delete(listener)
+      this._listeners.delete(listener)
     }
   }
 
   /**
    * Подписывает обработчик на изменения ChartRoot.
    */
-  private subscribeInteraction(listener: NovaChartInteractionListener<TData>): () => void {
-    this.interactionListeners.add(listener)
+  private _subscribeInteraction(listener: NovaChartInteractionListener<TData>): () => void {
+    this._interactionListeners.add(listener)
     return () => {
-      this.interactionListeners.delete(listener)
+      this._interactionListeners.delete(listener)
     }
   }
 
   /**
    * Возвращает значение состояния ChartRoot.
    */
-  private getDiagnostics(): NovaChartRootDiagnostics<TData> {
+  private _getDiagnostics(): NovaChartRootDiagnostics<TData> {
     return {
-      rowCount: this.dataStore.rowCount,
-      scaleCount: this.scales.list().length,
-      componentCount: this.managedChildren.length,
-      dataRevision: this.dataStore.revision,
-      scalesRevision: this.scaleRegistrations.size,
-      lastEvent: this.lastEvent,
-      series: Object.fromEntries(this.seriesDiagnostics),
+      rowCount: this._dataStore.rowCount,
+      scaleCount: this._scales.list().length,
+      componentCount: this._managedChildren.length,
+      dataRevision: this._dataStore.revision,
+      scalesRevision: this._scaleRegistrations.size,
+      lastEvent: this._lastEvent,
+      series: Object.fromEntries(this._seriesDiagnostics),
     }
   }
 
   /**
    * Собирает полный source domain шкалы из base domain и contributions.
    */
-  private resolveScaleSourceDomain(registration: NovaChartScaleRegistration<TData>): ChartScaleDomain {
-    const baseDomain = resolveScaleDomain(registration.props, this.dataStore)
+  private _resolveScaleSourceDomain(registration: NovaChartScaleRegistration<TData>): ChartScaleDomain {
+    const baseDomain = resolveScaleDomain(registration.props, this._dataStore)
     if (registration.props.domain) {
       return [...baseDomain] as ChartScaleDomain
     }
 
-    const contributions = this.getScaleDomainContributions(registration.id).map(item => item.domain)
+    const contributions = this._getScaleDomainContributions(registration.id).map(item => item.domain)
     if (contributions.length === 0) {
       return [...baseDomain] as ChartScaleDomain
     }
@@ -701,12 +701,12 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
   /**
    * Синхронизирует актуальное состояние ChartRoot.
    */
-  private refresh(event = 'refresh'): void {
-    this.lastEvent = event
-    this.dirtyChildren()
+  private _refresh(event = 'refresh'): void {
+    this._lastEvent = event
+    this._dirtyChildren()
     this.dirty({ update: true, render: true })
-    const diagnostics = this.getDiagnostics()
-    for (const listener of this.listeners) {
+    const diagnostics = this._getDiagnostics()
+    for (const listener of this._listeners) {
       listener(diagnostics)
     }
   }
@@ -714,14 +714,14 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
   /**
    * Применяет подготовленное состояние ChartRoot.
    */
-  private applyChildrenRect(): void {
+  private _applyChildrenRect(): void {
     const rect = {
       x: 0,
       y: 0,
       width: this.width,
       height: this.height,
     }
-    for (const child of this.managedChildren) {
+    for (const child of this._managedChildren) {
       applyChildRect(child, rect)
     }
   }
@@ -729,8 +729,8 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
   /**
    * Выполняет внутренний шаг dirtyChildren для ChartRoot.
    */
-  private dirtyChildren(): void {
-    for (const child of this.managedChildren) {
+  private _dirtyChildren(): void {
+    for (const child of this._managedChildren) {
       dirtySubtree(child)
     }
   }
@@ -741,35 +741,35 @@ export class ChartRoot<TData = Record<string, unknown>, E extends EventList = Re
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartRootResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
     if (changedKeys.includes('data') || changedKeys.includes('keyField')) {
-      this.dataStore.setData(this.props.data, this.props.keyField)
-      this.refreshScales()
-      this.refresh('props.data')
+      this._dataStore.setData(this.props.data, this.props.keyField)
+      this._refreshScales()
+      this._refresh('props.data')
     }
     if (changedKeys.includes('refScope')) {
-      this.runtime.refScope = this.props.refScope
+      this._runtime.refScope = this.props.refScope
     }
     if (
       changedKeys.includes('styleSheet')
       || changedKeys.includes('visualPreset')
       || changedKeys.includes('plugins')
     ) {
-      this.customization.configure(this.props, {
+      this._customization.configure(this.props, {
         id: this.componentId,
-        getData: () => this.dataStore.getData(),
-        getScale: id => this.getScale(id),
-        getSeriesMetadata: () => this.getSeriesMetadata(),
-        getInteractionState: () => this.getInteractionState(),
+        getData: () => this._dataStore.getData(),
+        getScale: id => this._getScale(id),
+        getSeriesMetadata: () => this._getSeriesMetadata(),
+        getInteractionState: () => this._getInteractionState(),
       })
-      this.refresh('props.customization')
+      this._refresh('props.customization')
     }
     if (changedKeys.includes('accessibility')) {
-      this.syncRootSemantics()
+      this._syncRootSemantics()
     }
   }
 
   protected override onUnmount(): void {
     this.nova.semantics.clearScope(this.componentId)
-    this.customization.dispose()
+    this._customization.dispose()
     super.onUnmount()
   }
 }

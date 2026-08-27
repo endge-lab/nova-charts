@@ -62,7 +62,11 @@ const STYLE_PROPERTY_MAP: Record<string, keyof NovaChartResolvedMarkStyle> = {
 const PART_ALIASES: Record<string, Record<string, string>> = {
   BarSeries: { label: 'barLabel' },
   LineSeries: { segment: 'lineSegment', marker: 'lineMarker' },
-  AreaSeries: { fill: 'areaFill', outline: 'areaOutline', marker: 'areaMarker' },
+  AreaSeries: {
+    fill: 'areaFill',
+    outline: 'areaOutline',
+    marker: 'areaMarker',
+  },
   ScatterSeries: { point: 'scatterPoint' },
   Axis: { tick: 'axisTick', label: 'axisLabel' },
   Grid: { line: 'gridLine' },
@@ -72,25 +76,27 @@ const PART_ALIASES: Record<string, Record<string, string>> = {
 }
 
 export class NovaChartStyleSheet {
-  private readonly rules: Array<ChartStyleRule>
-  private readonly cache = new Map<string, NovaChartResolvedMarkStyle>()
+  private readonly _rules: Array<ChartStyleRule>
+  private readonly _cache = new Map<string, NovaChartResolvedMarkStyle>()
 
   constructor(source?: string) {
-    this.rules = parseStyleSheet(source ?? '')
+    this._rules = parseStyleSheet(source ?? '')
   }
 
-  resolve<TData>(context: NovaChartStyleContext<TData>): NovaChartResolvedMarkStyle {
-    if (this.rules.length === 0) {
+  resolve<TData>(
+    context: NovaChartStyleContext<TData>,
+  ): NovaChartResolvedMarkStyle {
+    if (this._rules.length === 0) {
       return {}
     }
 
     const key = createCacheKey(context)
-    const cached = this.cache.get(key)
+    const cached = this._cache.get(key)
     if (cached) {
       return cached
     }
 
-    const matched = this.rules
+    const matched = this._rules
       .filter(rule => matchesSelector(rule.selector, context))
       .sort((a, b) => a.specificity - b.specificity || a.order - b.order)
     const style: NovaChartResolvedMarkStyle = {}
@@ -98,7 +104,7 @@ export class NovaChartStyleSheet {
       Object.assign(style, resolveTokenValues(rule.style, context))
     }
 
-    this.cache.set(key, style)
+    this._cache.set(key, style)
     return style
   }
 }
@@ -107,7 +113,9 @@ export function parseNovaChartStyleSheet(source?: string): NovaChartStyleSheet {
   return new NovaChartStyleSheet(source)
 }
 
-export function styleSheetToPartStyles(source?: string): Record<string, NovaChartMarkStyle> {
+export function styleSheetToPartStyles(
+  source?: string,
+): Record<string, NovaChartMarkStyle> {
   const rules = parseStyleSheet(source ?? '')
   const styles: Record<string, NovaChartMarkStyle> = {}
   for (const rule of rules) {
@@ -115,7 +123,8 @@ export function styleSheetToPartStyles(source?: string): Record<string, NovaChar
       continue
     }
     styles[`${rule.selector.component ?? '*'}::${rule.selector.part}`] = {
-      ...(styles[`${rule.selector.component ?? '*'}::${rule.selector.part}`] ?? {}),
+      ...(styles[`${rule.selector.component ?? '*'}::${rule.selector.part}`]
+        ?? {}),
       ...rule.style,
     }
   }
@@ -127,9 +136,15 @@ function parseStyleSheet(source: string): Array<ChartStyleRule> {
   const rules: Array<ChartStyleRule> = []
   let order = 0
   const blockPattern = /([^{}]+)\{([^{}]+)\}/g
-  let match: RegExpExecArray | null
-  while ((match = blockPattern.exec(withoutComments)) !== null) {
-    const selectors = (match[1] ?? '').split(',').map(selector => selector.trim()).filter(Boolean)
+  for (
+    let match = blockPattern.exec(withoutComments);
+    match !== null;
+    match = blockPattern.exec(withoutComments)
+  ) {
+    const selectors = (match[1] ?? '')
+      .split(',')
+      .map(selector => selector.trim())
+      .filter(Boolean)
     const style = parseDeclarations(match[2] ?? '')
     for (const selectorSource of selectors) {
       const selector = parseSelector(selectorSource)
@@ -151,8 +166,11 @@ function parseSelector(source: string): ChartStyleSelector | null {
   const selector: ChartStyleSelector = { classes: [], attrs: {} }
   const attrPattern = /\[([^\]=\s]+)(?:=(["']?)([^\]"']+)\2)?\]/g
   let clean = source.trim()
-  let attrMatch: RegExpExecArray | null
-  while ((attrMatch = attrPattern.exec(source)) !== null) {
+  for (
+    let attrMatch = attrPattern.exec(source);
+    attrMatch !== null;
+    attrMatch = attrPattern.exec(source)
+  ) {
     const attrName = attrMatch[1]
     if (attrName) {
       selector.attrs[attrName] = attrMatch[3] ?? true
@@ -161,8 +179,11 @@ function parseSelector(source: string): ChartStyleSelector | null {
   clean = clean.replace(attrPattern, '')
 
   const classPattern = /\.([\w-]+)/g
-  let classMatch: RegExpExecArray | null
-  while ((classMatch = classPattern.exec(clean)) !== null) {
+  for (
+    let classMatch = classPattern.exec(clean);
+    classMatch !== null;
+    classMatch = classPattern.exec(clean)
+  ) {
     if (classMatch[1]) {
       selector.classes.push(classMatch[1])
     }
@@ -200,7 +221,11 @@ function parseSelector(source: string): ChartStyleSelector | null {
     selector.component = normalizeComponentName(cleanSelector)
   }
 
-  return selector.component || selector.part || selector.id || selector.classes.length || Object.keys(selector.attrs).length
+  return selector.component
+    || selector.part
+    || selector.id
+    || selector.classes.length
+    || Object.keys(selector.attrs).length
     ? selector
     : null
 }
@@ -216,18 +241,28 @@ function parseDeclarations(source: string): NovaChartResolvedMarkStyle {
     const property = STYLE_PROPERTY_MAP[rawName.trim().toLowerCase()]
     if (!property) {
       continue
-    }(style as Record<string, unknown>)[property] = parseStyleValue(property, valueSource)
+    }
+    (style as Record<string, unknown>)[property] = parseStyleValue(
+      property,
+      valueSource,
+    )
   }
   return style
 }
 
-function parseStyleValue(property: keyof NovaChartResolvedMarkStyle, value: string): unknown {
+function parseStyleValue(
+  property: keyof NovaChartResolvedMarkStyle,
+  value: string,
+): unknown {
   const trimmed = value.trim()
   if (trimmed.startsWith('var(')) {
     return trimmed
   }
   if (property === 'dashPattern') {
-    return trimmed.split(/[,\s]+/).map(Number).filter(Number.isFinite)
+    return trimmed
+      .split(/[,\s]+/)
+      .map(Number)
+      .filter(Number.isFinite)
   }
   if (
     property === 'opacity'
@@ -245,8 +280,14 @@ function parseStyleValue(property: keyof NovaChartResolvedMarkStyle, value: stri
   return trimmed.replace(/^["']|["']$/g, '')
 }
 
-function matchesSelector<TData>(selector: ChartStyleSelector, context: NovaChartStyleContext<TData>): boolean {
-  if (selector.component && normalizeComponentName(context.componentName) !== selector.component) {
+function matchesSelector<TData>(
+  selector: ChartStyleSelector,
+  context: NovaChartStyleContext<TData>,
+): boolean {
+  if (
+    selector.component
+    && normalizeComponentName(context.componentName) !== selector.component
+  ) {
     return false
   }
   if (selector.part && selector.part !== context.part) {
@@ -288,33 +329,38 @@ function resolveTokenValues<TData>(
 ): NovaChartResolvedMarkStyle {
   const next: NovaChartResolvedMarkStyle = {}
   for (const [key, value] of Object.entries(style)) {
-    ;(next as Record<string, unknown>)[key] = typeof value === 'string'
-      ? resolveTokenValue(value, context)
-      : value
+    (next as Record<string, unknown>)[key]
+      = typeof value === 'string' ? resolveTokenValue(value, context) : value
   }
   return next
 }
 
-function resolveTokenValue<TData>(value: string, context: NovaChartStyleContext<TData>): string {
+function resolveTokenValue<TData>(
+  value: string,
+  context: NovaChartStyleContext<TData>,
+): string {
   const match = value.match(/^var\((--[\w-]+)(?:,\s*(.+))?\)$/)
   if (!match) {
     return value
   }
   const rawTokenName = match[1] ?? ''
   const tokenName = rawTokenName.replace(/^--nova-chart-/, '')
-  const normalized = tokenName.replace(/-([a-z])/g, (_, char: string) => char.toUpperCase())
+  const normalized = tokenName.replace(/-([a-z])/g, (_, char: string) =>
+    char.toUpperCase())
   const fallback = match[2]?.trim().replace(/^["']|["']$/g, '')
   const tokenValue = context.tokens[normalized] ?? context.tokens[rawTokenName]
-  return typeof tokenValue === 'string' ? tokenValue : fallback ?? value
+  return typeof tokenValue === 'string' ? tokenValue : (fallback ?? value)
 }
 
 function calculateSpecificity(selector: ChartStyleSelector): number {
-  return (selector.id ? 100 : 0)
+  return (
+    (selector.id ? 100 : 0)
     + selector.classes.length * 10
     + Object.keys(selector.attrs).length * 10
     + (selector.state ? 10 : 0)
     + (selector.component ? 1 : 0)
     + (selector.part ? 1 : 0)
+  )
 }
 
 function createCacheKey<TData>(context: NovaChartStyleContext<TData>): string {
@@ -324,7 +370,10 @@ function createCacheKey<TData>(context: NovaChartStyleContext<TData>): string {
     context.part,
     context.state,
     normalizeClassList(context.className).join('.'),
-    Object.entries(context.attrs ?? {}).map(([key, value]) => `${key}=${String(value)}`).sort().join('&'),
+    Object.entries(context.attrs ?? {})
+      .map(([key, value]) => `${key}=${String(value)}`)
+      .sort()
+      .join('&'),
     JSON.stringify(context.tokens),
   ].join('|')
 }
@@ -336,7 +385,10 @@ function normalizeComponentName(value?: string): string | undefined {
   return value.replace(/^NovaCharts\./, '')
 }
 
-function normalizePartName(component: string | undefined, part: string): string {
+function normalizePartName(
+  component: string | undefined,
+  part: string,
+): string {
   return PART_ALIASES[component ?? '']?.[part] ?? part
 }
 

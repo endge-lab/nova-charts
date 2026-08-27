@@ -55,9 +55,9 @@ const EMPTY_LAYOUT_PLAN: NovaChartBarLayoutPlan<any> = {
  */
 export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList = Record<string, any>>
   extends NovaUiComponentNode<NovaChartBarSeriesResolvedProps<TData>, NovaChartBarSeriesApi<TData>, NovaChartBarSeriesProps<TData>, E> {
-  private layoutPlan: NovaChartBarLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
-  private readonly api: NovaChartBarSeriesApi<TData>
-  private readonly runtimeBinding: ChartSeriesRuntimeBinding<TData>
+  private _layoutPlan: NovaChartBarLayoutPlan<TData> = EMPTY_LAYOUT_PLAN
+  private readonly _api: NovaChartBarSeriesApi<TData>
+  private readonly _runtimeBinding: ChartSeriesRuntimeBinding<TData>
 
   /**
    * Создает экземпляр ChartBarSeries и подготавливает базовое состояние.
@@ -71,15 +71,15 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
   ) {
     super(app, surface, descriptor, props, { componentId: options.componentId })
     this.options({ zIndex: 10 })
-    this.api = {
-      getLayoutPlan: () => this.layoutPlan,
-      getDiagnostics: () => this.layoutPlan.diagnostics,
-      hitTest: input => this.hitTest(input),
-      refresh: () => this.refresh(),
+    this._api = {
+      getLayoutPlan: () => this._layoutPlan,
+      getDiagnostics: () => this._layoutPlan.diagnostics,
+      hitTest: input => this._hitTestSeries(input),
+      refresh: () => this._refresh(),
       setVirtualization: patch => this.setVirtualization(patch),
     }
-    this.runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
-      hitTest: input => this.hitTest(input),
+    this._runtimeBinding = new ChartSeriesRuntimeBinding(this as any, {
+      hitTest: input => this._hitTestSeries(input),
     })
   }
 
@@ -97,14 +97,14 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
    * Возвращает значение состояния ChartBarSeries.
    */
   override getApi(): NovaChartBarSeriesApi<TData> {
-    return this.api
+    return this._api
   }
 
   /**
    * Обновляет runtime-состояние ChartBarSeries.
    */
   update(): void {
-    this.computeLayout()
+    this._computeLayout()
   }
 
   /**
@@ -114,9 +114,9 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
     const schemaStart = now()
     const runtime = resolveNovaChartRuntime<TData>(this, this.props.chartRef)
     const schema: NovaSchema = [] as unknown as NovaSchema
-    for (const item of this.layoutPlan.items) {
-      const context = this.createStyleContext('bar', item, runtime)
-      const style = this.resolveBarStyle(item, context, runtime)
+    for (const item of this._layoutPlan.items) {
+      const context = this._createStyleContext('bar', item, runtime)
+      const style = this._resolveBarStyle(item, context, runtime)
       renderWithSlot(
         schema,
         this.props.renderers?.bar,
@@ -145,19 +145,19 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
     }
 
     const schemaMs = now() - schemaStart
-    this.layoutPlan = {
-      ...this.layoutPlan,
+    this._layoutPlan = {
+      ...this._layoutPlan,
       diagnostics: {
-        ...this.layoutPlan.diagnostics,
+        ...this._layoutPlan.diagnostics,
         schemaMs,
-        totalMs: this.layoutPlan.diagnostics.domainMs + this.layoutPlan.diagnostics.layoutMs + schemaMs,
+        totalMs: this._layoutPlan.diagnostics.domainMs + this._layoutPlan.diagnostics.layoutMs + schemaMs,
       },
     }
-    this.publishDiagnostics()
+    this._publishDiagnostics()
     if (schema.length > 0) {
       this.renderer.schema(schema)
     }
-    this.renderLabels(runtime)
+    this._renderLabels(runtime)
   }
 
   /**
@@ -168,7 +168,7 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
       ...this.props.virtualization,
       ...options,
     }
-    this.refresh()
+    this._refresh()
   }
 
   /**
@@ -176,14 +176,14 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
    */
   protected override onMount(): void {
     super.onMount()
-    this.runtimeBinding.syncInteractive()
+    this._runtimeBinding.syncInteractive()
   }
 
   /**
    * Обрабатывает входящее событие ChartBarSeries.
    */
   protected override onUnmount(): void {
-    this.runtimeBinding.cleanup()
+    this._runtimeBinding.cleanup()
     super.onUnmount()
   }
 
@@ -193,35 +193,35 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
   protected override onPropsChanged(changedKeys: Array<keyof NovaChartBarSeriesResolvedProps<TData>>): void {
     this.applyCommonPropsChanged(changedKeys)
     if (changedKeys.includes('chartRef')) {
-      this.runtimeBinding.syncInteractive()
+      this._runtimeBinding.syncInteractive()
     }
-    this.refresh()
+    this._refresh()
   }
 
   /**
    * Выполняет hit-test для runtime-геометрии ChartBarSeries.
    */
-  private hitTest(input: NovaChartHitTestInput) {
-    return hitTestBarLayoutPlan(this.componentId, this.layoutPlan, input)
+  private _hitTestSeries(input: NovaChartHitTestInput) {
+    return hitTestBarLayoutPlan(this.componentId, this._layoutPlan, input)
   }
 
   /**
    * Синхронизирует актуальное состояние ChartBarSeries.
    */
-  private refresh(): void {
-    this.computeLayout()
+  private _refresh(): void {
+    this._computeLayout()
     this.dirty({ update: true, render: true })
   }
 
   /**
    * Вычисляет производное значение ChartBarSeries.
    */
-  private computeLayout(): void {
+  private _computeLayout(): void {
     const runtime = resolveNovaChartRuntime<TData>(this, this.props.chartRef)
     const xScale = runtime?.getScale(this.props.xScaleId)
     const yScale = runtime?.getScale(this.props.yScaleId)
     if (!runtime || !xScale || !yScale) {
-      this.layoutPlan = {
+      this._layoutPlan = {
         ...EMPTY_LAYOUT_PLAN,
         orientation: this.props.orientation,
         mode: this.props.mode,
@@ -229,8 +229,8 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
       return
     }
 
-    this.publishDomainContributions(runtime)
-    this.layoutPlan = createBarSeriesLayout({
+    this._publishDomainContributions(runtime)
+    this._layoutPlan = createBarSeriesLayout({
       props: this.props,
       dataStore: runtime.dataStore,
       xScale,
@@ -238,8 +238,8 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
       width: this.width,
       height: this.height,
     })
-    this.publishDiagnostics()
-    runtime.setSeriesMetadata(this.componentId, this.layoutPlan.series.map(item => ({
+    this._publishDiagnostics()
+    runtime.setSeriesMetadata(this.componentId, this._layoutPlan.series.map(item => ({
       ...item,
       kind: 'bar',
       sourceSeriesId: this.componentId,
@@ -248,7 +248,7 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
         y: this.props.yScaleId,
       },
     })))
-    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'bar', this.layoutPlan.items.map(item => ({
+    publishChartMarkSemantics(runtime, `${this.componentId}:marks`, this.componentId, 'bar', this._layoutPlan.items.map(item => ({
       key: item.key,
       x: item.x,
       y: item.y,
@@ -266,17 +266,17 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
   /**
    * Публикует вклад BarSeries в shared scale source domains.
    */
-  private publishDomainContributions(runtime: NovaChartRuntime<TData>): void {
-    this.runtimeBinding.publishContributions(runtime, [
+  private _publishDomainContributions(runtime: NovaChartRuntime<TData>): void {
+    this._runtimeBinding.publishContributions(runtime, [
       {
-        id: this.categoryContributionId,
-        scaleId: this.categoryScaleId,
-        domain: this.resolveCategoryDomain(runtime),
+        id: this._categoryContributionId,
+        scaleId: this._categoryScaleId,
+        domain: this._resolveCategoryDomain(runtime),
       },
       {
-        id: this.valueContributionId,
-        scaleId: this.valueScaleId,
-        domain: this.resolveValueDomain(runtime),
+        id: this._valueContributionId,
+        scaleId: this._valueScaleId,
+        domain: this._resolveValueDomain(runtime),
       },
     ])
   }
@@ -284,14 +284,14 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
   /**
    * Возвращает полный category domain этой series.
    */
-  private resolveCategoryDomain(runtime: NovaChartRuntime<TData>): ChartScaleDomain {
+  private _resolveCategoryDomain(runtime: NovaChartRuntime<TData>): ChartScaleDomain {
     return [...runtime.dataStore.categoryDomain(this.props.categoryField)] as ChartScaleDomain
   }
 
   /**
    * Возвращает полный value domain этой series с учетом stacked totals.
    */
-  private resolveValueDomain(runtime: NovaChartRuntime<TData>): ChartScaleDomain {
+  private _resolveValueDomain(runtime: NovaChartRuntime<TData>): ChartScaleDomain {
     const rows = runtime.dataStore.getData()
     if (rows.length === 0) {
       return [0, 1]
@@ -326,39 +326,39 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
   /**
    * Возвращает scale id, на котором лежит category axis.
    */
-  private get categoryScaleId(): string {
+  private get _categoryScaleId(): string {
     return this.props.orientation === 'horizontal' ? this.props.yScaleId : this.props.xScaleId
   }
 
   /**
    * Возвращает scale id, на котором лежит value axis.
    */
-  private get valueScaleId(): string {
+  private get _valueScaleId(): string {
     return this.props.orientation === 'horizontal' ? this.props.xScaleId : this.props.yScaleId
   }
 
-  private get categoryContributionId(): string {
+  private get _categoryContributionId(): string {
     return `${this.componentId}:category-domain`
   }
 
-  private get valueContributionId(): string {
+  private get _valueContributionId(): string {
     return `${this.componentId}:value-domain`
   }
 
   /**
    * Выполняет внутренний шаг publishDiagnostics для ChartBarSeries.
    */
-  private publishDiagnostics(): void {
+  private _publishDiagnostics(): void {
     const runtime = resolveNovaChartRuntime<TData>(this, this.props.chartRef)
     if (runtime) {
-      this.runtimeBinding.publishDiagnostics(runtime, this.layoutPlan.diagnostics)
+      this._runtimeBinding.publishDiagnostics(runtime, this._layoutPlan.diagnostics)
     }
   }
 
   /**
    * Выполняет внутренний шаг isItemHighlighted для ChartBarSeries.
    */
-  private isItemHighlighted(
+  private _isItemHighlighted(
     key: string,
     hovered: NovaChartDatumRef<TData> | null | undefined,
   ): boolean {
@@ -370,18 +370,18 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
   /**
    * Рисует подписи баров поверх bounded schema.
    */
-  private renderLabels(runtime: NovaChartRuntime<TData> | null | undefined): void {
+  private _renderLabels(runtime: NovaChartRuntime<TData> | null | undefined): void {
     if (!this.props.labels.visible) {
       return
     }
 
-    for (const item of this.layoutPlan.items) {
+    for (const item of this._layoutPlan.items) {
       if (!item.labelText) {
         continue
       }
       const rect = resolveLabelRect(this.props.orientation, this.props.labels.position, item)
-      const context = this.createStyleContext('barLabel', item, runtime)
-      const style = this.resolveLabelStyle(context, runtime)
+      const context = this._createStyleContext('barLabel', item, runtime)
+      const style = this._resolveLabelStyle(context, runtime)
       const defaultSchema: NovaSchemaItem = {
         type: 'text' as const,
         text: item.labelText,
@@ -427,7 +427,7 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
     }
   }
 
-  private createStyleContext(
+  private _createStyleContext(
     part: string,
     item: NovaChartBarLayoutPlan<TData>['items'][number],
     runtime: NovaChartRuntime<TData> | null | undefined,
@@ -468,12 +468,12 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
     }
   }
 
-  private resolveBarStyle(
+  private _resolveBarStyle(
     item: NovaChartBarLayoutPlan<TData>['items'][number],
     context: NovaChartStyleContext<TData, typeof item>,
     runtime: NovaChartRuntime<TData> | null | undefined,
   ): NovaChartResolvedMarkStyle {
-    const highlighted = this.isItemHighlighted(item.key, runtime?.getInteractionState().hovered)
+    const highlighted = this._isItemHighlighted(item.key, runtime?.getInteractionState().hovered)
     const stateStyle = {
       ...(this.props.states?.[context.state] ?? {}),
       ...(highlighted
@@ -508,7 +508,7 @@ export class ChartBarSeries<TData = Record<string, unknown>, E extends EventList
     }
   }
 
-  private resolveLabelStyle(
+  private _resolveLabelStyle(
     context: NovaChartStyleContext<TData>,
     runtime: NovaChartRuntime<TData> | null | undefined,
   ): NovaChartResolvedMarkStyle {
