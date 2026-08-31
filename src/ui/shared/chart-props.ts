@@ -1,3 +1,4 @@
+import type { NovaUiCommonProps, NovaUiCommonResolvedProps } from '@endge/nova-ui-kit'
 import type {
   NovaChartAreaSeriesProps,
   NovaChartAreaSeriesResolvedProps,
@@ -71,6 +72,19 @@ export const NOVA_CHARTS_COMMON_DIRTY_POLICY = {
     'renderers',
   ],
 } as any
+
+type NovaChartSeriesCommonInput = Omit<NovaUiCommonProps, 'motion' | 'style'> & {
+  motion?: unknown
+  style?: unknown
+}
+
+function normalizeChartSeriesCommonProps<TProps extends NovaChartSeriesCommonInput>(
+  props: TProps,
+  defaults: Partial<NovaUiCommonResolvedProps>,
+): NovaUiCommonResolvedProps {
+  const { motion: _motion, style: _style, ...commonProps } = props
+  return normalizeCommonProps(commonProps, defaults)
+}
 
 export function normalizeChartRootProps<TData>(
   props: NovaChartRootProps<TData> = {},
@@ -184,7 +198,7 @@ export function normalizeChartBarSeriesProps<TData>(
   }
 
   return {
-    ...normalizeCommonProps(props, {
+    ...normalizeChartSeriesCommonProps(props, {
       width: 560,
       height: 300,
       clip: true,
@@ -257,7 +271,7 @@ export function normalizeChartLineSeriesProps<TData>(
   props: NovaChartLineSeriesProps<TData>,
 ): NovaChartLineSeriesResolvedProps<TData> {
   return {
-    ...normalizeCommonProps(props, {
+    ...normalizeChartSeriesCommonProps(props, {
       width: 560,
       height: 300,
       clip: true,
@@ -322,7 +336,7 @@ export function normalizeChartScatterSeriesProps<TData>(
   const strokeWidth = Math.max(0, finiteNumber(props.strokeWidth, 1))
 
   return {
-    ...normalizeCommonProps(props, {
+    ...normalizeChartSeriesCommonProps(props, {
       width: 560,
       height: 300,
       clip: true,
@@ -377,7 +391,7 @@ export function normalizeChartAreaSeriesProps<TData>(
   props: NovaChartAreaSeriesProps<TData>,
 ): NovaChartAreaSeriesResolvedProps<TData> {
   return {
-    ...normalizeCommonProps(props, {
+    ...normalizeChartSeriesCommonProps(props, {
       width: 560,
       height: 300,
       clip: true,
@@ -442,7 +456,7 @@ export function normalizeChartBubbleSeriesProps<TData>(
   const strokeWidth = Math.max(0, finiteNumber(props.strokeWidth, 1))
 
   return {
-    ...normalizeCommonProps(props, {
+    ...normalizeChartSeriesCommonProps(props, {
       width: 560,
       height: 300,
       clip: true,

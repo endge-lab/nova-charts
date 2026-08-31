@@ -10,6 +10,7 @@ import type {
 } from '@/model/types/chart-components.types'
 import type { ChartTooltipDescriptor } from '@/ui/tooltip/tooltip.config'
 import {
+  borderRadiusToRendererValue,
   createTooltipSchema,
   NovaUiComponentNode,
 
@@ -89,7 +90,7 @@ export class ChartTooltip<E extends EventList = Record<string, any>>
         background: this.props.background,
         color: this.props.color,
         strokeColor: this.props.borderColor,
-        borderRadius: this.props.border?.radius ?? 7,
+        borderRadius: borderRadiusToRendererValue(this.props.border?.radius ?? 7),
       },
     })
     const origin = this._resolveAnchor()

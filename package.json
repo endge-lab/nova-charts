@@ -1,7 +1,7 @@
 {
   "name": "@endge/nova-charts",
   "type": "module",
-  "version": "0.10.11",
+  "version": "0.10.12",
   "private": false,
   "sideEffects": false,
   "exports": {
@@ -19,7 +19,8 @@
     "clean": "rimraf dist tsconfig.tsbuildinfo",
     "dev": "vite build --watch",
     "dev:watch": "vite build --watch",
-    "build": "vite build",
+    "build": "pnpm run typecheck && vite build",
+    "typecheck": "vue-tsc -p tsconfig.app.json --noEmit",
     "test": "vitest run --config vite.config.ts",
     "bench": "vitest run --config vite.bench.config.ts",
     "lint-check": "eslint . --cache",

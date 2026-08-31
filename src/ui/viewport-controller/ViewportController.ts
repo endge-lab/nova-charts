@@ -53,7 +53,9 @@ export class ChartViewportController<E extends EventList = Record<string, any>>
     this._setupEvents()
   }
 
-  override setProps(patch: Partial<NovaChartViewportControllerProps>): this {
+  override setProps(
+    patch: Partial<NovaChartViewportControllerProps> | Partial<NovaChartViewportControllerResolvedProps>,
+  ): this {
     return super.setProps(normalizeChartViewportControllerProps({
       ...this.props,
       ...patch,

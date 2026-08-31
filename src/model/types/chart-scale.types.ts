@@ -38,18 +38,20 @@ export interface ChartScaleTickOptions {
   formatter?: (value: ChartScaleValue) => string
 }
 
+/* eslint-disable ts/method-signature-style -- Method variance позволяет хранить числовые и категориальные шкалы в одном runtime registry. */
 export interface ChartScale<TValue extends ChartScaleValue = ChartScaleValue> {
   readonly id: string
   readonly type: ChartScaleType
 
-  getDomain: () => ChartScaleDomain
-  getRange: () => ChartScaleRange
-  setDomain: (domain: ChartScaleDomain) => void
-  setRange: (range: ChartScaleRange) => void
-  toPx: (value: TValue) => number
-  fromPx: (px: number) => TValue
-  ticks: (options?: ChartScaleTickOptions) => Array<ChartScaleTick<TValue>>
+  getDomain(): ChartScaleDomain
+  getRange(): ChartScaleRange
+  setDomain(domain: ChartScaleDomain): void
+  setRange(range: ChartScaleRange): void
+  toPx(value: TValue): number
+  fromPx(px: number): TValue
+  ticks(options?: ChartScaleTickOptions): Array<ChartScaleTick<TValue>>
 }
+/* eslint-enable ts/method-signature-style */
 
 export interface ChartLinearScaleOptions {
   id: string

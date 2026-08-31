@@ -71,7 +71,7 @@ export class ChartViewport<E extends EventList = Record<string, any>>
   /**
    * Обновляет значение состояния ChartViewport.
    */
-  override setProps(patch: Partial<NovaChartViewportProps>): this {
+  override setProps(patch: Partial<NovaChartViewportProps> | Partial<NovaChartViewportResolvedProps>): this {
     return super.setProps(normalizeChartViewportProps({
       ...this.props,
       ...patch,

@@ -12,6 +12,7 @@ import type {
   NovaScrollbarVisualOptions,
   NovaUiCommonProps,
   NovaUiCommonResolvedProps,
+  NovaUiStyleAttrValue,
   TooltipAnimationOptions,
   TooltipCollisionOptions,
   TooltipContent,
@@ -307,7 +308,7 @@ export interface NovaChartSeriesCommonProps<TData = Record<string, unknown>>
 export interface NovaChartSeriesCommonResolvedProps<TData = Record<string, unknown>>
   extends Omit<NovaUiCommonResolvedProps, 'style' | 'motion'>, NovaChartSeriesCustomizationProps<TData> {
   className?: string | Array<string>
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, NovaUiStyleAttrValue>
 }
 
 export type NovaChartBarOrientation = 'vertical' | 'horizontal'
@@ -497,7 +498,7 @@ export interface NovaChartAxisProps extends NovaUiCommonProps {
 
 export interface NovaChartAxisResolvedProps extends NovaUiCommonResolvedProps {
   className?: string | Array<string>
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, NovaUiStyleAttrValue>
   chartRef?: string
   scaleId: string
   orientation: 'horizontal' | 'vertical'
@@ -528,7 +529,7 @@ export interface NovaChartGridProps extends NovaUiCommonProps {
 
 export interface NovaChartGridResolvedProps extends NovaUiCommonResolvedProps {
   className?: string | Array<string>
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, NovaUiStyleAttrValue>
   chartRef?: string
   xScaleId?: string
   yScaleId?: string
@@ -1190,7 +1191,7 @@ export interface NovaChartTooltipProps extends NovaUiCommonProps {
 
 export interface NovaChartTooltipResolvedProps extends NovaUiCommonResolvedProps {
   className?: string | Array<string>
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, NovaUiStyleAttrValue>
   chartRef?: string
   enabled: boolean
   offsetX: number
@@ -1334,7 +1335,7 @@ export interface NovaChartViewportControllerProps extends NovaUiCommonProps, Nov
 
 export interface NovaChartViewportControllerResolvedProps extends NovaUiCommonResolvedProps, NovaChartViewportControllerResolvedOptions {
   className?: string | Array<string>
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, NovaUiStyleAttrValue>
   chartRef?: string
   scaleId?: string
 }
@@ -1358,7 +1359,7 @@ export interface NovaChartViewportProps extends NovaUiCommonProps {
 
 export interface NovaChartViewportResolvedProps extends NovaUiCommonResolvedProps {
   className?: string | Array<string>
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, NovaUiStyleAttrValue>
   chartRef?: string
   scaleId: string
   orientation: 'horizontal' | 'vertical'
@@ -1397,7 +1398,7 @@ export interface NovaChartLegendProps extends NovaUiCommonProps {
 
 export interface NovaChartLegendResolvedProps extends NovaUiCommonResolvedProps {
   className?: string | Array<string>
-  attrs?: Record<string, unknown>
+  attrs?: Record<string, NovaUiStyleAttrValue>
   chartRef?: string
   orientation: 'horizontal' | 'vertical'
   hiddenSeriesIds: Array<string>
