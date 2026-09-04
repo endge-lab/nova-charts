@@ -926,14 +926,14 @@ function mountLineSeriesChart(
   app.raph.run()
 }
 
-describe('nova Charts components', () => {
+describe('компоненты Nova Charts', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
     document.body.innerHTML = ''
     installCanvasMocks()
   })
 
-  it('registers root scales and exposes runtime API', () => {
+  it('регистрирует корневые шкалы и предоставляет runtime API', () => {
     const app = createApp()
     mountChart(app, rows(4))
 
@@ -944,7 +944,7 @@ describe('nova Charts components', () => {
     expect(root.getDiagnostics().scaleCount).toBe(2)
   })
 
-  it('updates scale ranges from Plot layout rect', () => {
+  it('обновляет диапазоны шкал из прямоугольника layout Plot', () => {
     const app = createApp()
     mountChart(app, rows(10), 640, 320)
 
@@ -953,7 +953,7 @@ describe('nova Charts components', () => {
     expect(root.requireScale('y').getRange()).toEqual([320, 0])
   })
 
-  it('shares scale ticks between Axis and Grid', () => {
+  it('разделяет деления шкалы между Axis и Grid', () => {
     const app = createApp()
     mountChart(app, rows(20), 800, 360)
 
@@ -964,7 +964,7 @@ describe('nova Charts components', () => {
     expect(grid.getLineCount()).toBeGreaterThanOrEqual(axis.getTickCount())
   })
 
-  it('computes direct bar layout for small data', () => {
+  it('вычисляет прямой layout bar для небольшого набора данных', () => {
     const app = createApp()
     mountChart(app, rows(3), 600, 300)
 
@@ -977,7 +977,7 @@ describe('nova Charts components', () => {
     expect(plan.items[0].height).toBeGreaterThan(0)
   })
 
-  it('aggregates huge category domains into bounded buckets', () => {
+  it('агрегирует большие домены категорий в ограниченные buckets', () => {
     const app = createApp()
     mountChart(app, rows(100_000), 900, 360)
 
@@ -989,7 +989,7 @@ describe('nova Charts components', () => {
     expect(diagnostics.renderedBars).toBeLessThan(100_000)
   })
 
-  it('updates and removes rows through root API indexes', () => {
+  it('обновляет и удаляет строки через индексы корневого API', () => {
     const app = createApp()
     mountChart(app, rows(5))
     const root = app.components.requireApi<NovaChartRootApi<Row>>('chart')
@@ -1004,7 +1004,7 @@ describe('nova Charts components', () => {
     expect(root.requireScale('x').getDomain()).toContain('C5')
   })
 
-  it('allows external components to read a root scale through chartRef', () => {
+  it('разрешает внешним компонентам читать корневую шкалу через chartRef', () => {
     const app = createApp()
     mountChart(app, rows(8))
 
@@ -1031,7 +1031,7 @@ describe('nova Charts components', () => {
     expect(axis.getTickCount()).toBeGreaterThan(0)
   })
 
-  it('stores and publishes interaction state from root API', () => {
+  it('хранит и публикует состояние взаимодействия из корневого API', () => {
     const app = createApp()
     mountInteractiveChart(app, rows(4))
     const root = app.components.requireApi<NovaChartRootApi<Row>>('chart')
@@ -1048,7 +1048,7 @@ describe('nova Charts components', () => {
     expect(listener).toHaveBeenCalledTimes(1)
   })
 
-  it('hit-tests direct bars and returns null outside the layout', () => {
+  it('выполняет hit-test прямых bar и возвращает null за пределами layout', () => {
     const app = createApp()
     mountInteractiveChart(app, rows(3), 600, 300)
 
@@ -1067,7 +1067,7 @@ describe('nova Charts components', () => {
     expect(series.hitTest({ x: -20, y: -20 })).toBeNull()
   })
 
-  it('hit-tests windowed bars after scale range expansion', () => {
+  it('выполняет hit-test оконных bar после расширения диапазона шкалы', () => {
     const app = createApp()
     mountInteractiveChart(app, rows(100_000), 900, 360)
 
@@ -1083,7 +1083,7 @@ describe('nova Charts components', () => {
     expect(series.hitTest({ x: item.x + item.width / 2, y: item.y + item.height / 2 })?.key).toBe(item.key)
   })
 
-  it('hit-tests aggregated buckets without exposing raw rows', () => {
+  it('выполняет hit-test агрегированных buckets без публикации исходных строк', () => {
     const app = createApp()
     mountInteractiveChart(app, rows(100_000), 900, 360)
 
@@ -1097,7 +1097,7 @@ describe('nova Charts components', () => {
     expect(hit?.row).toBeUndefined()
   })
 
-  it('interaction component updates hover and clears it on leave', () => {
+  it('компонент взаимодействия обновляет hover и очищает его при leave', () => {
     const app = createApp()
     mountInteractiveChart(app, rows(10), 700, 320)
 
@@ -1119,7 +1119,7 @@ describe('nova Charts components', () => {
     expect(root.getInteractionState().tooltipVisible).toBe(false)
   })
 
-  it('external components can read interaction state through chartRef API', () => {
+  it('внешние компоненты могут читать состояние взаимодействия через API chartRef', () => {
     const app = createApp()
     mountInteractiveChart(app, rows(5))
 
@@ -1134,7 +1134,7 @@ describe('nova Charts components', () => {
     expect(externalRoot.getInteractionState().pointer?.plotY).toBe(18)
   })
 
-  it('renders tooltip through UIKit adapter and calls content formatter', () => {
+  it('отрисовывает tooltip через адаптер UIKit и вызывает formatter содержимого', () => {
     const app = createApp()
     const formatter = vi.fn((context: NovaChartTooltipContext<Row>) => ({
       text: `${context.label}: ${context.formattedValue}`,
@@ -1161,7 +1161,7 @@ describe('nova Charts components', () => {
     expect(formatter.mock.calls[0]?.[0].formattedValue).toBe('1 pts')
   })
 
-  it('scrolls a band domain through Viewport without losing source domain', () => {
+  it('прокручивает band-domain через Viewport без потери исходного domain', () => {
     const app = createApp()
     mountViewportChart(app, rows(40))
 
@@ -1183,7 +1183,7 @@ describe('nova Charts components', () => {
     })
   })
 
-  it('registers ViewportController and scrolls horizontal viewport from deltaX', () => {
+  it('регистрирует ViewportController и прокручивает горизонтальный viewport по deltaX', () => {
     const app = createApp()
     mountViewportControllerChart(app, rows(40), {
       wheel: { axis: 'horizontal', useDeltaX: true, speed: 1 },
@@ -1200,7 +1200,7 @@ describe('nova Charts components', () => {
     expect(app.components.requireApi<NovaChartRootApi<Row>>('chart').getScaleSourceDomain('x')).toHaveLength(40)
   })
 
-  it('maps Shift+wheel to horizontal viewport and filters tiny deltas', () => {
+  it('сопоставляет Shift+wheel горизонтальному viewport и фильтрует малые delta', () => {
     const app = createApp()
     mountViewportControllerChart(app, rows(40), {
       wheel: { axis: 'horizontal', shiftYToX: true, thresholdPx: 8 },
@@ -1215,7 +1215,7 @@ describe('nova Charts components', () => {
     expect(viewport.getViewportState().value).toBe(2)
   })
 
-  it('allows wheel pass-through at viewport bounds', () => {
+  it('разрешает пропуск wheel на границах viewport', () => {
     const app = createApp()
     mountViewportControllerChart(app, rows(20), {
       wheel: { axis: 'horizontal', edgeBehavior: 'pass-through', preventDefault: 'when-scrollable' },
@@ -1229,7 +1229,7 @@ describe('nova Charts components', () => {
     expect(app.components.requireApi<NovaChartViewportApi>('viewport').getViewportState().value).toBe(0)
   })
 
-  it('supports pointer pan, keyboard and custom wheel mapper', () => {
+  it('поддерживает pan через pointer, клавиатуру и пользовательский mapper wheel', () => {
     const app = createApp()
     const onInput = vi.fn()
     mountViewportControllerChart(app, rows(60), {
@@ -1264,7 +1264,7 @@ describe('nova Charts components', () => {
     expect(viewport.getViewportState().value).toBe(15)
   })
 
-  it('keeps scrollbar wheel behavior backward-compatible without controller', () => {
+  it('сохраняет обратную совместимость поведения wheel scrollbar без controller', () => {
     const app = createApp()
     mountViewportChart(app, rows(40))
 
@@ -1275,7 +1275,7 @@ describe('nova Charts components', () => {
     expect(viewport.getViewportState().value).toBe(5)
   })
 
-  it('keeps generic bar metadata and scale domain contributions in root API', () => {
+  it('сохраняет общие метаданные bar и вклады domain шкалы в корневом API', () => {
     const app = createApp()
     mountSeriesChart(app, { mode: 'grouped', orientation: 'vertical' })
 
@@ -1312,7 +1312,7 @@ describe('nova Charts components', () => {
     ])
   })
 
-  it('merges mixed series contributions into shared scales and viewport keeps source domain', () => {
+  it('объединяет вклады смешанных серий в общие шкалы, а viewport сохраняет исходный domain', () => {
     const app = createApp()
     mountMixedCoreChart(app)
 
@@ -1338,7 +1338,7 @@ describe('nova Charts components', () => {
     expect(root.getScaleSourceDomain('x')).toEqual(['A', 'B', 'C'])
   })
 
-  it('keeps explicit scale domain fixed when series publishes contributions', () => {
+  it('сохраняет явный domain шкалы фиксированным при публикации вкладов серии', () => {
     const app = createApp()
     mountSeriesChart(app, { mode: 'stacked', orientation: 'vertical' })
 
@@ -1351,7 +1351,7 @@ describe('nova Charts components', () => {
     }))
   })
 
-  it('interaction can select nearest datum from a non-bar registered series', () => {
+  it('взаимодействие выбирает ближайшее значение зарегистрированной серии не типа bar', () => {
     const app = createApp()
     mountMixedCoreChart(app)
 
@@ -1371,7 +1371,7 @@ describe('nova Charts components', () => {
     }))
   })
 
-  it('registers LineSeries as a public schema with metadata and domain contributions', () => {
+  it('регистрирует LineSeries как публичную схему с метаданными и вкладами domain', () => {
     const app = createApp()
     mountLineSeriesChart(app)
 
@@ -1405,7 +1405,7 @@ describe('nova Charts components', () => {
     ])
   })
 
-  it('renders step LineSeries and keeps null gaps unless connectNulls is enabled', () => {
+  it('отрисовывает ступенчатую LineSeries и сохраняет разрывы null, пока не включён connectNulls', () => {
     const data: Array<LineRow> = [
       { id: 'q1', category: 'Q1', value: 10 },
       { id: 'q2', category: 'Q2', value: Number.NaN },
@@ -1424,7 +1424,7 @@ describe('nova Charts components', () => {
     expect(connected.getLayoutPlan().segments).toHaveLength(2)
   })
 
-  it('hit-tests LineSeries points and passes generic datum to tooltip formatter', () => {
+  it('выполняет hit-test точек LineSeries и передаёт общее значение в formatter tooltip', () => {
     const app = createApp()
     const formatter = vi.fn((context: NovaChartTooltipContext<LineRow>) => ({
       text: `${context.datum.seriesKind}:${context.datum.xValue}:${context.formattedValue}`,
@@ -1457,7 +1457,7 @@ describe('nova Charts components', () => {
     expect(formatter.mock.calls[0]?.[0].datum.seriesKind).toBe('line')
   })
 
-  it('virtualizes large LineSeries datasets with bounded rendered points', () => {
+  it('виртуализирует большие наборы LineSeries с ограниченным числом отрисованных точек', () => {
     const app = createApp()
     mountLineSeriesChart(app, rows(80_000), {
       seriesField: undefined,
@@ -1471,7 +1471,7 @@ describe('nova Charts components', () => {
     expect(line.getDiagnostics().mode).toBe('sampled')
   })
 
-  it('computes grouped and stacked layouts with series metadata', () => {
+  it('вычисляет сгруппированные и stacked layouts с метаданными серий', () => {
     const app = createApp()
     mountSeriesChart(app, { mode: 'grouped', orientation: 'vertical' })
 
@@ -1490,7 +1490,7 @@ describe('nova Charts components', () => {
     expect(stacked.items.filter(item => item.category === 'Q1').map(item => item.value)).toEqual([12, 20])
   })
 
-  it('computes horizontal bars and labels from the professional BarSeries API', () => {
+  it('вычисляет горизонтальные bars и метки из профессионального API BarSeries', () => {
     const app = createApp()
     mountSeriesChart(app, {
       mode: 'grouped',
@@ -1507,7 +1507,7 @@ describe('nova Charts components', () => {
     expect(plan.items[0].labelText).toBe('A:12')
   })
 
-  it('mounts high-level BarChart wrapper and keeps low-level APIs reachable', () => {
+  it('монтирует высокоуровневую оболочку BarChart и сохраняет доступность низкоуровневых API', () => {
     const app = createApp()
     mountBarChart(app)
 
@@ -1526,7 +1526,7 @@ describe('nova Charts components', () => {
     expect(root.requireScale('category').getDomain()).toEqual(['Q2', 'Q3'])
   })
 
-  it('auto-mounts ViewportController from BarChart viewport controller props', () => {
+  it('автоматически монтирует ViewportController из props контроллера viewport BarChart', () => {
     const app = createApp()
     mountBarChart(app, seriesRows(), {
       viewport: {
@@ -1544,7 +1544,7 @@ describe('nova Charts components', () => {
     expect(viewport.getViewportState().value).toBe(1)
   })
 
-  it('exposes bounded chart semantics and export wrappers', async () => {
+  it('предоставляет ограниченную семантику диаграммы и оболочки экспорта', async () => {
     const app = createApp()
     mountBarChart(app, seriesRows(), {
       accessibility: {
@@ -1576,7 +1576,7 @@ describe('nova Charts components', () => {
     expect(exported.semanticSnapshot?.regions.some(region => region.label === 'Revenue chart')).toBe(true)
   })
 
-  it('disables chart semantic publishing when accessibility is false', () => {
+  it('отключает публикацию семантики диаграммы при accessibility=false', () => {
     const app = createApp()
     mountBarChart(app, seriesRows(), { accessibility: false })
 

@@ -6,8 +6,8 @@ import { createChartScale } from '@/model/scale/create-chart-scale'
 import { LinearScale } from '@/model/scale/LinearScale'
 import { TimeScale } from '@/model/scale/TimeScale'
 
-describe('linearScale', () => {
-  it('maps values to pixels and back', () => {
+describe('линейная шкала', () => {
+  it('преобразует значения в пиксели и обратно', () => {
     const scale = new LinearScale('value', {
       domain: [10, 20],
       range: [100, 300],
@@ -17,7 +17,7 @@ describe('linearScale', () => {
     expect(scale.fromPx(250)).toBe(17.5)
   })
 
-  it('creates readable numeric ticks', () => {
+  it('создаёт читаемые числовые деления', () => {
     const scale = new LinearScale('value', {
       domain: [0, 100],
       range: [0, 500],
@@ -27,8 +27,8 @@ describe('linearScale', () => {
   })
 })
 
-describe('bandScale', () => {
-  it('maps categories to bands and exposes centers', () => {
+describe('диапазонная шкала', () => {
+  it('преобразует категории в диапазоны и предоставляет их центры', () => {
     const scale = new BandScale('groups', {
       domain: ['a', 'b', 'c'],
       range: [0, 300],
@@ -40,7 +40,7 @@ describe('bandScale', () => {
     expect(scale.fromPx(240)).toBe('c')
   })
 
-  it('supports explicit tick values, labels and category step', () => {
+  it('поддерживает явные значения делений, метки и шаг категории', () => {
     const scale = new BandScale('groups', {
       domain: ['a', 'b', 'c', 'd', 'e'],
       range: [0, 500],
@@ -61,8 +61,8 @@ describe('bandScale', () => {
   })
 })
 
-describe('timeScale', () => {
-  it('creates calendar month ticks without approximating month as 30 days', () => {
+describe('временная шкала', () => {
+  it('создаёт календарные месячные деления без приближения месяца к 30 дням', () => {
     const scale = new TimeScale('time', {
       domain: [
         Date.UTC(2026, 0, 15),
@@ -86,7 +86,7 @@ describe('timeScale', () => {
     expect(ticks.map(tick => tick.label)).toEqual(['Feb', 'Mar', 'Apr'])
   })
 
-  it('uses timezone-aware day boundaries', () => {
+  it('использует границы дней с учётом часового пояса', () => {
     const scale = new TimeScale('time', {
       domain: [
         Date.UTC(2026, 4, 15, 20),
@@ -109,8 +109,8 @@ describe('timeScale', () => {
   })
 })
 
-describe('chartScaleRegistry', () => {
-  it('stores scales by id and updates ranges', () => {
+describe('реестр шкал диаграммы', () => {
+  it('хранит шкалы по ID и обновляет диапазоны', () => {
     const registry = new ChartScaleRegistry()
     registry.register(createChartScale({
       id: 'value',
@@ -124,8 +124,8 @@ describe('chartScaleRegistry', () => {
   })
 })
 
-describe('chartAxisModel', () => {
-  it('creates axis render plans from registered scales', () => {
+describe('модель оси диаграммы', () => {
+  it('создаёт планы render оси из зарегистрированных шкал', () => {
     const registry = new ChartScaleRegistry()
     registry.register(new LinearScale('value', {
       domain: [0, 100],

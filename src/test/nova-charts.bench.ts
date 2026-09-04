@@ -64,8 +64,8 @@ const OUTPUT_DIR = path.resolve(process.cwd(), 'output')
 const REPORT_JSON = path.join(OUTPUT_DIR, 'nova-charts-bench-report.json')
 const REPORT_MD = path.join(OUTPUT_DIR, 'nova-charts-bench-report.md')
 
-describe('nova Charts benchmarks', () => {
-  it('writes performance report and enforces virtualization invariants', async () => {
+describe('бенчмарки Nova Charts', () => {
+  it('записывает отчёт производительности и обеспечивает инварианты виртуализации', async () => {
     const results: Array<BenchScenarioResult> = []
 
     results.push(runScenario('data-index-10k', 'data', 'data/index setData 10k rows', 10_000, () => {

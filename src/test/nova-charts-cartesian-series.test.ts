@@ -198,8 +198,8 @@ beforeEach(() => {
   installCanvasMocks()
 })
 
-describe('nova Charts cartesian series', () => {
-  it('exports and registers new public schema names', () => {
+describe('декартовы серии Nova Charts', () => {
+  it('экспортирует и регистрирует новые публичные имена схем', () => {
     const app = createApp()
     expect(NovaCharts.ScatterSeries).toBe('NovaCharts.ScatterSeries')
     expect(NovaCharts.AreaSeries).toBe('NovaCharts.AreaSeries')
@@ -211,7 +211,7 @@ describe('nova Charts cartesian series', () => {
     expect(app.schema.has(NovaCharts.ComposedChart)).toBe(true)
   })
 
-  it('lays out scatter points, publishes metadata and hit-tests rendered points only', () => {
+  it('размещает точки scatter, публикует метаданные и выполняет hit-test только отрисованных точек', () => {
     const app = createApp()
     mountRootChart(app)
 
@@ -231,7 +231,7 @@ describe('nova Charts cartesian series', () => {
     expect(hit?.point).toEqual({ x: point!.x, y: point!.y })
   })
 
-  it('keeps explicit scale domain fixed while scatter contributes metadata to source domain', () => {
+  it('сохраняет явный domain шкалы фиксированным, пока scatter добавляет метаданные в исходный domain', () => {
     const app = createApp()
     const surface = app.createSurface('explicit-domain-test')
     app.schema.createNode(surface, {
@@ -271,7 +271,7 @@ describe('nova Charts cartesian series', () => {
     expect(root?.getScaleDomainContributions('x').length).toBe(1)
   })
 
-  it('creates area polygons, stacked y-domain totals, null gaps and step segments', () => {
+  it('создаёт полигоны area, суммарный stacked y-domain, разрывы null и step-сегменты', () => {
     const singleProps = normalizeChartAreaSeriesProps<PointRow>({
       xScaleId: 'x',
       yScaleId: 'y',
@@ -312,7 +312,7 @@ describe('nova Charts cartesian series', () => {
     expect(hit?.seriesKind).toBe('area')
   })
 
-  it('maps bubble sizes to bounded radius range and hit-tests by bubble radius', () => {
+  it('отображает размеры bubble в ограниченный диапазон радиусов и выполняет hit-test по радиусу', () => {
     const props = normalizeChartBubbleSeriesProps<PointRow>({
       xScaleId: 'x',
       yScaleId: 'y',
@@ -337,7 +337,7 @@ describe('nova Charts cartesian series', () => {
     expect(hit?.seriesKind).toBe('bubble')
   })
 
-  it('mounts ComposedChart with bar, line, area, scatter and bubble on shared scales', () => {
+  it('монтирует ComposedChart с bar, line, area, scatter и bubble на общих шкалах', () => {
     const app = createApp()
     const surface = app.createSurface('composed-chart-test')
     app.schema.createNode(surface, {

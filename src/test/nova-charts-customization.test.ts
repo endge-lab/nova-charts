@@ -52,8 +52,8 @@ function context(part = 'bar', state: NovaChartStyleContext<Row>['state'] = 'nor
   }
 }
 
-describe('nova Charts customization layer', () => {
-  it('resolves style precedence from preset, stylesheet, legacy props, series, state, datum and plugins', () => {
+describe('слой кастомизации Nova Charts', () => {
+  it('разрешает приоритет стилей из preset, stylesheet, legacy props, серии, состояния, значения и plugins', () => {
     const plugin = defineNovaChartPlugin<Row>({
       name: 'accent-plugin',
       resolveMarkStyle: (_context, style) => ({
@@ -95,7 +95,7 @@ describe('nova Charts customization layer', () => {
     expect(viewportStyle.borderRadius).toBe(9)
   })
 
-  it('registers custom presets and preserves explicit overrides', () => {
+  it('регистрирует пользовательские presets и сохраняет явные переопределения', () => {
     registerNovaChartPreset(createNovaChartPreset({
       name: 'unit-test',
       tokens: {
@@ -118,7 +118,7 @@ describe('nova Charts customization layer', () => {
     expect(resolved.opacity).toBe(0.95)
   })
 
-  it('supports renderer slots, including null to hide default marks', () => {
+  it('поддерживает slots renderer, включая null для скрытия стандартных marks', () => {
     const target = [] as any
     renderWithSlot(target, slotContext => ({
       type: 'circle',
@@ -149,7 +149,7 @@ describe('nova Charts customization layer', () => {
     expect(target[0].radius).toBe(8)
   })
 
-  it('runs plugin setup, ordered overlays, tooltip and legend decorators, then cleanup', () => {
+  it('выполняет setup plugins, упорядоченные overlays, декораторы tooltip и legend, затем очистку', () => {
     const calls: Array<string> = []
     const cleanup = vi.fn()
     const runtime = new NovaChartCustomizationController<Row>({
@@ -208,7 +208,7 @@ describe('nova Charts customization layer', () => {
     expect(cleanup).toHaveBeenCalledTimes(1)
   })
 
-  it('keeps hover/selection state resolution render-only and independent from domain data', () => {
+  it('оставляет разрешение состояния hover/selection только в render и независимым от данных domain', () => {
     expect(resolveVisualState('series', 'a', {
       hovered: { seriesId: 'series', key: 'a' },
     })).toBe('hovered')
@@ -220,7 +220,7 @@ describe('nova Charts customization layer', () => {
     })).toBe('muted')
   })
 
-  it('keeps default point-series hover highlight from changing mark geometry', () => {
+  it('не позволяет стандартной hover-подсветке точечной серии менять геометрию mark', () => {
     const scatter = normalizeChartScatterSeriesProps<Row>({
       xScaleId: 'x',
       yScaleId: 'y',
@@ -255,7 +255,7 @@ describe('nova Charts customization layer', () => {
     expect(explicitScatter.highlight.strokeWidth).toBe(4)
   })
 
-  it('appends custom schemas without growing hidden defaults', () => {
+  it('добавляет пользовательские схемы без разрастания скрытых значений по умолчанию', () => {
     const schema = [] as any
     appendSchema(schema, [{ type: 'rect', x: 0, y: 0, width: 1, height: 1 }])
     appendSchema(schema, null)
